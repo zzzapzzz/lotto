@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">  
+  
+<mapper namespace="sysmngMapper">
+	
+	<!-- 사용자 목록 조회 -->
+	<select id="getUserList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">		
+		SELECT *
+		FROM
+		(
+			SELECT 
+				  EMAIL
+				, NICKNAME
+				, USER_NM
+				, GROUP_ID
+				, GRADE
+				, POINT
+				, USED_POINT
+				, MBTLNUM
+				, PASSWORD
+				, RCMD_NICK
+				, SVC_AGREE_YN
+				, LOGIN_FAIL_CNT
+				, CR_DT
+				, UP_DT
+				, @rownum := @rownum + 1 AS row_num
+			FROM TB_USER_INFO tui,
+					(SELECT @rownum := 0) r
+			WHERE 1=1
+			<if test='search_key!=""'>		
+				AND (EMAIL = #{search_key} or USER_NM like '%'+#{search_key}+'%')
+			</if>	
+			<if test='auth_task!=""'>		
+				AND auth_task = #{auth_task}			
+			</if>
+		) AA
+		<if test='page!="" and scale!=""'>
+		WHERE row_num BETWEEN #{page} AND #{scale}
+		</if>
+	</select>
+	
+	<!-- 사용자 목록 건수 조회 -->
+	<select id="getUserListCnt" parameterType="java.util.Map" resultType="int">		
+		SELECT 
+			  COUNT(*)
+		FROM TB_USER_INFO
+		WHERE 1=1
+		<if test='search_key!=""'>		
+			AND (usr_id = #{search_key} or usr_nm like '%'+#{search_key}+'%')
+		</if>	
+		<if test='auth_task!=""'>		
+			AND auth_task = #{auth_task}			
+		</if>
+	</select>
+	
+	<!-- 권한코드 목록 조회 -->
+	<select id="getAuthCodeList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">		
+		SELECT *
+		FROM
+		(
+			SELECT 
+				  auth_cd
+				, auth_nm
+				, use_yn
+				, @rownum := @rownum + 1 AS row_num
+			FROM TB_AUTH_CODE tac,
+					(SELECT @rownum := 0) r
+			WHERE 1=1
+			<if test='search_key!=""'>		
+				AND (auth_cd = #{search_key} or auth_nm like '%'+#{search_key}+'%')
+			</if>	
+		) AA
+		<if test='page!="" and scale!=""'>
+		WHERE row_num BETWEEN #{page} AND #{scale}
+		</if>
+	</select>
+	
+	<!-- 권한코드 목록 건수 조회 -->
+	<select id="getAuthCodeListCnt" parameterType="java.util.Map" resultType="int">		
+		SELECT 
+			  COUNT(*)
+		FROM TB_AUTH_CODE
+		WHERE 1=1
+		<if test='search_key!=""'>		
+			AND (auth_cd = #{search_key} or auth_nm like '%'+#{search_key}+'%')
+		</if>	
+	</select>
+	
+	<!-- 업무권한정보 목록 조회 -->
+	<select id="getAuthTaskInfoList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">		
+		SELECT 
+			  tti.task_1_cd
+			, tti.task_2_cd
+			, tti.task_1_nm
+			, tti.task_2_nm
+			, ttig.cnt
+			, tti.sort
+			<if test='auth_cd!=""'>
+			, f_isTaskAuthInfo(#{auth_cd}, tti.task_1_cd, tti.task_2_cd) as checked
+			</if>
+			<if test='auth_cd==""'>
+			, 'N' as checked
+			</if>
+			, tti.use_yn
+		FROM TB_TASK_INFO tti		
+		LEFT OUTER JOIN (
+			SELECT
+				  task_1_cd				
+				, COUNT(task_1_cd) as cnt
+			FROM TB_TASK_INFO 
+			GROUP BY task_1_cd
+			) ttig ON tti.task_1_cd = ttig.task_1_cd
+		ORDER BY tti.sort		
+	</select>
+	
+	<!-- 권한코드 중복체크 -->
+	<select id="dupCheckAuthCode" parameterType="java.util.Map" resultType="int">		
+		SELECT 
+			  COUNT(*)
+		FROM TB_AUTH_CODE
+		WHERE 1=1
+		AND auth_cd = #{auth_cd}			
+	</select>
+	
+	<!-- 권한코드 등록 -->
+	<insert id="createAuthCode" parameterType="java.util.Map">		
+		INSERT INTO TB_AUTH_CODE (auth_cd, auth_nm)
+		VALUES (#{auth_cd}, #{auth_nm})			
+	</insert>
+	
+	<!-- 권한코드 수정 -->
+	<update id="modifyAuthCode" parameterType="java.util.Map">		
+		UPDATE TB_AUTH_CODE
+		SET auth_cd = #{auth_cd}
+			, auth_nm = #{auth_nm}
+		WHERE auth_cd = #{bf_auth_cd}
+	</update>
+	
+	<!-- 권한코드 삭제 -->
+	<delete id="deleteAuthCode" parameterType="java.util.Map">		
+		DELETE FROM TB_AUTH_CODE
+		WHERE auth_cd = #{auth_cd}
+	</delete>
+	
+	<!-- 기존 업무권한 매핑정보 삭제 -->
+	<delete id="deleteTaskAuthInfo" parameterType="java.util.Map">		
+		DELETE FROM TB_TASK_AUTHINFO		
+		WHERE auth_cd = #{auth_cd}
+	</delete>
+	
+	<!-- 업무권한 매핑정보 저장 -->
+	<insert id="saveTaskAuthInfo" parameterType="java.util.Map">	
+		<foreach collection="list" item="item">
+		INSERT INTO TB_TASK_AUTHINFO (auth_cd, depth_1_cd, depth_2_cd, task_1_cd, task_2_cd)
+		VALUES (
+			#{item.auth_cd}
+			, LOWER(f_getDepth1Menu(#{item.task_1_cd}))
+			, LOWER(f_getDepth2Menu(#{item.task_1_cd}))
+			, LOWER(#{item.task_1_cd})
+			<if test='item.task_2_cd == null or item.task_2_cd == ""'>
+			, LOWER(f_getTask2Cd(#{item.task_1_cd}))
+			</if>
+			<if test='item.task_2_cd != null and item.task_2_cd != ""'>
+			, LOWER(#{item.task_2_cd})
+			</if>
+		)
+		</foreach>	
+	</insert>
+	
+	<!-- 메뉴권한정보 목록 조회 -->
+	<select id="getAuthMenuInfoList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">		
+		select 
+			  tmi.menu_id
+			, tmi.p_menu_id
+			, tmi.menu_nm
+			, tmi.menu_url
+			, tmi.menu_order
+			, IFNULL(tmicnt.cnt, 0) cnt
+			<if test='auth_cd!=""'>
+			, CASE 
+				WHEN IFNULL(tmai.auth_cd,'') != '' THEN 'Y'
+				ELSE 'N'
+			  END checked
+			</if>
+			<if test='auth_cd==""'>
+			, 'N' as checked
+			</if>			
+		from tb_menu_info tmi
+		<if test='auth_cd!=""'>
+		LEFT OUTER JOIN 
+		(
+			select auth_cd, menu_id
+			from tb_menu_authinfo
+			where auth_cd = #{auth_cd}
+		) tmai ON tmi.menu_id = tmai.menu_id
+		</if>
+		LEFT OUTER JOIN 
+		(
+			select p_menu_id
+				, COUNT(p_menu_id) cnt
+			from tb_menu_info
+			group by p_menu_id
+		) tmicnt ON tmi.menu_id = tmicnt.p_menu_id
+		WHERE tmi.menu_id != 0
+		order by tmi.menu_order		
+	</select>
+	
+	<!-- 기존 메뉴권한 매핑정보 삭제 -->
+	<delete id="deleteMenuAuthInfo" parameterType="java.util.Map">		
+		DELETE FROM TB_MENU_AUTHINFO		
+		WHERE auth_cd = #{auth_cd}
+	</delete>
+	
+	<!-- 메뉴권한 매핑정보 저장 -->
+	<insert id="saveMenuAuthInfo" parameterType="java.util.Map">	
+		<foreach collection="list" item="item">
+		INSERT INTO TB_Menu_AUTHINFO (auth_cd, menu_id)
+		VALUES (#{item.auth_cd}, #{item.menu_id})
+		
+		</foreach>	
+	</insert>
+</mapper>

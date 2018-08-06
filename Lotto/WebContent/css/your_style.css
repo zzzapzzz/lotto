@@ -1,0 +1,79 @@
+/*
+ * It is advised not to edit the smartadmin_production.css
+ * as this will override any changes you make in the 
+ * later versions of this theme. 
+ * 
+ * We advise that you use use this CSS to override 
+ * SmartAdmin styles. 
+ * 
+ * Rename the stylesheet to whatever your liking so it will stay
+ * unique to you with each update of SmartAdmin.
+ */
+
+/*
+ * INDEX
+ * 
+ * - HTML
+ * - BODY
+ * - CUSTOM STYLES
+ */
+ .badge {
+    display: inline-block;
+    min-width: 10px;
+    padding: 10px 10px 10px 10px;
+    font-size: 42px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+    vertical-align: baseline;
+    white-space: nowrap;
+    text-align: center;
+    background-color: #999;
+    border-radius: 30px
+}
+.badge_plus {
+    display: inline-block;
+    min-width: 10px;
+    padding: 10px 10px 10px 10px;
+    font-size: 42px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+    vertical-align: baseline;
+    white-space: nowrap;
+    text-align: center;
+    background-color: #999;
+    border-radius: 30px
+}
+
+/* Number BG Color */
+.bg-color-orange2 {
+    background-color: #FDBB3B!important
+}
+.bg-color-blueLight2 {
+    background-color: #4391E8!important
+}
+.bg-color-redLight2 {
+    background-color: #FE5742!important
+}
+.bg-color-grayDark2 {
+    background-color: #717172!important
+}
+.bg-color-greenLight2 {
+    background-color: #51B30D!important
+}
+.wid100 {
+	width: 100px!important
+}
+.wid200 {
+	width: 200px!important
+}
+.wid300 {
+	width: 300px!important
+}
+.wid400 {
+	width: 400px!important
+}
+.add-option {
+	color: #e80909;
+}

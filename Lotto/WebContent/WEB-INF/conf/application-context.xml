@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans  xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:p="http://www.springframework.org/schema/p"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xmlns:tx="http://www.springframework.org/schema/tx"
+        xmlns:encryption="http://www.jasypt.org/schema/encryption"
+        xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+                            classpath:com/schema/spring/beans/spring-beans-3.2.xsd
+                            http://www.springframework.org/schema/context
+                            classpath:com/schema/spring/context/spring-context-3.2.xsd
+                            http://www.springframework.org/schema/tx
+                            classpath:com/schema/spring/tx/spring-tx-3.2.xsd
+                            http://www.springframework.org/schema/aop
+                            classpath:com/schema/spring/aop/spring-aop-3.2.xsd
+                            http://www.jasypt.org/schema/encryption
+                            classpath:com/schema/jasypt/jasypt-spring31-encryption-1.xsd
+                            http://www.springframework.org/schema/jdbc
+                            http://www.springframework.org/schema/jdbc/spring-jdbc-3.2.xsd">
+
+    <context:component-scan base-package="com.lotto.spring">
+        <context:exclude-filter type="aspectj" expression="com.lotto.spring.domain.dao.sqlMap.*" />
+    </context:component-scan>
+
+	<!--
+	 JASYPT CONFIG FOR DATASOURCE'S PASSWORD ENCRYPTION
+	-->
+	<bean id="dbPWEncryptorConfig" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
+	    <property name="algorithm" value="PBEWithMD5AndDES" />
+	    <property name="passwordEnvName" value="APP_ENCRYPTION_PASSWORD" />
+	</bean>
+	
+	<!--
+	 JASYPT CONFIG FOR DATASOURCE'S PASSWORD ENCRYPTION
+	-->	
+	<bean id="dbPWEncryptor" class="org.jasypt.encryption.pbe.StandardPBEStringEncryptor">
+        <property name="config" ref="dbPWEncryptorConfig" />
+        <property name="password" value="jasyptPass" />
+	</bean>
+	
+	<!--
+	 DATABASE CONFIG PROPERITY FILE SETTING 
+	-->
+    <bean id="propertyConfigurer" class="org.jasypt.spring31.properties.EncryptablePropertyPlaceholderConfigurer">
+    	<constructor-arg ref="dbPWEncryptor" />
+        <property name="locations">
+            <list>
+                <value>/WEB-INF/conf/database.properties</value>
+            </list>
+        </property>
+    </bean>
+
+	<!--
+	 DATABASE CONNECTION CONFIG 
+	-->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName">
+			<value>${driver}</value>
+		</property>
+		<property name="url">
+			<value>${url}</value>
+		</property>
+		<property name="username">
+			<value>${username}</value>
+		</property>
+		<property name="password">
+			<value>${thwd}</value>
+		</property>
+		<property name="initialSize">
+			<value>100</value>
+		</property>
+		<property name="maxWait">
+			<value>10000</value>
+		</property>
+				<!-- 디비서버 재시작 컨넥션 유무확인 -->
+		<property name="testOnBorrow" value="true" />
+		<property name="validationQuery">
+			<value>${validationQuery}</value>
+		</property>
+    </bean>
+
+    <!-- 
+     SQL SESSION FACTORY
+    -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+    	<property name="dataSource" ref="dataSource" />
+        <property name="configLocation" value="/WEB-INF/conf/sqlmap-config.xml" />
+        <property name="mapperLocations" value="classpath:com/lotto/spring/domain/dao/sqlMap/${dbtype}/*.sqlMap.xml" />
+    </bean>
+    
+    <!--
+	 SQL SESSION TEMPLATE
+	-->
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="sqlSessionFactory" />
+    </bean>
+    
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <tx:annotation-driven />
+
+    <!--
+     TX:ADVICE, METHOD NAME START WITH 'GET' HAVE READ ONLY TRANSACTION, OTHERS FOLLOW DEFAULT TRANSACTION
+	-->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="get*" read-only="true" propagation="NEVER" />
+            <tx:method name="search*" read-only="true" propagation="NEVER" />
+            <tx:method name="select*" read-only="true" propagation="NEVER" />
+            <tx:method name="create*" read-only="false" propagation="REQUIRED" />
+            <tx:method name="update*" read-only="false" propagation="REQUIRED" />
+            <tx:method name="delete*" read-only="false" propagation="REQUIRED" />
+            <tx:method name="procedure*" read-only="false" propagation="REQUIRED" />
+        </tx:attributes>
+    </tx:advice>
+
+    <!--
+     AOP SETTING, ANY METHOD IN ALL CLASS IN SAMPLE.SERVICE GOT TXADVICE ADVISOR
+    -->
+    <aop:config>
+        <aop:pointcut expression="execution(* com.lotto.spring.service.*.*(..))" id="txOperation" />
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="txOperation" />
+    </aop:config>
+
+    <!--
+     'BASEDAO' SHOULD DEFINED HERE, CANNOT USE ANNOTATION CAUSE 'TX:ANNOTATION-DRIVEN'
+    -->
+    <bean id="baseDao" name="baseDao" class="com.chello.base.spring.dao.BaseDao" />
+
+</beans>

@@ -1,0 +1,1 @@
+<#include "/WEB-INF/ftl/pages/${pluginPage?if_exists}.ftl" />

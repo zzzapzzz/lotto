@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:tx="http://www.springframework.org/schema/tx"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:mvc="http://www.springframework.org/schema/mvc"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+						   classpath:com/schema/spring/beans/spring-beans-3.2.xsd
+						   http://www.springframework.org/schema/aop
+						   classpath:com/schema/spring/aop/spring-aop-3.2.xsd
+						   http://www.springframework.org/schema/context
+						   classpath:com/schema/spring/context/spring-context-3.2.xsd
+						   http://www.springframework.org/schema/tx
+						   classpath:com/schema/spring/tx/spring-tx-3.2.xsd
+						   http://www.springframework.org/schema/util
+						   classpath:com/schema/spring/util/spring-util.xsd
+						   http://www.springframework.org/schema/mvc 
+       					   http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+                            
+   <context:component-scan base-package="com.lotto.spring.controller" />
+
+   <!--
+    Default handler mapping
+   -->
+   <bean class="org.springframework.web.servlet.mvc.support.ControllerClassNameHandlerMapping"
+       p:basePackage="com.lotto.spring.controller"
+       p:caseSensitive="true">
+       <property name="excludedClasses">
+           <list>
+               <value>com.lotto.spring.controller.IndexController</value>
+           </list>
+       </property>
+   </bean>
+   
+   <!-- Use this handler or DefaultAnnotationHandlerMapping
+   <bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+       <property name="mappings">
+           <props>
+               <prop key="/index.do">index</prop>
+           </props>
+       </property>
+   </bean>
+	-->
+	
+	<mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <mvc:exclude-mapping path="/wjdqhqusrud.do"/> <!-- 정보변경 -->
+            <mvc:exclude-mapping path="/sysmng/uploadFileForUser.do"/>
+            <mvc:exclude-mapping path="*/uploadFile*.do"/>
+            <mvc:exclude-mapping path="/excelUploadAjax.do"/>
+            
+            
+            <bean id="interceptor" class="com.lotto.common.SmInterceptor"></bean>
+        </mvc:interceptor>
+    </mvc:interceptors> 
+     
+    <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/>
+     
+   
+   <!--
+    USE EXTERNAL CLASS TO TILES CONFIGURER DUE TO BUG WITH TILES 2.1.4 AND SPRING 3.1.1
+   -->
+   <bean id="tilesConfigurer" class="org.springframework.web.servlet.view.tiles3.TilesConfigurer">
+      <property name="definitions">
+            <list>
+                <value>/WEB-INF/conf/tiles-defs.xml</value>
+            </list>
+      </property>
+   </bean>
+   
+   <bean id="viewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+       <property name="viewClass" value="org.springframework.web.servlet.view.tiles3.TilesView" />
+       <property name="contentType" value="text/html; charset=UTF-8" />
+   </bean>
+   
+   <!-- MULTIPART RESOLVERS -->  
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="1000000000" />
+	</bean>
+	
+</beans>

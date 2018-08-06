@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC
+        "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+        "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<tiles-definitions>
+
+    <definition name="login" template="/WEB-INF/ftl/layouts/Login.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+    </definition>
+    
+    <definition name="base" template="/WEB-INF/ftl/layouts/Base.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/Header.ftl" />
+        <put-attribute name="lna" value="/WEB-INF/ftl/layouts/LNA.ftl" />
+        <put-attribute name="content" value="/WEB-INF/ftl/layouts/Content.ftl" />
+        <put-attribute name="footer" value="/WEB-INF/ftl/layouts/Footer.ftl" />
+        <put-attribute name="plugin" value="" />
+    </definition>
+    
+    <definition name="base/plugin" extends="base">
+        <put-attribute name="plugin" value="/WEB-INF/ftl/layouts/Plugin.ftl" />
+    </definition>
+    
+    <definition name="popup" template="/WEB-INF/ftl/layouts/Popup.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+    </definition>
+    
+    <definition name="msg" template="/WEB-INF/ftl/layouts/Msg.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+    </definition>
+    
+    
+    <definition name="login/*" template="/WEB-INF/ftl/layouts/{1}/Login.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+    </definition>
+    
+    <definition name="lockbase" template="/WEB-INF/ftl/layouts/Lock.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+    </definition>
+    
+    
+    <definition name="popup_msg" template="/WEB-INF/ftl/layouts/PopupMsg.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+    </definition>
+    
+</tiles-definitions>
