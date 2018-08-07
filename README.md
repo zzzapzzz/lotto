@@ -28,6 +28,7 @@ For questions, please send a message via the [Contact](https://cremazer.github.i
 ## Donation
 
 여러분의 따뜻한 손길이 이 블로그에 좋은 글을 게재하는데 큰 도움이 됩니다.^^
+
 Did you like my blog? Buy me a beer :)
 
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=WLBJ2P3HW5732)
