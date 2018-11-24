@@ -4,19 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.collections.map.CaseInsensitiveMap;
-import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.chello.base.spring.core.DefaultService;
+import com.lotto.spring.domain.dto.UserInfoDto;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 @Service("sysmngService")
 public class SysmngService extends DefaultService {
 
-	private Logger log = Logger.getLogger(this.getClass());
+//	private Logger log = Logger.getLogger(this.getClass());
 
 	/**
 	 * 사용자 목록 조회
@@ -24,8 +24,13 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public ArrayList<CaseInsensitiveMap> getUserList(Map map) {
 		return (ArrayList<CaseInsensitiveMap>) baseDao.getList("sysmngMapper.getUserList", map);
+	}
+	
+	public ArrayList<UserInfoDto> getUserList2(Map map) {
+		return (ArrayList<UserInfoDto>) baseDao.getList("sysmngMapper.getUserList2", map);
 	}
 	
 	/**
@@ -34,6 +39,7 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public int getUserListCnt(Map map) {
 		return (Integer) baseDao.getSingleRow("sysmngMapper.getUserListCnt", map);
 	}
@@ -44,6 +50,7 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public boolean dupCheckUserId(Map map) {
 		boolean flag = false;
 		int i = (Integer) baseDao.getSingleRow("sysmngMapper.dupCheckUserId", map);
@@ -52,35 +59,35 @@ public class SysmngService extends DefaultService {
 		}
 		return flag;
 	}
-	
+
 	/**
 	 * 사용자정보 등록
 	 * 
-	 * @param map
+	 * @param dto
 	 * @return
 	 */
-	public CaseInsensitiveMap createUserInfo(Map map) {
-		return (CaseInsensitiveMap) baseDao.getSingleRow("sysmngMapper.createUserInfo", map);
+	public CaseInsensitiveMap createUserInfo(UserInfoDto dto) {
+		return (CaseInsensitiveMap) baseDao.getSingleRow("sysmngMapper.createUserInfo", dto);
 	}
 	
 	/**
 	 * 사용자정보 수정
 	 * 
-	 * @param map
+	 * @param dto
 	 * @return
 	 */
-	public CaseInsensitiveMap modifyUserInfo(Map map) {
-		return (CaseInsensitiveMap) baseDao.getSingleRow("sysmngMapper.modifyUserInfo", map);
+	public CaseInsensitiveMap modifyUserInfo(UserInfoDto dto) {
+		return (CaseInsensitiveMap) baseDao.getSingleRow("sysmngMapper.modifyUserInfo", dto);
 	}
 	
 	/**
 	 * 사용자정보 삭제
 	 * 
-	 * @param map
+	 * @param dto
 	 * @return
 	 */
-	public CaseInsensitiveMap deleteUserInfo(Map map) {
-		return (CaseInsensitiveMap) baseDao.getSingleRow("sysmngMapper.deleteUserInfo", map);
+	public CaseInsensitiveMap deleteUserInfo(UserInfoDto dto) {
+		return (CaseInsensitiveMap) baseDao.getSingleRow("sysmngMapper.deleteUserInfo", dto);
 	}
 	
 	/**
@@ -90,14 +97,17 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public boolean insertUserInfoList(Map map) {
-		boolean flag = false;
+		boolean flag = false;		
 		int i = (Integer) baseDao.insert("sysmngMapper.insertUserInfoList", map);
-		if(i > 0) {
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
 			flag = true;
-		}
+//		}
 		return flag;
 	}
+	
 	
 	/**
 	 * 권한코드 목록 조회
@@ -105,6 +115,7 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public ArrayList<CaseInsensitiveMap> getAuthCodeList(Map map) {
 		return (ArrayList<CaseInsensitiveMap>) baseDao.getList("sysmngMapper.getAuthCodeList", map);
 	}
@@ -115,6 +126,7 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public int getAuthCodeListCnt(Map map) {
 		return (Integer) baseDao.getSingleRow("sysmngMapper.getAuthCodeListCnt", map);
 	}
@@ -125,6 +137,7 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public ArrayList<CaseInsensitiveMap> getAuthTaskInfoList(Map map) {
 		return (ArrayList<CaseInsensitiveMap>) baseDao.getList("sysmngMapper.getAuthTaskInfoList", map);
 	}
@@ -135,6 +148,7 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public boolean dupCheckAuthCode(Map map) {
 		boolean flag = false;
 		int i = (Integer) baseDao.getSingleRow("sysmngMapper.dupCheckAuthCode", map);
@@ -150,12 +164,14 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public boolean createAuthCode(Map map) {
 		boolean flag = false;
 		int i = (Integer) baseDao.insert("sysmngMapper.createAuthCode", map);
-		if(i > 0) {
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
 			flag = true;
-		}
+//		}
 		return flag;
 	}
 	
@@ -165,12 +181,14 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public boolean modifyAuthCode(Map map) {
 		boolean flag = false;
 		int i = (Integer) baseDao.update("sysmngMapper.modifyAuthCode", map);
-		if(i > 0) {
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
 			flag = true;
-		}
+//		}
 		return flag;
 	}
 	
@@ -180,12 +198,14 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public boolean deleteAuthCode(Map map) {
 		boolean flag = false;
 		int i = (Integer) baseDao.delete("sysmngMapper.deleteAuthCode", map);
-		if(i > 0) {
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
 			flag = true;
-		}
+//		}
 		return flag;
 	}
 	
@@ -195,12 +215,14 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public boolean deleteTaskAuthInfo(Map map) {
 		boolean flag = false;
 		int i = (Integer) baseDao.delete("sysmngMapper.deleteTaskAuthInfo", map);
-		if(i > 0) {
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
 			flag = true;
-		}
+//		}
 		return flag;
 	}
 	
@@ -210,12 +232,14 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public boolean saveTaskAuthInfo(Map map) {
 		boolean flag = false;
 		int i = (Integer) baseDao.insert("sysmngMapper.saveTaskAuthInfo", map);
-		if(i > 0) {
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
 			flag = true;
-		}
+//		}
 		return flag;
 	}
 	
@@ -228,6 +252,7 @@ public class SysmngService extends DefaultService {
 	 * @param depth 
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public JSONArray getAuthTaskInfoTree(List list, int startIdx, int endIdx, int depth) {
 		JSONArray jsonRtnArr = new JSONArray();
 		
@@ -290,6 +315,7 @@ public class SysmngService extends DefaultService {
 	 * @param endIdx
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public int getAuthTaskInfoCheckCnt(List list, int startIdx, int endIdx) {
 		int checkCnt = 0;
 		
@@ -311,6 +337,7 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public ArrayList<CaseInsensitiveMap> getAuthMenuInfoList(Map map) {
 		return (ArrayList<CaseInsensitiveMap>) baseDao.getList("sysmngMapper.getAuthMenuInfoList", map);
 	}
@@ -324,6 +351,7 @@ public class SysmngService extends DefaultService {
 	 * @param depth 
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public JSONArray getAuthMenuInfoTree(List list, int startIdx, int endIdx, int depth) {
 		JSONArray jsonRtnArr = new JSONArray();
 		
@@ -388,6 +416,7 @@ public class SysmngService extends DefaultService {
 	 * @param endIdx
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public int getAuthMenuInfoCheckCnt(List list, int startIdx, int endIdx) {
 		int checkCnt = 0;
 		
@@ -409,12 +438,14 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public boolean deleteMenuAuthInfo(Map map) {
 		boolean flag = false;
 		int i = (Integer) baseDao.delete("sysmngMapper.deleteMenuAuthInfo", map);
-		if(i > 0) {
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
 			flag = true;
-		}
+//		}
 		return flag;
 	}
 	
@@ -424,12 +455,15 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public boolean saveMenuAuthInfo(Map map) {
 		boolean flag = false;
 		int i = (Integer) baseDao.insert("sysmngMapper.saveMenuAuthInfo", map);
-		if(i > 0) {
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
 			flag = true;
-		}
+//		}
 		return flag;
 	}
+
 }

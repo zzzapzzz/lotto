@@ -44,4 +44,136 @@
         <put-attribute name="title" value="SM Lotto" />
     </definition>
     
+    
+    <definition name="search" template="/WEB-INF/ftl/layouts/Search.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/Header.ftl" />
+        <put-attribute name="content" value="/WEB-INF/ftl/layouts/Content.ftl" />
+        <put-attribute name="footer" value="/WEB-INF/ftl/layouts/Footer.ftl" />
+    </definition>
+        
+    <definition name="searchbase/*" extends="search">
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/dbic/Header.ftl" />
+        <put-attribute name="content" value="/WEB-INF/ftl/pages/search/{1}/Main.ftl" />
+    </definition>
+    
+    <definition name="search/*" extends="search">
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/{1}/Header.ftl" />
+        <put-attribute name="content" value="/WEB-INF/ftl/pages/search/{1}/Main.ftl" />
+    </definition>
+        
+    <definition name="search/*/*" extends="search">
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/{1}/Header.ftl" />
+        <put-attribute name="content" value="/WEB-INF/ftl/pages/search/{1}/{2}.ftl" />
+    </definition>
+        
+    <definition name="approval" template="/WEB-INF/ftl/layouts/Approval.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/Header.ftl" />
+        <put-attribute name="content" value="/WEB-INF/ftl/layouts/Content.ftl" />
+        <put-attribute name="footer" value="/WEB-INF/ftl/layouts/Footer.ftl" />
+    </definition>
+        
+    <definition name="approval/*" extends="approval">
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/{1}/Header.ftl" />
+        <put-attribute name="content" value="/WEB-INF/ftl/pages/approval/{1}/Main.ftl" />
+    </definition>
+        
+    <definition name="approval/*/*" extends="approval">
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/{1}/Header.ftl" />
+        <put-attribute name="content" value="/WEB-INF/ftl/pages/approval/{1}/{2}.ftl" />
+    </definition>    
+    
+    <definition name="interest" template="/WEB-INF/ftl/layouts/Interest.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/Header.ftl" />
+        <put-attribute name="content" value="/WEB-INF/ftl/layouts/Content.ftl" />
+        <put-attribute name="footer" value="/WEB-INF/ftl/layouts/Footer.ftl" />
+    </definition>
+    
+    <definition name="interest/*" extends="interest">
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/{1}/Header.ftl" />
+    </definition>
+    
+    <definition name="access" template="/WEB-INF/ftl/layouts/Access.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/Header.ftl" />
+        <put-attribute name="content" value="/WEB-INF/ftl/layouts/Content.ftl" />
+        <put-attribute name="footer" value="/WEB-INF/ftl/layouts/Footer.ftl" />
+    </definition> 
+    
+    <definition name="statistictree" template="/WEB-INF/ftl/layouts/StatisticTree.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/Header.ftl" />
+        <put-attribute name="content" value="/WEB-INF/ftl/layouts/Content.ftl" />
+        <put-attribute name="footer" value="/WEB-INF/ftl/layouts/Footer.ftl" />
+    </definition>
+    
+    <definition name="statistic" template="/WEB-INF/ftl/layouts/Statistic.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/Header.ftl" />
+        <put-attribute name="content" value="/WEB-INF/ftl/layouts/Content.ftl" />
+        <put-attribute name="footer" value="/WEB-INF/ftl/layouts/Footer.ftl" />
+    </definition>
+    
+    <definition name="statistic/*" extends="statistic">
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/{1}/Header.ftl" />
+    </definition>
+    
+    <definition name="sysmng" template="/WEB-INF/ftl/layouts/Sysmng.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/Header.ftl" />
+        <put-attribute name="content" value="/WEB-INF/ftl/layouts/Content.ftl" />
+        <put-attribute name="footer" value="/WEB-INF/ftl/layouts/Footer.ftl" />
+    </definition>
+    
+    <definition name="sysmng/*" extends="sysmng">
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/{1}/Header.ftl" />
+    </definition>
+    
+    <definition name="sysmngtree" template="/WEB-INF/ftl/layouts/SysmngTree.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+        <put-attribute name="content" value="/WEB-INF/ftl/layouts/Content.ftl" />
+        <put-attribute name="footer" value="/WEB-INF/ftl/layouts/Footer.ftl" />
+    </definition>
+    
+    <definition name="sysinfo" template="/WEB-INF/ftl/layouts/Sysinfo.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/Header.ftl" />
+        <put-attribute name="content" value="/WEB-INF/ftl/layouts/Content.ftl" />
+        <put-attribute name="footer" value="/WEB-INF/ftl/layouts/Footer.ftl" />
+    </definition>
+    
+    <definition name="sysinfo/*" extends="sysinfo">
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/{1}/Header.ftl" />
+    </definition>
+    
+    <definition name="syscodemng" template="/WEB-INF/ftl/layouts/Sysmng.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/Header.ftl" />
+        <put-attribute name="content" value="/WEB-INF/ftl/layouts/CodeContent.ftl" />
+        <put-attribute name="footer" value="/WEB-INF/ftl/layouts/Footer.ftl" />
+    </definition>
+    
+    <definition name="syscodemng/*" extends="syscodemng">
+        <put-attribute name="header" value="/WEB-INF/ftl/layouts/{1}/Header.ftl" />
+    </definition>
+    
+    <definition name="onlycont" template="/WEB-INF/ftl/layouts/Content.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+    </definition>
+
+    <definition name="ext" template="/WEB-INF/ftl/layouts/ext.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+    </definition>
+    
+    <definition name="baseerror" template="/WEB-INF/ftl/layouts/error.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+    </definition>
+
+    <definition name="plugin" template="/WEB-INF/ftl/layouts/plugIn.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+    </definition>
+    
+    
 </tiles-definitions>

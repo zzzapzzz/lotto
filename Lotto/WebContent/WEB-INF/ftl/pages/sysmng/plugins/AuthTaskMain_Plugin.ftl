@@ -156,7 +156,7 @@
 						  {startColumnName: 'usr_c', numberOfColumns: 4, titleText: '<strong>사용자관리</strong>'}
 						, {startColumnName: 'sc_c', numberOfColumns: 4, titleText: '<strong>매장/고객정보관리</strong>'}
 						, {startColumnName: 'es_ex', numberOfColumns: 1, titleText: '<strong>직원세일관리</strong>'}
-						, {startColumnName: 'fg_ex', numberOfColumns: 1, titleText: '<strong>프리굿관리</strong>'}
+						, {startColumnName: 'fg_ex', numberOfColumns: 1, titleText: '<strong>프리굳관리</strong>'}
 						, {startColumnName: 'od_mng', numberOfColumns: 1, titleText: '<strong>오더관리</strong>'}
 					]
 				});
@@ -303,7 +303,7 @@
 				var checkCnt = 0;
 				var win_count = "";
 				
-				for(var i=0;i<idArray.length;i++){		
+				for(var i = 0 ; i < idArray.length ; i++){		
 					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ) {
 						checkCnt = checkCnt+1;
 					}
@@ -319,7 +319,7 @@
 					return;			
 				}
 				
-				for(var i=0;i<idArray.length;i++){				
+				for(var i = 0 ; i < idArray.length ; i++){				
 					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ){						
 						var rowdata = $("#jqgrid").getRowData(idArray[i]);
 						win_count = rowdata.win_count;
@@ -427,7 +427,7 @@
 				var bf_auth_cd = "";
 				var bf_auth_nm = "";
 				
-				for(var i=0;i<idArray.length;i++){		
+				for(var i = 0 ; i < idArray.length ; i++){		
 					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ) {
 						var rowdata = $("#jqgrid").getRowData(idArray[i]);
 						if(auth_cd=="") {
@@ -519,7 +519,7 @@
 				var auth_cd = "";
 				var auth_nm = "";
 				
-				for(var i=0;i<idArray.length;i++){		
+				for(var i = 0 ; i < idArray.length ; i++){		
 					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ) {
 						var rowdata = $("#jqgrid").getRowData(idArray[i]);
 						if(auth_cd=="") {
@@ -581,7 +581,7 @@
 				var checkCnt = 0;
 				var auth_cd = "";
 				
-				for(var i=0;i<idArray.length;i++){		
+				for(var i = 0 ; i < idArray.length ; i++){		
 					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ) {
 						var rowdata = $("#jqgrid").getRowData(idArray[i]);
 						if(auth_cd=="") {

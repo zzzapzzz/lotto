@@ -43,6 +43,15 @@
 							required : false,
 							minlength : 0,
 							maxlength : 10
+						},
+						new_usr_thwd : {
+							required : true,
+							minlength : 6,
+							maxlength : 10
+						},
+						confirm_usr_thwd : {
+							required : true,
+							equalTo : "#new_usr_thwd"
 						}
 					},
 
@@ -53,6 +62,13 @@
 						},
 						usr_nm : {
 							required : '직원명을 입력하세요.'
+						},
+						new_usr_thwd : {
+							required : '비밀번호를 입력하세요.'
+						},
+						confirm_usr_thwd : {
+							required : '비밀번호를 다시 한 번 입력하세요.',
+							equalTo : '입력한 비밀번호가 일치하지 않습니다.'
 						}
 					},
 
@@ -81,21 +97,17 @@
 					},					
 					height : 'auto',
 					colNames : [
-						'소속구분코드','소속구분','사원명','사원ID','소속','Cost Centre','Ship To','이메일','업무권한코드','업무권한','메뉴권한코드','메뉴권한','사용여부코드', '사용여부'
+						'row_num','회원번호','닉네임','이메일','업무권한코드','업무권한','메뉴권한코드','메뉴권한','사용여부코드', '사용여부'
 					],
 					colModel : [
-						  {name : 'store_type', index : 'store_type', hidden:true}
-						, {name : 'store_type_nm',	index : 'store_type_nm'}
-						, {name : 'usr_nm',		index : 'usr_nm'}
-						, {name : 'usr_id',		index : 'usr_id'}
-						, {name : 'store_desc',	index : 'store_desc'}
-						, {name : 'cost_centre_code',	index : 'cost_centre_code'}
-						, {name : 'ship_to_code',	index : 'ship_to_code'}
-						, {name : 'email',		index : 'email', hidden:true}
-						, {name : 'auth_task',	index : 'auth_task', hidden:true}
-						, {name : 'auth_task_nm',	index : 'auth_task_nm'}
-						, {name : 'auth_menu',	index : 'auth_menu', hidden:true}
-						, {name : 'auth_menu_nm',	index : 'auth_menu_nm'}
+						  {name : 'row_num', index : 'row_num', hidden:true}
+						, {name : 'user_no',	index : 'user_no'}
+						, {name : 'nickname',	index : 'nickname'}
+						, {name : 'email',		index : 'email'}
+						, {name : 'auth_task',		index : 'auth_task', hidden:true}
+						, {name : 'auth_task_nm',		index : 'auth_task_nm'}
+						, {name : 'auth_menu',		index : 'auth_menu', hidden:true}
+						, {name : 'auth_menu_nm',		index : 'auth_menu_nm'}
 						, {name : 'use_yn',		index : 'use_yn', hidden:true}
 						, {name : 'use_yn_nm',		index : 'use_yn_nm'}
 					],
@@ -174,8 +186,6 @@
 				$("#modify").click(modifyUserInfoGo);
 				$('#del').click(deleteUserInfoGo);
 				$("#thwdInit").click(thwdInitGo);
-				$("#uploadFile").click(uploadFileGo);
-				$("#downloadFile").click(downloadFileGo);
 				
 				$("#auth_task").change(changeEqualAuth);
 				
@@ -184,8 +194,6 @@
 			            searchGo();
 			        }
 			    });
-				
-				setCodeList('C000000001', 'store_type');
 				
 				setAuthList();
 			}
@@ -239,7 +247,7 @@
 				});
 			}
 			*/
-			
+			/*
 			function setAuthList() {
 				$.ajax({
 					type: "POST",
@@ -270,6 +278,7 @@
 					}
 				});
 			}
+			*/
 			
 			
 			function createUserInfoGo() {
@@ -277,6 +286,8 @@
 				$("#usr_id").val("");
 				$("#usr_id").removeAttr("disabled");
 				$("#usr_nm").val("");
+				$("#new_usr_thwd").val("");
+				$("#confirm_usr_thwd").val("");
 				
 				$('#store_type option').each(function() {
 					$(this).removeAttr("selected");
@@ -316,6 +327,7 @@
 				var auth_task = $("#auth_task").val();
 				var auth_menu = $("#auth_menu").val();
 				var use_yn = $("#use_yn").val();
+				var etc01 = $("#new_usr_thwd").val();
 				
 		    	
 		    	var param = {
@@ -327,7 +339,8 @@
 		    		'ship_to_code' : ship_to_code,
 		    		'auth_task' : auth_task,
 		    		'auth_menu' : auth_menu,
-		    		'use_yn' : use_yn
+		    		'use_yn' : use_yn,
+		    		'etc01' : etc01
 		    	};
 		    	
 		    	$.ajax({
@@ -370,8 +383,9 @@
 				var auth_task = "";
 				var auth_menu = "";
 				var use_yn = "";
+				var etc01 = "";
 				
-				for(var i=0;i<idArray.length;i++){		
+				for(var i = 0 ; i < idArray.length ; i++){		
 					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ) {
 						var rowdata = $("#jqgrid").getRowData(idArray[i]);
 						usr_id = rowdata.usr_id;
@@ -383,6 +397,7 @@
 						auth_task = rowdata.auth_task;
 						auth_menu = rowdata.auth_menu;
 						use_yn = rowdata.use_yn;
+						etc01 = rowdata.etc01;
 							
 						checkCnt = checkCnt + 1;
 					}
@@ -425,6 +440,10 @@
 				$("#auth_menu").val(auth_menu).attr("selected", true);
 				$("#use_yn").val(use_yn).attr("selected", true);
 				
+				$("#new_usr_thwd").val(etc01);
+				
+				//TODO 관리자일 경우에만 설정할 것인지 검토 필요
+				$("#confirm_usr_thwd").val(etc01);
 				
 				var url = "javascript:modifyUserInfo();";
 				$("#userinput-form").attr("action", url);
@@ -437,7 +456,7 @@
 				var checkCnt = 0;
 				var usr_id = "";
 				
-				for(var i=0;i<idArray.length;i++){		
+				for(var i = 0 ; i < idArray.length ; i++){		
 					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ) {
 						var rowdata = $("#jqgrid").getRowData(idArray[i]);
 						usr_id = rowdata.usr_id;
@@ -495,6 +514,7 @@
 				var auth_task = $("#auth_task").val();
 				var auth_menu = $("#auth_menu").val();
 				var use_yn = $("#use_yn").val();
+				var usr_thwd = $("#new_usr_thwd").val();
 				
 		    	
 		    	var param = {
@@ -506,7 +526,8 @@
 		    		'ship_to_code' : ship_to_code,
 		    		'auth_task' : auth_task,
 		    		'auth_menu' : auth_menu,
-		    		'use_yn' : use_yn
+		    		'use_yn' : use_yn,
+		    		'etc01' : usr_thwd
 		    	};
 		    	
 		    	$.ajax({
@@ -541,7 +562,7 @@
 				var usr_id = "";
 				var usr_nm = "";
 				
-				for(var i=0;i<idArray.length;i++){		
+				for(var i = 0 ; i < idArray.length ; i++){		
 					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ) {
 						var rowdata = $("#jqgrid").getRowData(idArray[i]);
 						usr_id = rowdata.usr_id;
@@ -591,66 +612,6 @@
 				}
 			}
 			
-			function uploadFileGo() {
-				$("#excel").val("");
-				
-				$("#status").html("");
-		        var percentVal = '0%';
-		        $(".bar").attr("width", percentVal);
-		        $(".percent").html(percentVal);
-		        
-				var url = "javascript:uploadFileForUser();";
-				$("#uploadfile-form").attr("action", url);
-				
-				layer_popup('uploadPopup', 'C');
-			}
-			
-			function downloadFileGo() {
-				location.href = "${APP_ROOT}/download/form/IOS_사용자_업로드.xlsx";
-			}
-						
-			function uploadFileForUser() {
-				
-				var excel = $("#excel").val();
-				var result = checkExcelFile("excel",1);
-				if (result) {
-					var url = "${APP_ROOT}/sysmng/uploadFileForUser.do";
-					$("#uploadfile-form").attr("action", url);
-				
-					var options = {
-						beforeSend: function() {
-					        $("#status").html("");
-					        var percentVal = '0%';
-					        $(".bar").attr("width", percentVal);
-					        $(".percent").html(percentVal);
-					    },
-					    uploadProgress: function(event, position, total, percentComplete) {
-					        var percentVal = percentComplete + '%';
-					        $(".bar").attr("width", percentVal);
-					        $(".percent").html(percentVal);
-					    },
-                        success : function(data) {
-					        
-                        	if ("success" == data.status) {
-                        		isDim ? $('.dim-layer').fadeOut() : $el.fadeOut();
-                            	alert("모든 데이터가 업로드 되었습니다.");
-                            	
-                            	searchGo();
-                        	} else {
-                        		alert(data.msg);
-                        	}
-                        },            
-                        error: function(request, errordata, errorObject) { 
-                        	alert(errorObject.toString()); 
-                        },
-                        type : "POST",
-                        dataType: 'json'
-                    };
-                    $("#uploadfile-form").ajaxSubmit(options);
-				}
-
-			}
-			
 			function popup_add() {
 				//팝업 화면 중앙으로 배치
 				var wid = 800;
@@ -671,7 +632,7 @@
 				var checkCnt = 0;
 				var win_count = "";
 				
-				for(var i=0;i<idArray.length;i++){		
+				for(var i = 0 ; i < idArray.length ; i++){		
 					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ) {
 						checkCnt = checkCnt+1;
 					}
@@ -687,7 +648,7 @@
 					return;			
 				}
 				
-				for(var i=0;i<idArray.length;i++){				
+				for(var i = 0 ; i < idArray.length ; i++){				
 					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ){						
 						var rowdata = $("#jqgrid").getRowData(idArray[i]);
 						win_count = rowdata.win_count;

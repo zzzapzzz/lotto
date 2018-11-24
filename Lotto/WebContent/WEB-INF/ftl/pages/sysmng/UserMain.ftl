@@ -12,14 +12,12 @@
 				<section id="widget-grid" class="">
 
 					<div class="well">
-						<section class="col col-6">
-							<label>직원명/사번</label>
-							<label class="input"> 
-								<input id="searchKey" type="text" placeholder="Search..." />
-								<b class="tooltip tooltip-top-right"><i class="fa txt-color-teal"></i>직원의 이름 또는 사번을 입력하세요.</b>
-							</label>
-							<span id="search" class="btn btn-default btn-primary"><i class="fa fa-search"></i> 조회</span>
-						</section>
+						<label class="col-md-1 control-label" for="searchKey">이름</label>
+						<div class="col-lg-2">
+							<input type="text" class="form-control" id="searchKey" placeholder="Search..." />
+							<b class="tooltip tooltip-top-right"><i class="fa txt-color-teal"></i>이름 또는 이메일을 입력하세요.</b>							
+						</div>
+						<span id="search" class="btn btn-default btn-primary"><i class="fa fa-search"></i> 조회</span>
 					</div>
 					
 					<span id="add" class="btn btn-success"><i class="fa fa-pencil"></i> 등록</span>
@@ -98,7 +96,7 @@
 					<!-- end uploadPopup -->
 				    
 					<!-- userInfoPopup -->
-				    <div id="userInfoPopup" class="pop-layer">
+				    <div id="userInfoPopup" class="pop-layer-col2">
 				        <div class="pop-container">
 				            <div class="pop-conts">
 				                <!--content //-->
@@ -111,79 +109,133 @@
 									</header>
 	
 									<fieldset>
-										<section>
-											<label class="label">사원ID</label>
-											<label class="input">
-												<input type="text" id="usr_id" name="usr_id">
-												<b class="tooltip tooltip-top-right"><i class="fa txt-color-teal"></i> 사번ID를 입력하세요.</b>
-											</label>
-										</section>
+										<table class="table table-bordered">
+											<tbody>
+												<tr>
+													<td>
+														<section>
+															<label class="label">사원ID</label>
+															<label class="input">
+																<input type="text" id="usr_id" name="usr_id">
+																<b class="tooltip tooltip-top-right"><i class="fa txt-color-teal"></i> 사번ID를 입력하세요.</b>
+															</label>
+														</section>
+													</td>
+													<td>
+														<section>
+															<label class="label">사원명</label>
+															<label class="input">
+																<input type="text" id="usr_nm" name="usr_nm">
+																<b class="tooltip tooltip-top-right"><i class="fa txt-color-teal"></i> 사원명을 입력하세요.</b> 
+															</label>
+														</section>
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<section>
+															<label class="label">소속구분</label>
+															<label class="select">
+																<select id="store_type" name="store_type">
+																</select> <i></i>
+															</label>
+														</section>
+													</td>
+													<td>
+														<section>
+															<label class="label">소속</label>
+															<label class="input">
+																<input type="text" id="store_desc" name="store_desc">
+																<b class="tooltip tooltip-top-right"><i class="fa txt-color-teal"></i> 소속을 입력하세요.</b>
+															</label>
+														</section>
+													</td>
+												</tr>
+												<tr>
+													<td>
+													<section>
+														<label class="label">Cost Centre</label>
+														<label class="input">
+															<input type="text" id="cost_centre_code" name="cost_centre_code">
+															<b class="tooltip tooltip-top-right"><i class="fa txt-color-teal"></i> Cost Centre를 입력하세요.</b>
+														</label>
+													</section>
+													</td>
+													<td>
+														<section>
+															<label class="label">Ship To</label>
+															<label class="input">
+																<input type="text" id="ship_to_code" name="ship_to_code">
+																<b class="tooltip tooltip-top-right"><i class="fa txt-color-teal"></i> Ship To를 입력하세요.</b>
+															</label>
+														</section>
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<section>
+															<label class="label">업무권한</label>
+															<label class="select">
+																<select id="auth_task" name="auth_task">
+																</select> <i></i>
+															</label>
+														</section>
+													</td>
+													<td>
+														<section>
+															<label class="label">메뉴권한</label>
+															<label class="select">
+																<select id="auth_menu" name="auth_menu">
+																</select> <i></i>
+															</label>
+														</section>
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<section>
+															<label class="label">비밀번호</label>
+															<label class="input">
+																<input type="password" id="new_usr_thwd" name="new_usr_thwd">
+																<b class="tooltip tooltip-top-right"><i class="fa txt-color-teal"></i> 비밀번호를 입력하세요.</b>
+															</label>
+														</section>
+													</td>
+													<td>
+														<section>
+															<label class="label">비밀번호 확인</label>
+															<label class="input">
+																<input type="password" id="confirm_usr_thwd" name="confirm_usr_thwd">
+																<b class="tooltip tooltip-top-right"><i class="fa txt-color-teal"></i> 비밀번호를 다시 한 번 입력하세요.</b>
+															</label>
+														</section>
+													</td>
+												</tr>
+												<tr>
+													<td colspan="2">
+														<section>
+															<label class="label">사용여부</label>
+															<label class="select">
+																<select id="use_yn" name="use_yn">
+																	<option value="Y">사용</option>
+																	<option value="N">미사용</option>
+																</select> <i></i>
+															</label>
+														</section>
+													</td>
+												</tr>
+											</tbody>
+										</table>
 										
-										<section>
-											<label class="label">사원명</label>
-											<label class="input">
-												<input type="text" id="usr_nm" name="usr_nm">
-												<b class="tooltip tooltip-top-right"><i class="fa txt-color-teal"></i> 사원명을 입력하세요.</b> 
-											</label>
-										</section>
 										
-										<section>
-											<label class="label">소속구분</label>
-											<label class="select">
-												<select id="store_type" name="store_type">
-												</select> <i></i>
-											</label>
-										</section>
 										
-										<section>
-											<label class="label">소속</label>
-											<label class="input">
-												<input type="text" id="store_desc" name="store_desc">
-												<b class="tooltip tooltip-top-right"><i class="fa txt-color-teal"></i> 소속을 입력하세요.</b>
-											</label>
-										</section>
 										
-										<section>
-											<label class="label">Cost Centre</label>
-											<label class="input">
-												<input type="text" id="cost_centre_code" name="cost_centre_code">
-												<b class="tooltip tooltip-top-right"><i class="fa txt-color-teal"></i> Cost Centre를 입력하세요.</b>
-											</label>
-										</section>
 										
-										<section>
-											<label class="label">Ship To</label>
-											<label class="input">
-												<input type="text" id="ship_to_code" name="ship_to_code">
-												<b class="tooltip tooltip-top-right"><i class="fa txt-color-teal"></i> Ship To를 입력하세요.</b>
-											</label>
-										</section>
 										
-										<section>
-											<label class="label">업무권한</label>
-											<label class="select">
-												<select id="auth_task" name="auth_task">
-												</select> <i></i>
-											</label>
-										</section>
 										
-										<section>
-											<label class="label">메뉴권한</label>
-											<label class="select">
-												<select id="auth_menu" name="auth_menu">
-												</select> <i></i>
-											</label>
-										</section>
 										
-										<section>
-											<label class="label">사용여부</label>
-											<label class="select">
-												<select id="use_yn" name="use_yn">
-													<option value="Y">사용</option>
-													<option value="N">미사용</option>
-												</select> <i></i>
-											</label>
-										</section>
+										
+										
 	
 									</fieldset>
 									<footer>

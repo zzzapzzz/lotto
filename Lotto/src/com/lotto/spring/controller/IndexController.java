@@ -92,7 +92,7 @@ public class IndexController extends DefaultSMController{
 					
 //					return LOGIN;
 					
-					RequestDispatcher rd = request.getRequestDispatcher("/sysmng/usermng.do");
+					RequestDispatcher rd = request.getRequestDispatcher("/fhrmdlsapdls.do");
 					rd.forward(request, response);
 				}
     		} else {
@@ -103,7 +103,7 @@ public class IndexController extends DefaultSMController{
     			
     			modelMap.addAttribute("SystemInfo", systemInfo);
 //   				return LOGIN;
-    			RequestDispatcher rd = request.getRequestDispatcher("/sysmng/usermng.do");
+    			RequestDispatcher rd = request.getRequestDispatcher("/fhrmdlsapdls.do");
 				rd.forward(request, response);
 				
 				//TODO
@@ -127,7 +127,7 @@ public class IndexController extends DefaultSMController{
 //			} else {
 //				return LOGIN;
 //			}
-			RequestDispatcher rd = request.getRequestDispatcher("/sysmng/usermng.do");
+			RequestDispatcher rd = request.getRequestDispatcher("/fhrmdlsapdls.do");
 			rd.forward(request, response);
     	}
     	

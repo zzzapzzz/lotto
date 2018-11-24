@@ -2,46 +2,42 @@
 <!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">  
   
 <mapper namespace="userAuthMapper">
-
 	<select id="userLogin" statementType="CALLABLE" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
-		{CALL PW_LOGIN (#{user_id}, #{user_pwd}, #{user_ip})} 
+		{CALL PW_LOGIN (#{email}, #{thwd}, #{access_ip})} 
 	</select>
 	
 	<select id="getUserInfo" parameterType="java.util.Map" resultType="com.lotto.spring.domain.dao.UserSession">
+		/* userAuth.getUserInfo */
 		SELECT 
-			  usr_id
-			, usr_nm
-			, usr_thwd
-			, store_type
-			, dbo.f_getCodeName('C000000001', store_type) as store_type_nm
-			, store_desc
-			, cost_centre_code
-			, ship_to_code			
-			, login_tm
-			, login_ip
-			, login_fail_cnt
-			, isnull(use_yn, 'N') use_yn
-			, CASE 
-				WHEN isnull(use_yn, 'N') = 'Y' THEN '사용'
-				ELSE '미사용'
-			  END use_yn_nm 
-			, thwd_q
-			, thwd_a
+			  user_no
 			, email
-			, email_chk_yn
-			, email_chk_tm
+			, nickname
+			, grade
+			, point
+			, used_point
+			, mbtlnum
+			, thwd			
+			, rcmd_user_no
+			, svc_agree_yn
+			, login_fail_cnt
+			, ifnull(use_yn, 'N') use_yn
 			, auth_task
-			, dbo.f_getAuthNm(auth_task) auth_task_nm
 			, auth_menu
-			, dbo.f_getAuthNm(auth_menu) auth_menu_nm
 			, cr_dt
 			, up_dt
 		FROM TB_USER_INFO		
-		WHERE usr_id = #{usr_id}
+		WHERE 1=1
+		<if test='email != null and email != ""'>
+		AND email = #{email}
+		</if>
+		<if test='user_no != null and user_no != ""'>
+		AND user_no = #{user_no}
+		</if>
 	</select>
 	
 	<!-- 사용자별 메뉴접근 URL 정보 조회 -->
 	<select id="getMenuAuthUrlList" resultType="org.apache.commons.collections.map.CaseInsensitiveMap" parameterType="java.lang.String">
+		/* userAuth.getMenuAuthUrlList */
 		select tmi.menu_id
 				, tmi.p_menu_id
 				, tmi.menu_nm
@@ -52,7 +48,7 @@
 		        , tmi.menu_url
 		        , tmi.lna_element
 		from tb_menu_info tmi
-		<if test='usr_id != null and usr_id != "smlotto"'>
+		<if test='isAdmin != null and isAdmin == false'>
 		inner join (
 			select auth_cd, menu_id
 			from tb_menu_authinfo
@@ -60,12 +56,33 @@
 			and auth_cd = (
 							SELECT auth_task 
 		                    FROM TB_USER_INFO
-		                    WHERE usr_id = #{usr_id}
+		                    WHERE user_no = #{userNo}
 							)
 		) tmai ON tmai.menu_id = tmi.menu_id
 		</if>
 		where tmi.menu_id != 0
+		AND tmi.use_yn = 'Y'
 		order by tmi.menu_id
+	</select>
+	
+	<!-- 사용자 로그 등록 -->
+	<insert id="insertLogAgent" statementType="CALLABLE" parameterType="java.util.Map">
+		{CALL PW_LOGACCESS_I (#{log_type}, #{user_no}, #{user_ip}, #{msg_s}, #{msg_l})} 
+	</insert>
+	
+	<!-- 사용자 초기정보 등록 -->
+	<select id="setUserInfo" statementType="CALLABLE" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		{CALL PW_USERINFO_INIT (#{email}, #{thwd}, #{access_ip}, #{thwd_q}, #{thwd_a})}
+	</select>
+	
+	<!-- 사용자 비밀번호 변경 -->
+	<select id="changeThwd" statementType="CALLABLE" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		{CALL PW_USERINFO_PWCHG (#{email}, #{thwd}, #{access_ip}, #{thwd_a})}
+	</select>
+	
+	<!-- 사용자 비밀번호 초기화 -->
+	<select id="initThwd" statementType="CALLABLE" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		{CALL pw_UserInfo_PwInit (#{email}, #{access_ip})}
 	</select>
 	
 </mapper>

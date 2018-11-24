@@ -1,95 +1,96 @@
 package com.lotto.spring.domain.dto;
 
-public class UserInfoDto {
-	String usr_id;
-	String usr_nm;
-	String usr_thwd;
-	String store_type;
-	String store_desc;
-	String cost_centre_code;
-	String ship_to_code;
-	String login_tm;
-	String login_ip;
-	String login_fail_cnt;
-	String use_yn;
-	String thwd_q;
-	String thwd_a;
-	String email;
-	String email_chk_yn;
-	String email_chk_tm;
-	String auth_task;
-	String auth_menu;
-	String etc01;
-	String etc02;
-	String etc03;
-	String cr_dt;
-	String up_dt;
+public class UserInfoDto extends DefaultDto{
+	/** 회원번호 */
+	private int user_no;
+	/** 이메일 */
+	private String email;
+	/** 닉네임 */
+	private String nickname;
+	/** 등급 */
+	private String grade;
+	/** 포인트 */
+	private int point;
+	/** 사용포인트 */
+	private int used_point;
+	/** 이동전화번호 */
+	private String mbtlnum;
+	/** 비밀번호 */
+	private String thwd;
+	/** 비밀번호찾기 질문 */
+	private String thwd_q;
+	/** 비밀번호찾기 답변 */
+	private String thwd_a;
+	/** 추천인 회원번호 */
+	private int rcmd_user_no;
+	/** 서비스약관동의여부 */
+	private String svc_agree_yn;
+	/** 로그인실패횟수 */
+	private int login_fail_cnt;
+	/** 업무권한코드 */
+	private String auth_task;
+	/** 업무권한명 */
+	private String auth_task_nm;
+	/** 메뉴권한코드 */
+	private String auth_menu;
+	/** 메뉴권한명 */
+	private String auth_menu_nm;
+	/** 사용여부코드 */
+	private String use_yn;	
+	/** 사용여부명 */
+	private String use_yn_nm;	
+	/** 등록일자 */
+	private String cr_dt;
+	/** 수정일자 */
+	private String up_dt;
 	
-	public String getUsr_id() {
-		return usr_id;
+	public int getUser_no() {
+		return user_no;
 	}
-	public void setUsr_id(String usr_id) {
-		this.usr_id = usr_id;
+	public void setUser_no(int user_no) {
+		this.user_no = user_no;
 	}
-	public String getUsr_nm() {
-		return usr_nm;
+	public String getEmail() {
+		return email;
 	}
-	public void setUsr_nm(String usr_nm) {
-		this.usr_nm = usr_nm;
+	public void setEmail(String email) {
+		this.email = email;
 	}
-	public String getUsr_thwd() {
-		return usr_thwd;
+	public String getNickname() {
+		return nickname;
 	}
-	public void setUsr_thwd(String usr_thwd) {
-		this.usr_thwd = usr_thwd;
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
 	}
-	public String getStore_type() {
-		return store_type;
+	public String getGrade() {
+		return grade;
 	}
-	public void setStore_type(String store_type) {
-		this.store_type = store_type;
+	public void setGrade(String grade) {
+		this.grade = grade;
 	}
-	public String getStore_desc() {
-		return store_desc;
+	public int getPoint() {
+		return point;
 	}
-	public void setStore_desc(String store_desc) {
-		this.store_desc = store_desc;
+	public void setPoint(int point) {
+		this.point = point;
 	}
-	public String getCost_centre_code() {
-		return cost_centre_code;
+	public int getUsed_point() {
+		return used_point;
 	}
-	public void setCost_centre_code(String cost_centre_code) {
-		this.cost_centre_code = cost_centre_code;
+	public void setUsed_point(int used_point) {
+		this.used_point = used_point;
 	}
-	public String getShip_to_code() {
-		return ship_to_code;
+	public String getMbtlnum() {
+		return mbtlnum;
 	}
-	public void setShip_to_code(String ship_to_code) {
-		this.ship_to_code = ship_to_code;
+	public void setMbtlnum(String mbtlnum) {
+		this.mbtlnum = mbtlnum;
 	}
-	public String getLogin_tm() {
-		return login_tm;
+	public String getThwd() {
+		return thwd;
 	}
-	public void setLogin_tm(String login_tm) {
-		this.login_tm = login_tm;
-	}
-	public String getLogin_ip() {
-		return login_ip;
-	}
-	public void setLogin_ip(String login_ip) {
-		this.login_ip = login_ip;
-	}
-	public String getLogin_fail_cnt() {
-		return login_fail_cnt;
-	}
-	public void setLogin_fail_cnt(String login_fail_cnt) {
-		this.login_fail_cnt = login_fail_cnt;
-	}
-	public String getUse_yn() {
-		return use_yn;
-	}
-	public void setUse_yn(String use_yn) {
-		this.use_yn = use_yn;
+	public void setThwd(String thwd) {
+		this.thwd = thwd;
 	}
 	public String getThwd_q() {
 		return thwd_q;
@@ -103,23 +104,23 @@ public class UserInfoDto {
 	public void setThwd_a(String thwd_a) {
 		this.thwd_a = thwd_a;
 	}
-	public String getEmail() {
-		return email;
+	public int getRcmd_user_no() {
+		return rcmd_user_no;
 	}
-	public void setEmail(String email) {
-		this.email = email;
+	public void setRcmd_user_no(int rcmd_user_no) {
+		this.rcmd_user_no = rcmd_user_no;
 	}
-	public String getEmail_chk_yn() {
-		return email_chk_yn;
+	public String getSvc_agree_yn() {
+		return svc_agree_yn;
 	}
-	public void setEmail_chk_yn(String email_chk_yn) {
-		this.email_chk_yn = email_chk_yn;
+	public void setSvc_agree_yn(String svc_agree_yn) {
+		this.svc_agree_yn = svc_agree_yn;
 	}
-	public String getEmail_chk_tm() {
-		return email_chk_tm;
+	public int getLogin_fail_cnt() {
+		return login_fail_cnt;
 	}
-	public void setEmail_chk_tm(String email_chk_tm) {
-		this.email_chk_tm = email_chk_tm;
+	public void setLogin_fail_cnt(int login_fail_cnt) {
+		this.login_fail_cnt = login_fail_cnt;
 	}
 	public String getAuth_task() {
 		return auth_task;
@@ -127,29 +128,35 @@ public class UserInfoDto {
 	public void setAuth_task(String auth_task) {
 		this.auth_task = auth_task;
 	}
+	public String getAuth_task_nm() {
+		return auth_task_nm;
+	}
+	public void setAuth_task_nm(String auth_task_nm) {
+		this.auth_task_nm = auth_task_nm;
+	}
 	public String getAuth_menu() {
 		return auth_menu;
 	}
 	public void setAuth_menu(String auth_menu) {
 		this.auth_menu = auth_menu;
 	}
-	public String getEtc01() {
-		return etc01;
+	public String getAuth_menu_nm() {
+		return auth_menu_nm;
 	}
-	public void setEtc01(String etc01) {
-		this.etc01 = etc01;
+	public void setAuth_menu_nm(String auth_menu_nm) {
+		this.auth_menu_nm = auth_menu_nm;
 	}
-	public String getEtc02() {
-		return etc02;
+	public String getUse_yn() {
+		return use_yn;
 	}
-	public void setEtc02(String etc02) {
-		this.etc02 = etc02;
+	public void setUse_yn(String use_yn) {
+		this.use_yn = use_yn;
 	}
-	public String getEtc03() {
-		return etc03;
+	public String getUse_yn_nm() {
+		return use_yn_nm;
 	}
-	public void setEtc03(String etc03) {
-		this.etc03 = etc03;
+	public void setUse_yn_nm(String use_yn_nm) {
+		this.use_yn_nm = use_yn_nm;
 	}
 	public String getCr_dt() {
 		return cr_dt;

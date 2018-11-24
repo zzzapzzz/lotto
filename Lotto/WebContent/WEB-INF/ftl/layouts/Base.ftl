@@ -6,7 +6,7 @@
 		<title><@tiles.getAsString name="title" /></title>
 		<!--<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">-->
 
-		<meta name="description" content="SM Lotto">
+		<meta name="description" content="심서방로또">
 		<meta name="author" content="cremazer">
 			
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -206,10 +206,7 @@
 					$this.parents('.dropdown-menu').find('li').removeClass('active');
 					$this.parent().addClass('active');
 				});
-
-				/*
-				 * TODO: add a way to add more todo's to list
-				 */
+				
 			});
 
 		</script>

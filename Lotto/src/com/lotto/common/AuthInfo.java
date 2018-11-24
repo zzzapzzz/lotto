@@ -1,7 +1,11 @@
 package com.lotto.common;
 
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -10,6 +14,9 @@ import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 import com.chello.base.common.resource.ResourceManager;
+import com.chello.base.common.util.CookieUtil;
+import com.chello.base.common.util.StringHandler;
+import com.chello.base.crypto.StringEncrypter;
 import com.lotto.spring.domain.dao.SystemSession;
 import com.lotto.spring.domain.dao.UserSession;
 

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">  
+  
+<mapper namespace="commonMapper">
+
+	<!-- 코드그룹 목록 조회 -->
+	<select id="getCodeGroupList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		/* common.getCodeGroupList */		
+		SELECT 
+			  code_type
+			, code_id
+			, code_nm
+			, code_oder
+			, use_yn
+		FROM TB_CODE_INFO					
+		WHERE 1=1
+		AND code_id = '0000000000'
+		<if test='code_type != null and code_type != ""'>		
+		AND code_type = #{code_type}
+		</if>
+		AND use_yn = 'Y'
+		
+	</select>
+	
+	<!-- 코드 목록 조회 -->
+	<select id="getCodeList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		/* common.getCodeList */		
+		SELECT 
+			  code_type
+			, code_id
+			, code_nm
+			, code_oder
+			, use_yn
+		FROM TB_CODE_INFO					
+		WHERE 1=1
+		AND code_type = #{code_type}
+		AND code_id != '0000000000'
+		<if test='code_id != null and code_id != ""'>		
+		AND code_id = #{code_id}
+		</if>
+		AND use_yn = 'Y'
+	</select>
+	
+	<!-- 최근 로그 조회 -->
+	<select id="getLastLog" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		/* common.getLastLog */		
+		SELECT TOP 1 
+			  idx
+			, yyyymmdd
+			, hhmmss
+			, log_type
+			, user_no
+			, access_ip
+			, etc01
+			, etc02
+			, etc03
+		FROM TB_LOG_INFO					
+		WHERE 1=1
+		AND log_type = #{log_type}
+		ORDER BY idx DESC
+	</select>
+	
+	<!-- 코드 정보 등록 -->
+	<insert id="createCodeInfo" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		/* common.createCodeInfo */		
+		INSERT INTO TB_CODE_INFO (code_type, code_id, code_nm, code_oder)
+		VALUES (#{code_type}, #{code_id}, #{code_nm}, #{code_oder})	
+	</insert>
+	
+	<!-- 로그등록 -->
+ 	<insert id="logInsert" parameterType="java.util.Map">
+ 		/* common.logInsert */	
+		INSERT INTO TB_LOG_INFO (yyyymmdd, hhmmss, log_type, user_no, access_ip, etc01, etc02, etc03)
+		VALUES(DATE_FORMAT(NOW(), '%Y%m%d'), DATE_FORMAT(NOW(), '%H%i%s'), #{log_type}, #{user_no}, #{access_ip}, #{etc01}, #{etc02}, #{etc03})		 
+	</insert>
+</mapper>

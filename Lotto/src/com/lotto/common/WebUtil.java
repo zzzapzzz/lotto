@@ -842,6 +842,7 @@ public final class WebUtil {
 	  } else if ("RSNO_FILENM".equals(type)) {
 		  
 		  //2016.06.24 cremazer
+		  //동방 녹취파일 이외에 타 녹취파일에 적용
 		  String strTarget = data.substring(data.lastIndexOf("/")+1, data.length());		
 		  if (strTarget.length() > 22 ) {
 		  	  int idx = checkJuminIndex(data);
@@ -891,21 +892,20 @@ public final class WebUtil {
 	}
 	
 	/**
-	 * 숫자여부 판단하기
-	 * 2016.06.13 cremazer
+	 * 숫자 체크
+	 * 2018.04.16
 	 * 
 	 * @param str
-	 * @return
+	 * @return true: 숫자, false: 숫자아님
 	 */
-	public static boolean isNumber(String str) {
-		if (str == null) {
-			return false;
-		}
-
-		Pattern p = Pattern.compile("([\\p{Digit}]+)(([.]?)([\\]{digit}]+))?");
-		Matcher m = p.matcher(str);
-		return m.matches();
-	}
+    public static boolean isNumber(String str){
+        
+        String expr = "^[-+]?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][-+]?[0-9]+)?$";
+        Pattern pattern = Pattern.compile(expr);
+        Matcher matcher = pattern.matcher(str);
+        
+        return matcher.matches(); //일치하면 true, 일치하지 않으면 false
+    }   
   
   /**
    * 사용자 접속 IP 조회

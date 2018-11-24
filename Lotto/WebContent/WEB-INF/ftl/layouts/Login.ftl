@@ -5,7 +5,7 @@
 		<meta charset="utf-8">
 		<title><@tiles.getAsString name="title" /></title>
 		
-		<meta name="description" content="SM Lotto">
+		<meta name="description" content="심서방로또">
 		<meta name="author" content="cremazer">
 		
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -82,15 +82,12 @@
 
 				<div class="row">
 					<div class="col-xs-12 col-sm-12 col-md-7 col-lg-8 hidden-xs hidden-sm">
-						<h1 class="txt-color-red login-header-big">다음 1등 당첨자는 바로 "당신"입니다!</h1>
+						<h1 class="txt-color-red login-header-big">SM Lotto</h1>
 						<div class="hero">
 
 							<div class="pull-left login-desc-box-l">
 								<h4 class="paragraph-header">
-								<strong>SM Lotto</strong>는<br>
-								나눔로또 6/45의 당첨번호 분석 정보와<br> 
-								예측 정보를 공유하고,<br>
-								사용자가 원하는 필요한 정보를 제공합니다.</h4>
+								심서방 로또입니다.
 							</div>
 							
 						</div>
@@ -108,20 +105,20 @@
 								<fieldset>
 									
 									<section>
-										<label class="label">사원ID</label>
+										<label class="label">이메일</label>
 										<label class="input"> <i class="icon-append fa fa-user"></i>
-											<!--
 											<input type="email" id="email" name="email">
-											-->
+											<!--
 											<input type="text" id="usr_id" name="usr_id">
-											<b class="tooltip tooltip-top-right"><i class="fa fa-user txt-color-teal"></i>사원ID를 입력하세요.</b>
+											-->
+											<b class="tooltip tooltip-top-right"><i class="fa fa-user txt-color-teal"></i>이메일을 입력하세요.</b>
 										</label>
 									</section>
 
 									<section>
 										<label class="label">비밀번호</label>
 										<label class="input"> <i class="icon-append fa fa-lock"></i>
-											<input type="password" id="usr_thwd" name="usr_thwd">
+											<input type="password" id="thwd" name="thwd">
 											<b class="tooltip tooltip-top-right"><i class="fa fa-lock txt-color-teal"></i> 비밀번호를 입력하세요.</b> </label>
 										<div class="note">
 											<a href="javascript:forgetProcGo();">비밀번호를 잊어버렸나요?</a>
@@ -338,7 +335,7 @@
 							minlength : 7,
 							maxlength : 20
 						},
-						usr_thwd : {
+						thwd : {
 							required : true,
 							minlength : 3,
 							maxlength : 20
@@ -350,7 +347,7 @@
 						usr_id : {
 							required : '사원ID를 입력하세요.'
 						},
-						usr_thwd : {
+						thwd : {
 							required : '비밀번호를 입력하세요.'
 						}
 					},
@@ -510,52 +507,54 @@
 			    });
 				*/
 				
+				//TEST
+				$("#email").val("smlotto@naver.com");
+				$("#thwd").val("Qudrkfl!3023");
+				
 			});
 			
 			function loginProc() {
 				var paramMap = {};
-				var uid      = '';
-				var upwd     = '';
+				var email      = '';
+				var thwd     = '';
 				
-				uid  = $.trim($('#usr_id').val());
+				email  = $.trim($('#email').val());
 				
-				upwd = $.trim($('#usr_thwd').val());
+				thwd = $.trim($('#thwd').val());
 				
-				if ((uid == "") && (upwd == "")) {
+				if ((email == "") && (thwd == "")) {
 					return;
 				}
 				
-				if (uid == "") {
-					alert("아이디를 입력하여 주십시요.");
+				if (email == "") {
+					alert("이메일을 입력하여 주십시요.");
 					return;
 				}
 				
-				if (upwd == "" || upwd=="비밀번호") {
+				if (thwd == "" || thwd=="비밀번호") {
 					alert("비밀번호를 입력하여 주십시요.");
 					return;
 				}
 				
-				map = {'uid':uid, 'thwd':upwd};
+				paramMap = {'email':email, 'thwd':thwd};
 		        $.ajax({
 		            type: "POST",
 		            url: "${APP_ROOT}/login/loginProc.do",
-		            data: map,
+		            data: paramMap,
 		            dataType: "json",
 		            async: true,
 		            error:function(data, a, b){
 		            	alert('서버와의 연결이 원활하지 않습니다.');
 		            },
 		            success: function(result){
+		            	console.log('result.status=' + result.status);
 		            	if(result.status=="success"){
-			            	var data = result.data;
-			            	if (data.length > 0) {	            	
-			            		if (data[0].result == "T") {
-		        					window.location.href = "/";
-		        					//window.location.href = result.goto;
-			            		} else {
-		            				alert(data[0].msg);
-			            		}
-			            	}
+		            		if (result.result == "T") {
+	        					window.location.href = "/";
+	        					//window.location.href = result.goto;
+		            		} else {
+	            				alert(result.msg);
+		            		}
 		            	} else {
 		            		if (result.result == "F05") {
 		            		
@@ -623,8 +622,8 @@
 							$("#login-form").removeClass("hide");
 					        $("#reset-form").addClass("hide");
 					        
-					        $("#usr_thwd").val("");
-							$("#usr_thwd").focus();
+					        $("#thwd").val("");
+							$("#thwd").focus();
 						}
 		            }
 		        });	
@@ -655,8 +654,8 @@
 							$("#forget-form").addClass("hide");
 					        $("#login-form").removeClass("hide");
 					        
-					        $("#usr_thwd").val("");
-							$("#usr_thwd").focus();
+					        $("#thwd").val("");
+							$("#thwd").focus();
 							
 						}
 		            }
@@ -692,8 +691,8 @@
 					        
 					        $("#usr_id").val(changeUsrId);
 					        
-					        $("#usr_thwd").val("");
-							$("#usr_thwd").focus();
+					        $("#thwd").val("");
+							$("#thwd").focus();
 						} else {
 							$("#thwd_a").focus();							
 						}

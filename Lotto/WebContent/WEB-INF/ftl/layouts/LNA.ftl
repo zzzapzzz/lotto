@@ -61,6 +61,8 @@
 	    	}
 	    	
 	    	function openContent(cid) {
+	    		clearCurrInterval("#currIntervalId");
+	    		
 	    		var url = $("#"+cid+"_url").val();
 	    		$("#currCid").val(cid);	//2018.02.01 set current cid
 	    		$("#currUrl").val(url);	//2018.02.03 set current url
@@ -89,6 +91,8 @@
 	    	
 	    	//2018.02.01 change content view
 	    	function changeContent(url) {
+	    		clearCurrInterval("#currIntervalId");
+	    		
 	    		var cid = $("#currCid").val();	//2018.02.01 set current cid
 	    		$("#currUrl").val(url);	//2018.02.03 set current url
 	    		
@@ -151,6 +155,13 @@
 					}
 				});
 	    	}
+
+	    	// 2018.06.23
+			// 콤마찍기
+			function numberWithCommas(x) {
+				return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+			}
+	    	
 	    </script>
 	    
 		<!-- Left panel : Navigation area -->
@@ -166,15 +177,32 @@
 						<img src="img/avatars/sunny.png" alt="me" class="online" />
 						--> 
 						<span>
-							${UserInfo.usr_nm}님 접속중
+							${UserInfo.nickname}님 접속중
 						</span>						
 					</a> 
 					
 				</span>
+				<!-- 2018.02.01 set current cid -->
 				<input type="hidden" id="currCid" value="" />
+				<!-- 2018.02.03 set current url -->
 				<input type="hidden" id="currUrl" value="" />
+				
+				<!-- 2018.02.10 set promotion -->
 				<input type="hidden" id="currIdx" value="" />
 				<input type="hidden" id="currUsrId" value="" />
+				<input type="hidden" id="currItemBrand" value="" /> <!-- 2018.04.01 최초 1회 설정 -->
+				<input type="hidden" id="currItemBrandNm" value="" /> <!-- 아이템 추가할 때 검색조건 -->
+				<input type="hidden" id="currOrderType" value="" />
+				<input type="hidden" id="currRemarkType" value="" />
+				<input type="hidden" id="currProcStatus" value="" />
+				
+				<!-- 2018.03.12 current interval id -->
+				<input type="hidden" id="currIntervalId" value="" />
+				
+				<!-- 2018.06.09 current freegood master idx -->
+				<input type="hidden" id="currFGMstIdx" value="" />
+				<!-- 2018.06.14 current employeesale master idx -->
+				<input type="hidden" id="currSSMstIdx" value="" />
 				
 			</div>
 			<!-- end user info -->
@@ -236,3 +264,9 @@
 
 		</aside>
 		<!-- END NAVIGATION -->
+		
+		<script type="text/javascript">
+			//document.addEventListener("DOMContentLoaded", function(){
+			//	alert('dom ready');
+			//});
+		</script>

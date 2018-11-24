@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
@@ -25,6 +26,8 @@ import com.lotto.common.WebUtil;
 import com.lotto.spring.core.DefaultSMController;
 import com.lotto.spring.domain.dao.SystemSession;
 import com.lotto.spring.domain.dao.UserSession;
+import com.lotto.spring.domain.dto.UserInfoDto;
+import com.lotto.spring.service.CommonService;
 import com.lotto.spring.service.SysmngService;
 
 import net.sf.json.JSONArray;
@@ -36,6 +39,9 @@ public class SysmngController extends DefaultSMController {
 	
 	@Autowired(required = true)
     private SysmngService sysmngService;
+	
+	@Autowired(required = true)
+	private CommonService commonService;
 	
 	private Logger log = Logger.getLogger(this.getClass());
 	
@@ -62,7 +68,7 @@ public class SysmngController extends DefaultSMController {
 		
 		if (userInfo != null) {
 			
-			String loginUserId = userInfo.getUsr_id();
+			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 사용자관리 화면 호출");
 			
 			setModelMap(modelMap, request);
@@ -71,6 +77,8 @@ public class SysmngController extends DefaultSMController {
 			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/UserMain_Plugin");
 			modelMap.addAttribute("isAjax", "N");
 			
+			//2018.05.02
+			//권한에 의한 초기화면 호출시에는 PLUGIN으로 설정해야 함.
 			return BASE_PLUGIN;
 		} else {
 			return "redirect:/fhrmdlsapdls.do";			
@@ -96,7 +104,7 @@ public class SysmngController extends DefaultSMController {
 		
 		if (userInfo != null) {
 			
-			String loginUserId = userInfo.getUsr_id();
+			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 사용자관리 화면 호출(ajax)");
 			
 			setModelMap(modelMap, request);
@@ -128,7 +136,7 @@ public class SysmngController extends DefaultSMController {
 		
 		if (userInfo != null) {
 			
-			String loginUserId = userInfo.getUsr_id();
+			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 사용자관리 화면 호출(plugin)");
 			
 			setModelMap(modelMap, request);
@@ -151,6 +159,7 @@ public class SysmngController extends DefaultSMController {
 	 * @return
 	 * @throws SQLException
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping("/sysmng/userList")
 	public void userList(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws SQLException {
 		HttpSession session = request.getSession();
@@ -172,7 +181,7 @@ public class SysmngController extends DefaultSMController {
   		}
   		
 		// 로그인 아이디
-		String loginUserId = userInfo.getUsr_id();
+		int loginUserId = userInfo.getUser_no();
 		log.info("[" + loginUserId + "][C] 사용자정보 목록 조회");
 		
 		Map map = new HashMap();
@@ -183,11 +192,12 @@ public class SysmngController extends DefaultSMController {
 		map.put("sidx", sidx);
 		map.put("sord", sord);
 		
-		ArrayList<CaseInsensitiveMap> userList = sysmngService.getUserList(map);
+//		ArrayList<CaseInsensitiveMap> userList = sysmngService.getUserList(map);
+		ArrayList<UserInfoDto> userList = sysmngService.getUserList2(map);
 		int userListCnt = sysmngService.getUserListCnt(map);
 
 		int total_pages = 0;
-		if( userListCnt >0 ) {
+		if( userListCnt > 0 ) {
 			total_pages = (int) Math.ceil((double)userListCnt/Double.parseDouble(limit));
 		} else { 
 			total_pages = 0; 
@@ -198,7 +208,7 @@ public class SysmngController extends DefaultSMController {
  
 		JSONObject json = new JSONObject();
   
-		//JSONArray jsonArr = JSONArray.fromObject(usermngList);
+//		JSONArray jsonArr = JSONArray.fromObject(userList);
 		
 
 		json.put("cnt", userList.size());
@@ -218,64 +228,31 @@ public class SysmngController extends DefaultSMController {
 	 * @param response
 	 * @throws IOException
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping("/sysmng/createUserInfo")
-	public void createUserInfo(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public void createUserInfo(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute UserInfoDto dto) throws IOException {
 		
 		HttpSession session = request.getSession();
 	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
-		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+//		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
 		JSONObject jsonObj = new JSONObject();
 		
 		if (userInfo != null) {
-			String loginUserId = userInfo.getUsr_id();
-			String loginUserNm = userInfo.getUsr_nm();
-			log.info("[" + loginUserId + "][C] 사용자정보 등록");
+			int loginUserNo = userInfo.getUser_no();
+			String accessip = request.getRemoteHost();
+			log.info("[" + loginUserNo + "][C] 사용자정보 등록");
 			
-			String usrId       = WebUtil.replaceParam(request.getParameter("usr_id"), "");
-			String usrNm       = WebUtil.replaceParam(request.getParameter("usr_nm"), "");
-			String storeType       = WebUtil.replaceParam(request.getParameter("store_type"), "");
-			String storeDesc       = WebUtil.replaceParam(request.getParameter("store_desc"), "");
-			String costCentreCode       = WebUtil.replaceParam(request.getParameter("cost_centre_code"), "");
-			String shipToCode       = WebUtil.replaceParam(request.getParameter("ship_to_code"), "");
-			String authTask    = WebUtil.replaceParam(request.getParameter("auth_task"), "");
-			String authMenu    = WebUtil.replaceParam(request.getParameter("auth_menu"), "");
-			String useYn       = WebUtil.replaceParam(request.getParameter("use_yn"), "");
-			
-			String email       = WebUtil.replaceParam(request.getParameter("email"), "");
-			
-			String etc01       = WebUtil.replaceParam(request.getParameter("etc01"), "");
-			String etc02       = WebUtil.replaceParam(request.getParameter("etc02"), "");
-			String etc03       = WebUtil.replaceParam(request.getParameter("etc03"), "");
-			
-			String userip = request.getRemoteHost();
-			
-			Map map = new HashMap();
-			map.put("reg_id", loginUserId);
-			map.put("reg_nm", loginUserNm);
-			map.put("access_ip", userip);
-			
-			map.put("usr_id", usrId);
-			map.put("usr_nm", usrNm);
-			map.put("store_type", storeType);
-			map.put("store_desc", storeDesc);
-			map.put("cost_centre_code", costCentreCode);
-			map.put("ship_to_code", shipToCode);
-			map.put("use_yn", useYn);
-			map.put("email", email);
-			map.put("auth_task", authTask);
-			map.put("auth_menu", authMenu);
-			map.put("etc01", etc01);
-			map.put("etc02", etc02);
-			map.put("etc03", etc03);
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
 			
 			//사용자정보 등록
-			log.info("[" + loginUserId + "] > 사용자정보 등록");
-			CaseInsensitiveMap resultInfo = sysmngService.createUserInfo(map);
+			log.info("[" + loginUserNo + "] > 사용자정보 등록");
+			CaseInsensitiveMap resultInfo = sysmngService.createUserInfo(dto);
 			String status = (String) resultInfo.get("result");
 			String msg = (String) resultInfo.get("msg");
 			
-			log.info("[" + loginUserId + "]\t" + msg);
+			log.info("[" + loginUserNo + "]\t" + msg);
 			jsonObj.put("status", status);
 			jsonObj.put("msg", msg);
 			
@@ -297,64 +274,31 @@ public class SysmngController extends DefaultSMController {
 	 * @param response
 	 * @throws IOException
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping("/sysmng/modifyUserInfo")
-	public void modifyUserInfo(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public void modifyUserInfo(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute UserInfoDto dto) throws IOException {
 		
 		HttpSession session = request.getSession();
 	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
-		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+//		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
 		JSONObject jsonObj = new JSONObject();
 		
 		if (userInfo != null) {
-			String loginUserId = userInfo.getUsr_id();
-			String loginUserNm = userInfo.getUsr_nm();
-			log.info("[" + loginUserId + "][C] 사용자정보 수정");
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 사용자정보 수정");
+			String accessip = request.getRemoteHost();
 			
-			String usrId       = WebUtil.replaceParam(request.getParameter("usr_id"), "");
-			String usrNm       = WebUtil.replaceParam(request.getParameter("usr_nm"), "");
-			String storeType       = WebUtil.replaceParam(request.getParameter("store_type"), "");
-			String storeDesc       = WebUtil.replaceParam(request.getParameter("store_desc"), "");
-			String costCentreCode       = WebUtil.replaceParam(request.getParameter("cost_centre_code"), "");
-			String shipToCode       = WebUtil.replaceParam(request.getParameter("ship_to_code"), "");
-			String authTask    = WebUtil.replaceParam(request.getParameter("auth_task"), "");
-			String authMenu    = WebUtil.replaceParam(request.getParameter("auth_menu"), "");
-			String useYn       = WebUtil.replaceParam(request.getParameter("use_yn"), "");
-			
-			String email       = WebUtil.replaceParam(request.getParameter("email"), "");
-			
-			String etc01       = WebUtil.replaceParam(request.getParameter("etc01"), "");
-			String etc02       = WebUtil.replaceParam(request.getParameter("etc02"), "");
-			String etc03       = WebUtil.replaceParam(request.getParameter("etc03"), "");
-			
-			String userip = request.getRemoteHost();
-			
-			Map map = new HashMap();
-			map.put("reg_id", loginUserId);
-			map.put("reg_nm", loginUserNm);
-			map.put("access_ip", userip);
-			
-			map.put("usr_id", usrId);
-			map.put("usr_nm", usrNm);
-			map.put("store_type", storeType);
-			map.put("store_desc", storeDesc);
-			map.put("cost_centre_code", costCentreCode);
-			map.put("ship_to_code", shipToCode);
-			map.put("use_yn", useYn);
-			map.put("email", email);
-			map.put("auth_task", authTask);
-			map.put("auth_menu", authMenu);
-			map.put("etc01", etc01);
-			map.put("etc02", etc02);
-			map.put("etc03", etc03);
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
 			
 			//사용자정보 수정
-			log.info("[" + loginUserId + "] > 사용자정보 수정");
-			CaseInsensitiveMap resultInfo = sysmngService.modifyUserInfo(map);
+			log.info("[" + loginUserNo + "] > 사용자정보 수정");
+			CaseInsensitiveMap resultInfo = sysmngService.modifyUserInfo(dto);
 			String status = (String) resultInfo.get("result");
 			String msg = (String) resultInfo.get("msg");
 			
-			log.info("[" + loginUserId + "]\t" + msg);
+			log.info("[" + loginUserNo + "]\t" + msg);
 			jsonObj.put("status", status);
 			jsonObj.put("msg", msg);
 			
@@ -376,38 +320,31 @@ public class SysmngController extends DefaultSMController {
 	 * @param response
 	 * @throws IOException
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping("/sysmng/deleteUserInfo")
-	public void deleteUserInfo(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public void deleteUserInfo(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute UserInfoDto dto) throws IOException {
 		
 		HttpSession session = request.getSession();
 		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
-		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+//		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
 		JSONObject jsonObj = new JSONObject();
 		
 		if (userInfo != null) {
-			String loginUserId = userInfo.getUsr_id();
-			String loginUserNm = userInfo.getUsr_nm();
-			log.info("[" + loginUserId + "][C] 사용자정보 삭제");
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 사용자정보 삭제");
+			String accessip = request.getRemoteHost();
 			
-			String usrId       = WebUtil.replaceParam(request.getParameter("usr_id"), "");
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
 			
-			String userip = request.getRemoteHost();
-			
-			Map map = new HashMap();
-			map.put("reg_id", loginUserId);
-			map.put("reg_nm", loginUserNm);
-			map.put("access_ip", userip);
-			
-			map.put("usr_id", usrId);
-
 			//사용자정보 삭제
-			log.info("[" + loginUserId + "] > 사용자정보 삭제");
-			CaseInsensitiveMap resultInfo = sysmngService.deleteUserInfo(map);
+			log.info("[" + loginUserNo + "] > 사용자정보 삭제");
+			CaseInsensitiveMap resultInfo = sysmngService.deleteUserInfo(dto);
 			String status = (String) resultInfo.get("result");
 			String msg = (String) resultInfo.get("msg");
 			
-			log.info("[" + loginUserId + "]\t" + msg);
+			log.info("[" + loginUserNo + "]\t" + msg);
 			jsonObj.put("status", status);
 			jsonObj.put("msg", msg);
 			
@@ -421,358 +358,6 @@ public class SysmngController extends DefaultSMController {
 		
 	}
 	
-	
-	/**
-	 * 아이템관리 화면 호출
-	 * 
-	 * @param modelMap
-	 * @param request
-	 * @param response
-	 * @param ses
-	 * @return
-	 * @throws SQLException
-	 * @throws UnsupportedEncodingException
-	 */
-	@RequestMapping("/sysmng/itemmng")
-	public String itemmng(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
-		
-		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
-		
-		if (userInfo != null) {
-			
-			String loginUserId = userInfo.getUsr_id();
-			log.info("["+loginUserId+"][C] 아이템관리 화면 호출");
-			
-			setModelMap(modelMap, request);
-			
-			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ItemMain");
-			
-			return BASE;
-		} else {
-			return "redirect:/fhrmdlsapdls.do";			
-			
-		}
-	}
-	
-	/**
-	 * 재고관리 화면 호출
-	 * 
-	 * @param modelMap
-	 * @param request
-	 * @param response
-	 * @param ses
-	 * @return
-	 * @throws SQLException
-	 * @throws UnsupportedEncodingException
-	 */
-	@RequestMapping("/sysmng/invenmng")
-	public String invenmng(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
-		
-		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
-		
-		if (userInfo != null) {
-			
-			String loginUserId = userInfo.getUsr_id();
-			log.info("["+loginUserId+"][C] 재고관리 화면 호출");
-			
-			setModelMap(modelMap, request);
-			
-			modelMap.addAttribute(CONTENT_PAGE, "sysmng/InventoryMain");
-			
-			return BASE;
-		} else {
-			return "redirect:/fhrmdlsapdls.do";			
-			
-		}
-	}
-	
-	/**
-	 * 재고관리 화면 호출(ajax)
-	 * 
-	 * @param modelMap
-	 * @param request
-	 * @param response
-	 * @param ses
-	 * @return
-	 * @throws SQLException
-	 * @throws UnsupportedEncodingException
-	 */
-	@RequestMapping("/sysmng/invenmngajax")
-	public String invenmngajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
-		
-		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
-		
-		if (userInfo != null) {
-			
-			String loginUserId = userInfo.getUsr_id();
-			log.info("["+loginUserId+"][C] 재고관리 화면 호출(ajax)");
-			
-			setModelMap(modelMap, request);
-			
-			modelMap.addAttribute(CONTENT_PAGE, "sysmng/InventoryMain");
-			modelMap.addAttribute("isAjax", "Y");
-			
-		} else {
-			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
-		}
-		return POPUP;
-	}
-	
-	/**
-	 * Prod Posting Group 화면 호출
-	 * 
-	 * @param modelMap
-	 * @param request
-	 * @param response
-	 * @param ses
-	 * @return
-	 * @throws SQLException
-	 * @throws UnsupportedEncodingException
-	 */
-	@RequestMapping("/sysmng/prodpostinggroup")
-	public String prodpostinggroup(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
-		
-		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
-		
-		if (userInfo != null) {
-			
-			String loginUserId = userInfo.getUsr_id();
-			log.info("["+loginUserId+"][C] Prod Posting Group 화면 호출");
-			
-			setModelMap(modelMap, request);
-			
-			modelMap.addAttribute(CONTENT_PAGE, "sysmng/PPGrpMain");
-			
-			return BASE;
-		} else {
-			return "redirect:/fhrmdlsapdls.do";			
-			
-		}
-	}
-	
-	/**
-	 * 매장/고객정보관리 화면 호출
-	 * 
-	 * @param modelMap
-	 * @param request
-	 * @param response
-	 * @param ses
-	 * @return
-	 * @throws SQLException
-	 * @throws UnsupportedEncodingException
-	 */
-	@RequestMapping("/sysmng/scmng")
-	public String scmng(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
-		
-		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
-		
-		if (userInfo != null) {
-			
-			String loginUserId = userInfo.getUsr_id();
-			log.info("["+loginUserId+"][C] 매장/고객정보관리 화면 호출");
-			
-			setModelMap(modelMap, request);
-			
-			modelMap.addAttribute(CONTENT_PAGE, "sysmng/SCMain");
-			
-			return BASE;
-		} else {
-			return "redirect:/fhrmdlsapdls.do";			
-			
-		}
-	}
-	
-	/**
-	 * 매장/고객정보관리 화면 호출(ajax)
-	 * 
-	 * @param modelMap
-	 * @param request
-	 * @param response
-	 * @param ses
-	 * @return
-	 * @throws SQLException
-	 * @throws UnsupportedEncodingException
-	 */
-	@RequestMapping("/sysmng/scmngajax")
-	public String scmngajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
-		
-		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
-		
-		if (userInfo != null) {
-			
-			String loginUserId = userInfo.getUsr_id();
-			log.info("["+loginUserId+"][C] 매장/고객정보관리 화면 호출(ajax)");
-			
-			setModelMap(modelMap, request);
-			
-			modelMap.addAttribute(CONTENT_PAGE, "sysmng/SCMain");
-			modelMap.addAttribute("isAjax", "Y");
-			
-		} else {
-			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
-		}
-		return POPUP;
-	}
-	
-	/**
-	 * 배송처관리 화면 호출
-	 * 
-	 * @param modelMap
-	 * @param request
-	 * @param response
-	 * @param ses
-	 * @return
-	 * @throws SQLException
-	 * @throws UnsupportedEncodingException
-	 */
-	@RequestMapping("/sysmng/deliverymng")
-	public String deliverymng(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
-		
-		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
-		
-		if (userInfo != null) {
-			
-			String loginUserId = userInfo.getUsr_id();
-			log.info("["+loginUserId+"][C] 배송처관리 화면 호출");
-			
-			setModelMap(modelMap, request);
-			
-			modelMap.addAttribute(CONTENT_PAGE, "sysmng/DeliveryMain");
-			
-			return BASE;
-		} else {
-			return "redirect:/fhrmdlsapdls.do";			
-			
-		}
-	}
-	
-	/**
-	 * 직원세일관리 화면 호출
-	 * 
-	 * @param modelMap
-	 * @param request
-	 * @param response
-	 * @param ses
-	 * @return
-	 * @throws SQLException
-	 * @throws UnsupportedEncodingException
-	 */
-	@RequestMapping("/sysmng/esmng")
-	public String esmng(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
-		
-		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
-		
-		if (userInfo != null) {
-			
-			String loginUserId = userInfo.getUsr_id();
-			log.info("["+loginUserId+"][C] 직원세일관리 화면 호출");
-			
-			setModelMap(modelMap, request);
-			
-			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ESMain");
-			
-			return BASE;
-		} else {
-			return "redirect:/fhrmdlsapdls.do";			
-			
-		}
-	}
-	
-	/**
-	 * 직원세일관리 화면 호출(ajax)
-	 * 
-	 * @param modelMap
-	 * @param request
-	 * @param response
-	 * @param ses
-	 * @return
-	 * @throws SQLException
-	 * @throws UnsupportedEncodingException
-	 */
-	@RequestMapping("/sysmng/esmngajax")
-	public String esmngajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
-		
-		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
-		
-		if (userInfo != null) {
-			
-			String loginUserId = userInfo.getUsr_id();
-			log.info("["+loginUserId+"][C] 직원세일관리 화면 호출(ajax)");
-			
-			setModelMap(modelMap, request);
-			
-			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ESMain");
-			modelMap.addAttribute("isAjax", "Y");
-			
-		} else {
-			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
-		}
-		return POPUP;
-	}
-	
-	/**
-	 * 프리굿관리 화면 호출
-	 * 
-	 * @param modelMap
-	 * @param request
-	 * @param response
-	 * @param ses
-	 * @return
-	 * @throws SQLException
-	 * @throws UnsupportedEncodingException
-	 */
-	@RequestMapping("/sysmng/fgmng")
-	public String fgmng(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
-		
-		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
-		
-		if (userInfo != null) {
-			
-			String loginUserId = userInfo.getUsr_id();
-			log.info("["+loginUserId+"][C] 프리굿관리 화면 호출");
-			
-			setModelMap(modelMap, request);
-			
-			modelMap.addAttribute(CONTENT_PAGE, "sysmng/FGMain");
-			
-			return BASE;
-		} else {
-			return "redirect:/fhrmdlsapdls.do";			
-			
-		}
-	}
-	
-	/**
-	 * 프리굿관리 화면 호출(ajax)
-	 * 
-	 * @param modelMap
-	 * @param request
-	 * @param response
-	 * @param ses
-	 * @return
-	 * @throws SQLException
-	 * @throws UnsupportedEncodingException
-	 */
-	@RequestMapping("/sysmng/fgmngajax")
-	public String fgmngajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
-		
-		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
-		
-		if (userInfo != null) {
-			
-			String loginUserId = userInfo.getUsr_id();
-			log.info("["+loginUserId+"][C] 프리굿관리 화면 호출(ajax)");
-			
-			setModelMap(modelMap, request);
-			
-			modelMap.addAttribute(CONTENT_PAGE, "sysmng/FGMain");
-			modelMap.addAttribute("isAjax", "Y");
-			
-		} else {
-			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
-		}
-		return POPUP;
-	}
 	
 	/**
 	 * 업무권한관리 화면 호출
@@ -792,7 +377,7 @@ public class SysmngController extends DefaultSMController {
 		
 		if (userInfo != null) {
 			
-			String loginUserId = userInfo.getUsr_id();
+			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 업무권한관리 화면 호출");
 			
 			setModelMap(modelMap, request);
@@ -801,7 +386,9 @@ public class SysmngController extends DefaultSMController {
 			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/AuthTaskMain_Plugin");
 			modelMap.addAttribute("isAjax", "N");
 			
-			return BASE;
+			//2018.05.02
+			//권한에 의한 초기화면 호출시에는 PLUGIN으로 설정해야 함.
+			return BASE_PLUGIN;
 		} else {
 			return "redirect:/fhrmdlsapdls.do";			
 			
@@ -826,7 +413,7 @@ public class SysmngController extends DefaultSMController {
 		
 		if (userInfo != null) {
 			
-			String loginUserId = userInfo.getUsr_id();
+			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 업무권한관리 화면 호출(ajax)");
 			
 			setModelMap(modelMap, request);
@@ -858,7 +445,7 @@ public class SysmngController extends DefaultSMController {
 		
 		if (userInfo != null) {
 			
-			String loginUserId = userInfo.getUsr_id();
+			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 업무권한관리 화면 호출(plugin)");
 			
 			setModelMap(modelMap, request);
@@ -881,6 +468,7 @@ public class SysmngController extends DefaultSMController {
 	 * @return
 	 * @throws SQLException
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping("/sysmng/authCodeList")
 	public void authCodeList(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws SQLException {
 		HttpSession session = request.getSession();
@@ -901,7 +489,7 @@ public class SysmngController extends DefaultSMController {
   		}
   		
 		// 로그인 아이디
-		String loginUserId = userInfo.getUsr_id();
+		int loginUserId = userInfo.getUser_no();
 		log.info("[" + loginUserId + "][C] 권한코드 목록 조회");
 		
 		Map map = new HashMap();
@@ -915,7 +503,7 @@ public class SysmngController extends DefaultSMController {
 		int authTaskListCnt = sysmngService.getAuthCodeListCnt(map);
 
 		int total_pages = 0;
-		if( authTaskListCnt >0 ) {
+		if( authTaskListCnt > 0 ) {
 			total_pages = (int) Math.ceil((double)authTaskListCnt/Double.parseDouble(limit));
 		} else { 
 			total_pages = 0; 
@@ -947,16 +535,17 @@ public class SysmngController extends DefaultSMController {
 	 * @return
 	 * @throws SQLException
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping("/sysmng/authTaskInfoList")
 	public void authTaskInfoList(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws SQLException {
 		HttpSession session = request.getSession();
 	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
-		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+//		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
 		String authCd       = WebUtil.replaceParam(request.getParameter("auth_cd"), "");
 		     			
 		// 로그인 아이디
-		String loginUserId = userInfo.getUsr_id();
+		int loginUserId = userInfo.getUser_no();
 		log.info("[" + loginUserId + "][C] 업무권한정보 목록 조회");
 		
 		Map map = new HashMap();
@@ -965,28 +554,9 @@ public class SysmngController extends DefaultSMController {
 		ArrayList<CaseInsensitiveMap> authTaskInfoList = sysmngService.getAuthTaskInfoList(map);
 
 		int authTaskInfoListCnt = 0;
-//		Map task1CdMap = new HashMap();
-//		for (int i = 0; i < authTaskInfoList.size(); i++) {
-//			CaseInsensitiveMap one = (CaseInsensitiveMap) authTaskInfoList.get(i);
-//			String cd = (String) one.get("task_1_cd");
-//			if (task1CdMap.containsKey(cd)) {
-//				continue;
-//			} else {
-//				task1CdCnt++;
-//				task1CdMap.put(cd, cd);
-//			}
-//		}
 		if (authTaskInfoList != null  && authTaskInfoList.size() > 0) {
 			authTaskInfoListCnt = authTaskInfoList.size();
 		}
-		
-		/*
-		JSONObject jsonRtn = new JSONObject();
-		jsonRtn.put("status", "success");
-		jsonRtn.put("AuthTaskInfoList", authTaskInfoList);
-		
-		writeJSON(response, jsonRtn);
-		*/
 		
 		//Tree Data 설정
 		JSONArray treeData = sysmngService.getAuthTaskInfoTree(authTaskInfoList, 0, authTaskInfoListCnt, 1);
@@ -1027,22 +597,23 @@ public class SysmngController extends DefaultSMController {
 	 * @param response
 	 * @throws IOException
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping("/sysmng/createAuthCode")
 	public void createAuthCode(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
 		HttpSession session = request.getSession();
 	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
-		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+//		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
 		JSONObject jsonObj = new JSONObject();
 		
 		if (userInfo != null) {
-			String loginUserId = userInfo.getUsr_id();
+			int loginUserId = userInfo.getUser_no();
 			log.info("[" + loginUserId + "][C] 권한코드 등록");
 			
 			String authCd       = WebUtil.replaceParam(request.getParameter("auth_cd"), "");
 			String authNm       = WebUtil.replaceParam(request.getParameter("auth_nm"), "");
-			String userip = request.getRemoteHost();
+//			String userip = request.getRemoteHost();
 			
 			Map map = new HashMap();
 			map.put("auth_cd", authCd);
@@ -1088,24 +659,25 @@ public class SysmngController extends DefaultSMController {
 	 * @param response
 	 * @throws IOException
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping("/sysmng/modifyAuthCode")
 	public void modifyAuthCode(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
 		HttpSession session = request.getSession();
 	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
-		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+//		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
 		JSONObject jsonObj = new JSONObject();
 		
 		if (userInfo != null) {
-			String loginUserId = userInfo.getUsr_id();
+			int loginUserId = userInfo.getUser_no();
 			log.info("[" + loginUserId + "][C] 권한코드 수정");
 			
 			String authCd       = WebUtil.replaceParam(request.getParameter("auth_cd"), "");
 			String authNm       = WebUtil.replaceParam(request.getParameter("auth_nm"), "");
 			String bfAuthCd       = WebUtil.replaceParam(request.getParameter("bf_auth_cd"), "");
 			String bfAuthNm       = WebUtil.replaceParam(request.getParameter("bf_auth_nm"), "");
-			String userip = request.getRemoteHost();
+//			String userip = request.getRemoteHost();
 			
 			Map map = new HashMap();
 			map.put("auth_cd", authCd);
@@ -1150,22 +722,23 @@ public class SysmngController extends DefaultSMController {
 	 * @param response
 	 * @throws IOException
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping("/sysmng/deleteAuthCode")
 	public void deleteAuthCode(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
 		HttpSession session = request.getSession();
 		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
-		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+//		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
 		JSONObject jsonObj = new JSONObject();
 		
 		if (userInfo != null) {
-			String loginUserId = userInfo.getUsr_id();
+			int loginUserId = userInfo.getUser_no();
 			log.info("[" + loginUserId + "][C] 권한코드 삭제");
 			
 			String authCd       = WebUtil.replaceParam(request.getParameter("auth_cd"), "");
 			String authNm       = WebUtil.replaceParam(request.getParameter("auth_nm"), "");
-			String userip = request.getRemoteHost();
+//			String userip = request.getRemoteHost();
 			
 			Map map = new HashMap();
 			map.put("auth_cd", authCd);
@@ -1207,24 +780,25 @@ public class SysmngController extends DefaultSMController {
 	 * @param response
 	 * @throws IOException
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping("/sysmng/saveTaskAuthInfo")
 	public void saveTaskAuthInfo(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
 		HttpSession session = request.getSession();
 	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
-		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+//		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
 		JSONObject jsonObj = new JSONObject();
 		
 		if (userInfo != null) {
-			String loginUserId = userInfo.getUsr_id();
+			int loginUserId = userInfo.getUser_no();
 			log.info("[" + loginUserId + "][C] 업무권한 매핑정보 저장");
 			
 			String authCd       = WebUtil.replaceParam(request.getParameter("auth_cd"), "");
 			String tmpAuthCd       = WebUtil.replaceParam(request.getParameter("tmp_auth_cd"), "");
 			tmpAuthCd = tmpAuthCd.toLowerCase();
 			
-			String userip = request.getRemoteHost();
+//			String userip = request.getRemoteHost();
 			
 			Map map = new HashMap();
 			map.put("auth_cd", authCd);
@@ -1311,7 +885,7 @@ public class SysmngController extends DefaultSMController {
 		
 		if (userInfo != null) {
 			
-			String loginUserId = userInfo.getUsr_id();
+			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 메뉴권한관리 화면 호출");
 			
 			setModelMap(modelMap, request);
@@ -1320,6 +894,8 @@ public class SysmngController extends DefaultSMController {
 			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/AuthMenuMain_Plugin");
 			modelMap.addAttribute("isAjax", "N");
 
+			//2018.05.02
+			//권한에 의한 초기화면 호출시에는 PLUGIN으로 설정해야 함.
 			return BASE_PLUGIN;
 		} else {
 			return "redirect:/fhrmdlsapdls.do";			
@@ -1345,7 +921,7 @@ public class SysmngController extends DefaultSMController {
 		
 		if (userInfo != null) {
 			
-			String loginUserId = userInfo.getUsr_id();
+			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 메뉴권한관리 화면 호출(ajax)");
 			
 			setModelMap(modelMap, request);
@@ -1377,7 +953,7 @@ public class SysmngController extends DefaultSMController {
 		
 		if (userInfo != null) {
 			
-			String loginUserId = userInfo.getUsr_id();
+			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 메뉴권한관리 화면 호출(plugin)");
 			
 			setModelMap(modelMap, request);
@@ -1404,12 +980,12 @@ public class SysmngController extends DefaultSMController {
 	public void authMenuInfoList(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws SQLException {
 		HttpSession session = request.getSession();
 	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
-		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+//		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
 		String authCd       = WebUtil.replaceParam(request.getParameter("auth_cd"), "");
 		     			
 		// 로그인 아이디
-		String loginUserId = userInfo.getUsr_id();
+		int loginUserId = userInfo.getUser_no();
 		log.info("[" + loginUserId + "][C] 메뉴권한정보 목록 조회");
 		
 		Map<String, String> map = new HashMap<String, String>();
@@ -1418,17 +994,6 @@ public class SysmngController extends DefaultSMController {
 		ArrayList<CaseInsensitiveMap> authMenuInfoList = sysmngService.getAuthMenuInfoList(map);
 
 		int authMenuInfoListCnt = 0;
-//		Map task1CdMap = new HashMap();
-//		for (int i = 0; i < authTaskInfoList.size(); i++) {
-//			CaseInsensitiveMap one = (CaseInsensitiveMap) authTaskInfoList.get(i);
-//			String cd = (String) one.get("task_1_cd");
-//			if (task1CdMap.containsKey(cd)) {
-//				continue;
-//			} else {
-//				task1CdCnt++;
-//				task1CdMap.put(cd, cd);
-//			}
-//		}
 		if (authMenuInfoList != null  && authMenuInfoList.size() > 0) {
 			authMenuInfoListCnt = authMenuInfoList.size();
 		}
@@ -1482,24 +1047,25 @@ public class SysmngController extends DefaultSMController {
 	 * @param response
 	 * @throws IOException
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping("/sysmng/saveMenuAuthInfo")
 	public void saveMenuAuthInfo(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
 		HttpSession session = request.getSession();
 	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
-		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+//		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
 		JSONObject jsonObj = new JSONObject();
 		
 		if (userInfo != null) {
-			String loginUserId = userInfo.getUsr_id();
+			int loginUserId = userInfo.getUser_no();
 			log.info("[" + loginUserId + "][C] 메뉴권한 매핑정보 저장");
 			
 			String authCd       = WebUtil.replaceParam(request.getParameter("auth_cd"), "");
 			String tmpMenuId       = WebUtil.replaceParam(request.getParameter("tmp_menu_id"), "");
 			tmpMenuId = tmpMenuId.toLowerCase();
 			
-			String userip = request.getRemoteHost();
+//			String userip = request.getRemoteHost();
 			
 			Map map = new HashMap();
 			map.put("auth_cd", authCd);
@@ -1549,81 +1115,4 @@ public class SysmngController extends DefaultSMController {
 		writeJSON(response, jsonObj);
         
 	}
-    
-	/**
-     * 파일에 저장된 당첨번호 목록을 저장하기
-     * 2017.11.28
-     * 
-     * @param modelMap
-     * @param request
-     * @param response
-     * @throws SQLException
-     */
-//    @RequestMapping("/sysmng/procAddForFile")
-//    public void procAddForFile(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws SQLException {
-//    	
-//    	List<WindataDto> dataList = excelService.getWinDataList();
-//    	
-//    	//최근회차 조회
-//    	int lastCnt = sysmngService.getWindataLastCnt();
-//    	
-//    	//횟수만큼 DB에 반복 저장하기
-//    	for (int i = 0; i < dataList.size(); i++) {
-//			WindataDto dto = dataList.get(i);
-//			
-//			if (lastCnt < dto.getWin_count()) {
-//				boolean result = sysmngService.insertWindata(dto);
-//				if (result) {
-//					log.debug(dto.getWin_count() + "회차 당첨번호 등록 완료.");
-//				}
-//			} else {
-//				log.debug("이미 등록된 당첨번호 입니다.[" + dto.getWin_count() + "회].");
-//			}
-//		}
-//    	
-//    	JSONObject jsonObj = new JSONObject();
-//    	jsonObj.put("status", "success");
-//    	jsonObj.put("msg", "success");
-//    	
-//    	writeJSON(response, jsonObj); 
-//    }
-    
-    /**
-     * 당첨번호 등록 팝업 호출
-     * 2017.11.28
-     * 
-     * @param modelMap
-     * @param request
-     * @param response
-     * @return
-     * @throws SQLException
-     */
-//    @RequestMapping("/sysmng/popupAddWindata")
-//	public String popupAddWindata(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException {
-//    	
-//    	UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
-//		
-//		if (userInfo != null) {
-//			
-//			String loginUserId = userInfo.getUsr_id();
-//			log.info("["+loginUserId+"][C] 당첨번호 등록 팝업 호출");
-//			
-//			//최근회차 조회
-//			int lastCnt = sysmngService.getWindataLastCnt();
-//			//다음회차 설정
-//			int nextCnt = lastCnt + 1;
-//			
-//			setModelMap(modelMap, request);
-//			
-//			modelMap.addAttribute("NextCnt", nextCnt);
-//			modelMap.addAttribute(CONTENT_PAGE, "sysmng/popup/Windata_Add");
-//			
-//			return POPUP;
-//		} else {
-//			return "redirect:/fhrmdlsapdls.do";			
-//			
-//		}
-//         
-//	}
-    
 }

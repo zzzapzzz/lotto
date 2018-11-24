@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<!--<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">-->
 
-		<title>L'OCCITANE-IOS</title>
+		<title>SM Lotto</title>
 		<meta name="description" content="">
 		<meta name="author" content="">
 			
@@ -100,13 +100,13 @@
 								<p class="lead semi-bold">
 									<strong>이 페이지를 보고계신다면 웹사이트의 기술적인 문제를 경험하셨습니다. <br>관리자에게 문의해 주세요.</strong><br><br>
 									<small>
-										이 문제를 해결하기 위해 관리팀에서는 최선을 다하고 있습니다. <br>어떤 과정으로 이 페이지를 보게되었는지 관리자에게 상세히 알려주시면, 문제를 더 빨리 해결할 수 있습니다. <br>업무에 불편을 드려 대단히 죄송합니다.
+										이 문제를 해결하기 위해 관리팀에서는 최선을 다하고 있습니다. <br>어떤 과정으로 이 페이지를 보게되었는지 관리자에게 상세히 알려주시면, 문제를 더 빨리 해결할 수 있습니다. <br>이용에 불편을 드려 대단히 죄송합니다.
 									</small>
 								</p>
 								<ul class="error-search text-left font-md">
 						            <li><a href="javascript:location.href='/base/main.do'"><small>Go to Main Page. <i class="fa fa-arrow-right"></i></small></a></li>
-						            <li><a href="javascript:window = window.open('mailto:sungchul.lim@loccitane.com', 'emailWindow')"><small>Contact IT Staff.<i class="fa fa-mail-forward"></i></small></a></li>
-						            <li><a href="javascript:window.history.back();"><small>Go back.</small></a></li>
+						            <li><a href="javascript:window = window.open('mailto:smlotto@naver.com', 'emailWindow')"><small>Contact System Manager.<i class="fa fa-mail-forward"></i></small></a></li>
+						            <li><a href="javascript:location.href='/'"><small>Go back.</small></a></li>
 						        </ul>
 							</div>
 			

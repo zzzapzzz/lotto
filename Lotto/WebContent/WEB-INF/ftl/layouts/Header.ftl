@@ -7,7 +7,7 @@
 		<header id="header">
 			<div id="logo-group">
 
-				<span id="logo"> <a href="/"><img src="${IMG_ROOT}/logo.png" alt="LOCCITANE Logo"></a> </span>
+				<span id="logo"> <a href="/"><img src="${IMG_ROOT}/logo.png" alt="심서방로또"></a> </span>
 
 			</div>
 
