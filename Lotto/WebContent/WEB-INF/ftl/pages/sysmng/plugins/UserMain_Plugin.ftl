@@ -195,7 +195,7 @@
 			        }
 			    });
 				
-				setAuthList();
+				// setAuthList();
 			}
 			
 			$(window).on('resize.jqGrid', function() {

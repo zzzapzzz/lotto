@@ -8,6 +8,8 @@ import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.springframework.stereotype.Service;
 
 import com.chello.base.spring.core.DefaultService;
+import com.lotto.spring.domain.dto.MenuInfoDto;
+import com.lotto.spring.domain.dto.TaskInfoDto;
 import com.lotto.spring.domain.dto.UserInfoDto;
 
 import net.sf.json.JSONArray;
@@ -138,8 +140,8 @@ public class SysmngService extends DefaultService {
 	 * @return
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public ArrayList<CaseInsensitiveMap> getAuthTaskInfoList(Map map) {
-		return (ArrayList<CaseInsensitiveMap>) baseDao.getList("sysmngMapper.getAuthTaskInfoList", map);
+	public ArrayList<TaskInfoDto> getAuthTaskInfoList(Map map) {
+		return (ArrayList<TaskInfoDto>) baseDao.getList("sysmngMapper.getAuthTaskInfoList", map);
 	}
 	
 	/**
@@ -257,14 +259,22 @@ public class SysmngService extends DefaultService {
 		JSONArray jsonRtnArr = new JSONArray();
 		
 		for (int i = startIdx; i < endIdx; i++) {
-			CaseInsensitiveMap one = (CaseInsensitiveMap) list.get(i);
+//			CaseInsensitiveMap one = (CaseInsensitiveMap) list.get(i);
+			TaskInfoDto one = (TaskInfoDto) list.get(i);
 			
-			String task_1_cd = (String) one.get("task_1_cd");
-			String task_2_cd = (String) one.get("task_2_cd");
-			String task_1_nm = (String) one.get("task_1_nm");
-			String task_2_nm = (String) one.get("task_2_nm");
-			String checked = (String) one.get("checked");
-			int cnt = (int) one.get("cnt");
+//			String task_1_cd = (String) one.get("task_1_cd");
+//			String task_2_cd = (String) one.get("task_2_cd");
+//			String task_1_nm = (String) one.get("task_1_nm");
+//			String task_2_nm = (String) one.get("task_2_nm");
+//			String checked = (String) one.get("checked");
+//			int cnt = (int) one.get("cnt");
+			
+			String task_1_cd = (String) one.getTask_1_cd();
+			String task_2_cd = (String) one.getTask_2_cd();
+			String task_1_nm = (String) one.getTask_1_nm();
+			String task_2_nm = (String) one.getTask_2_nm();
+			String checked = (String) one.getChecked();
+			int cnt = one.getCnt();
 			
 //			System.out.println("[" + depth + "] " + task_1_cd + " / " + task_2_cd + " / " + task_1_nm + " / " + task_2_nm);
 			
@@ -278,8 +288,8 @@ public class SysmngService extends DefaultService {
 				
 				if (cnt > 1) {
 					depthJson.put("hasChildren", true);
-					depthJson.put("ChildNodes", getAuthTaskInfoTree(list, i, i + cnt, 2));
-					int checkCnt = getAuthTaskInfoCheckCnt(list, i, i + cnt);
+					depthJson.put("ChildNodes", this.getAuthTaskInfoTree(list, i, i + cnt, 2));
+					int checkCnt = this.getAuthTaskInfoCheckCnt(list, i, i + cnt);
 					depthJson.put("checkstate", ((checkCnt == cnt) ? 1 : 0));
 					i += (cnt - 1);
 				} else {
@@ -320,9 +330,10 @@ public class SysmngService extends DefaultService {
 		int checkCnt = 0;
 		
 		for (int i = startIdx; i < endIdx; i++) {
-			CaseInsensitiveMap one = (CaseInsensitiveMap) list.get(i);
+//			CaseInsensitiveMap one = (CaseInsensitiveMap) list.get(i);
+			TaskInfoDto one = (TaskInfoDto) list.get(i);
 			
-			String checked = (String) one.get("checked");
+			String checked = (String) one.getChecked();
 			if ("Y".equals(checked)) {
 				checkCnt++;
 			}
@@ -338,8 +349,8 @@ public class SysmngService extends DefaultService {
 	 * @return
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public ArrayList<CaseInsensitiveMap> getAuthMenuInfoList(Map map) {
-		return (ArrayList<CaseInsensitiveMap>) baseDao.getList("sysmngMapper.getAuthMenuInfoList", map);
+	public ArrayList<MenuInfoDto> getAuthMenuInfoList(Map map) {
+		return (ArrayList<MenuInfoDto>) baseDao.getList("sysmngMapper.getAuthMenuInfoList", map);
 	}
 	
 	/**
@@ -356,16 +367,23 @@ public class SysmngService extends DefaultService {
 		JSONArray jsonRtnArr = new JSONArray();
 		
 		for (int i = startIdx; i < endIdx; i++) {
-			CaseInsensitiveMap one = (CaseInsensitiveMap) list.get(i);
+//			CaseInsensitiveMap one = (CaseInsensitiveMap) list.get(i);
+			MenuInfoDto one = (MenuInfoDto) list.get(i);
 			
 			System.out.println(i + " data = " + one.toString());
 			
 			//java.lang.ClassCastException: java.lang.Short cannot be cast to java.lang.Integer			
-			int menu_id = Integer.parseInt(String.valueOf(one.get("menu_id")));
-			int p_menu_id = Integer.parseInt(String.valueOf(one.get("p_menu_id")));
-			String menu_nm = (String) one.get("menu_nm");
-			String checked = (String) one.get("checked");
-			int cnt = (int) one.get("cnt");
+//			int menu_id = Integer.parseInt(String.valueOf(one.get("menu_id")));
+//			int p_menu_id = Integer.parseInt(String.valueOf(one.get("p_menu_id")));
+//			String menu_nm = (String) one.get("menu_nm");
+//			String checked = (String) one.get("checked");
+//			int cnt = (int) one.get("cnt");
+			
+			int menu_id = one.getMenu_id();
+			int p_menu_id = one.getP_menu_id();
+			String menu_nm = one.getMenu_nm();
+			String checked = one.getChecked();
+			int cnt = one.getCnt();
 			
 //			System.out.println("[" + depth + "] " + task_1_cd + " / " + task_2_cd + " / " + task_1_nm + " / " + task_2_nm);
 			
@@ -379,8 +397,8 @@ public class SysmngService extends DefaultService {
 				
 				if (0 == p_menu_id) {
 					depthJson.put("hasChildren", true);
-					depthJson.put("ChildNodes", getAuthMenuInfoTree(list, (i+1), (i+1) + cnt, 2));
-					int checkCnt = getAuthMenuInfoCheckCnt(list, (i+1), (i+1) + cnt);
+					depthJson.put("ChildNodes", this.getAuthMenuInfoTree(list, (i+1), (i+1) + cnt, 2));
+					int checkCnt = this.getAuthMenuInfoCheckCnt(list, (i+1), (i+1) + cnt);
 					depthJson.put("checkstate", ((checkCnt == cnt) ? 1 : 0));
 					i += cnt;
 				} else {
@@ -421,9 +439,9 @@ public class SysmngService extends DefaultService {
 		int checkCnt = 0;
 		
 		for (int i = startIdx; i < endIdx; i++) {
-			CaseInsensitiveMap one = (CaseInsensitiveMap) list.get(i);
+			MenuInfoDto one = (MenuInfoDto) list.get(i);
 			
-			String checked = (String) one.get("checked");
+			String checked = one.getChecked();
 			if ("Y".equals(checked)) {
 				checkCnt++;
 			}

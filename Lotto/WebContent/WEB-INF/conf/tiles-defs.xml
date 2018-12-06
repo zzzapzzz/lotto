@@ -167,7 +167,7 @@
         <put-attribute name="title" value="SM Lotto" />
     </definition>
     
-    <definition name="baseerror" template="/WEB-INF/ftl/layouts/error.ftl">
+    <definition name="baseerror" template="/WEB-INF/ftl/layouts/errorpage.ftl">
         <put-attribute name="title" value="SM Lotto" />
     </definition>
 

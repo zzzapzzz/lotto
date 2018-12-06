@@ -24,9 +24,9 @@
 				, svc_agree_yn
 				, login_fail_cnt
 				, auth_task
-				, f_getAuthNm(auth_task) auth_task_nm
+				, F_GETAUTHNM(auth_task) auth_task_nm
 				, auth_menu
-				, f_getAuthNm(auth_menu) auth_menu_nm
+				, F_GETAUTHNM(auth_menu) auth_menu_nm
 				, ifnull(use_yn, 'N') use_yn
 				, CASE 
 					WHEN ifnull(use_yn, 'N') = 'Y' THEN '사용'
@@ -96,9 +96,9 @@
 				, svc_agree_yn
 				, login_fail_cnt
 				, auth_task
-				, f_getAuthNm(auth_task) auth_task_nm
+				, F_GETAUTHNM(auth_task) auth_task_nm
 				, auth_menu
-				, f_getAuthNm(auth_menu) auth_menu_nm
+				, F_GETAUTHNM(auth_menu) auth_menu_nm
 				, ifnull(use_yn, 'N') use_yn
 				, CASE 
 					WHEN ifnull(use_yn, 'N') = 'Y' THEN '사용'
@@ -236,7 +236,7 @@
 	</select>
 	
 	<!-- 업무권한정보 목록 조회 -->
-	<select id="getAuthTaskInfoList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">		
+	<select id="getAuthTaskInfoList" parameterType="java.util.Map" resultType="taskInfoDto">		
 		/* sysmng.getAuthTaskInfoList */
 		SELECT 
 			  tti.task_1_cd
@@ -246,7 +246,7 @@
 			, ttig.cnt
 			, tti.sort
 			<if test='auth_cd!=""'>
-			, f_isTaskAuthInfo(#{auth_cd}, tti.task_1_cd, tti.task_2_cd) as checked
+			, F_ISTASKAUTHINFO(#{auth_cd}, tti.task_1_cd, tti.task_2_cd) as checked
 			</if>
 			<if test='auth_cd==""'>
 			, 'N' as checked
@@ -310,11 +310,11 @@
 		INSERT INTO TB_TASK_AUTHINFO (auth_cd, depth_1_cd, depth_2_cd, task_1_cd, task_2_cd)
 		VALUES (
 			#{item.auth_cd}
-			, LOWER(f_getDepth1Menu(#{item.task_1_cd}))
-			, LOWER(f_getDepth2Menu(#{item.task_1_cd}))
+			, LOWER(F_GETDEPTH1MENU(#{item.task_1_cd}))
+			, LOWER(F_GETDEPTH2MENU(#{item.task_1_cd}))
 			, LOWER(#{item.task_1_cd})
 			<if test='item.task_2_cd == null or item.task_2_cd == ""'>
-			, LOWER(f_getTask2Cd(#{item.task_1_cd}))
+			, LOWER(F_GETTASK2CD(#{item.task_1_cd}))
 			</if>
 			<if test='item.task_2_cd != null and item.task_2_cd != ""'>
 			, LOWER(#{item.task_2_cd})
@@ -324,7 +324,7 @@
 	</insert>
 	
 	<!-- 메뉴권한정보 목록 조회 -->
-	<select id="getAuthMenuInfoList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">		
+	<select id="getAuthMenuInfoList" parameterType="java.util.Map" resultType="menuInfoDto">		
 		/* sysmng.getAuthMenuInfoList */
 		select 
 			  tmi.menu_id
@@ -341,7 +341,8 @@
 			</if>
 			<if test='auth_cd==""'>
 			, 'N' as checked
-			</if>			
+			</if>
+			, tmi.use_yn
 		from tb_menu_info tmi
 		<if test='auth_cd!=""'>
 		LEFT OUTER JOIN 

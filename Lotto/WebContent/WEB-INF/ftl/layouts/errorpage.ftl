@@ -104,9 +104,9 @@
 									</small>
 								</p>
 								<ul class="error-search text-left font-md">
-						            <li><a href="javascript:location.href='/base/main.do'"><small>Go to Main Page. <i class="fa fa-arrow-right"></i></small></a></li>
-						            <li><a href="javascript:window = window.open('mailto:smlotto@naver.com', 'emailWindow')"><small>Contact System Manager.<i class="fa fa-mail-forward"></i></small></a></li>
-						            <li><a href="javascript:location.href='/'"><small>Go back.</small></a></li>
+						            <li><a href="javascript:location.href='/';"><small>Go to Main Page. <i class="fa fa-arrow-right"></i></small></a></li>
+						            <li><a href="javascript:window = window.open('mailto:smlotto@naver.com', 'emailWindow');"><small>Contact System Manager.<i class="fa fa-mail-forward"></i></small></a></li>
+						            <li><a href="javascript:window.history.go(-1);"><small>Go back.</small></a></li>
 						        </ul>
 							</div>
 			

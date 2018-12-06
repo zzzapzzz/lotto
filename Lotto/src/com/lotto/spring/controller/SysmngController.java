@@ -26,6 +26,8 @@ import com.lotto.common.WebUtil;
 import com.lotto.spring.core.DefaultSMController;
 import com.lotto.spring.domain.dao.SystemSession;
 import com.lotto.spring.domain.dao.UserSession;
+import com.lotto.spring.domain.dto.MenuInfoDto;
+import com.lotto.spring.domain.dto.TaskInfoDto;
 import com.lotto.spring.domain.dto.UserInfoDto;
 import com.lotto.spring.service.CommonService;
 import com.lotto.spring.service.SysmngService;
@@ -50,7 +52,7 @@ public class SysmngController extends DefaultSMController {
 	}
 
 	/**
-	 * 사용자관리 화면 호출
+	 * 회원관리 화면 호출
 	 * 
 	 * @param modelMap
 	 * @param request
@@ -69,7 +71,7 @@ public class SysmngController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			int loginUserId = userInfo.getUser_no();
-			log.info("["+loginUserId+"][C] 사용자관리 화면 호출");
+			log.info("["+loginUserId+"][C] 회원관리 화면 호출");
 			
 			setModelMap(modelMap, request);
 			
@@ -87,7 +89,7 @@ public class SysmngController extends DefaultSMController {
 	}
 	
 	/**
-	 * 사용자관리 화면 호출(ajax)
+	 * 회원관리 화면 호출(ajax)
 	 * 
 	 * @param modelMap
 	 * @param request
@@ -105,7 +107,7 @@ public class SysmngController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			int loginUserId = userInfo.getUser_no();
-			log.info("["+loginUserId+"][C] 사용자관리 화면 호출(ajax)");
+			log.info("["+loginUserId+"][C] 회원관리 화면 호출(ajax)");
 			
 			setModelMap(modelMap, request);
 			
@@ -119,7 +121,7 @@ public class SysmngController extends DefaultSMController {
 	}
 	
 	/**
-	 * 사용자관리 화면 호출(plugin)
+	 * 회원관리 화면 호출(plugin)
 	 * 
 	 * @param modelMap
 	 * @param request
@@ -137,7 +139,7 @@ public class SysmngController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			int loginUserId = userInfo.getUser_no();
-			log.info("["+loginUserId+"][C] 사용자관리 화면 호출(plugin)");
+			log.info("["+loginUserId+"][C] 회원관리 화면 호출(plugin)");
 			
 			setModelMap(modelMap, request);
 			
@@ -151,7 +153,7 @@ public class SysmngController extends DefaultSMController {
 	}
 	
 	/**
-	 * 사용자정보 목록 조회
+	 * 회원정보 목록 조회
 	 * 
 	 * @param modelMap
 	 * @param request
@@ -182,7 +184,7 @@ public class SysmngController extends DefaultSMController {
   		
 		// 로그인 아이디
 		int loginUserId = userInfo.getUser_no();
-		log.info("[" + loginUserId + "][C] 사용자정보 목록 조회");
+		log.info("[" + loginUserId + "][C] 회원정보 목록 조회");
 		
 		Map map = new HashMap();
 		map.put("search_key", searchKey);
@@ -221,7 +223,7 @@ public class SysmngController extends DefaultSMController {
 	} 
 	
 	/**
-	 * 사용자정보 등록
+	 * 회원정보 등록
 	 * 
 	 * @param modelMap
 	 * @param request
@@ -241,13 +243,13 @@ public class SysmngController extends DefaultSMController {
 		if (userInfo != null) {
 			int loginUserNo = userInfo.getUser_no();
 			String accessip = request.getRemoteHost();
-			log.info("[" + loginUserNo + "][C] 사용자정보 등록");
+			log.info("[" + loginUserNo + "][C] 회원정보 등록");
 			
 			dto.setReg_user_no(loginUserNo);
 			dto.setAccess_ip(accessip);
 			
-			//사용자정보 등록
-			log.info("[" + loginUserNo + "] > 사용자정보 등록");
+			//회원정보 등록
+			log.info("[" + loginUserNo + "] > 회원정보 등록");
 			CaseInsensitiveMap resultInfo = sysmngService.createUserInfo(dto);
 			String status = (String) resultInfo.get("result");
 			String msg = (String) resultInfo.get("msg");
@@ -267,7 +269,7 @@ public class SysmngController extends DefaultSMController {
 	}
 	
 	/**
-	 * 사용자정보 수정
+	 * 회원정보 수정
 	 * 
 	 * @param modelMap
 	 * @param request
@@ -286,14 +288,14 @@ public class SysmngController extends DefaultSMController {
 		
 		if (userInfo != null) {
 			int loginUserNo = userInfo.getUser_no();
-			log.info("[" + loginUserNo + "][C] 사용자정보 수정");
+			log.info("[" + loginUserNo + "][C] 회원정보 수정");
 			String accessip = request.getRemoteHost();
 			
 			dto.setReg_user_no(loginUserNo);
 			dto.setAccess_ip(accessip);
 			
-			//사용자정보 수정
-			log.info("[" + loginUserNo + "] > 사용자정보 수정");
+			//회원정보 수정
+			log.info("[" + loginUserNo + "] > 회원정보 수정");
 			CaseInsensitiveMap resultInfo = sysmngService.modifyUserInfo(dto);
 			String status = (String) resultInfo.get("result");
 			String msg = (String) resultInfo.get("msg");
@@ -313,7 +315,7 @@ public class SysmngController extends DefaultSMController {
 	}
 	
 	/**
-	 * 사용자정보 삭제
+	 * 회원정보 삭제
 	 * 
 	 * @param modelMap
 	 * @param request
@@ -332,14 +334,14 @@ public class SysmngController extends DefaultSMController {
 		
 		if (userInfo != null) {
 			int loginUserNo = userInfo.getUser_no();
-			log.info("[" + loginUserNo + "][C] 사용자정보 삭제");
+			log.info("[" + loginUserNo + "][C] 회원정보 삭제");
 			String accessip = request.getRemoteHost();
 			
 			dto.setReg_user_no(loginUserNo);
 			dto.setAccess_ip(accessip);
 			
-			//사용자정보 삭제
-			log.info("[" + loginUserNo + "] > 사용자정보 삭제");
+			//회원정보 삭제
+			log.info("[" + loginUserNo + "] > 회원정보 삭제");
 			CaseInsensitiveMap resultInfo = sysmngService.deleteUserInfo(dto);
 			String status = (String) resultInfo.get("result");
 			String msg = (String) resultInfo.get("msg");
@@ -358,6 +360,510 @@ public class SysmngController extends DefaultSMController {
 		
 	}
 	
+	/**
+	 * 당첨번호관리 화면 호출
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException 
+	 * @throws ServletException 
+	 */
+	@RequestMapping("/sysmng/windatamng")
+	public String windatamng(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, ServletException, IOException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			int loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 당첨번호관리 화면 호출");
+			
+			setModelMap(modelMap, request);
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/WinDataMain");
+			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/WinDataMain_Plugin");
+			modelMap.addAttribute("isAjax", "N");
+			
+			//2018.05.02
+			//권한에 의한 초기화면 호출시에는 PLUGIN으로 설정해야 함.
+			return BASE_PLUGIN;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";			
+			
+		}
+	}
+	
+	/**
+	 * 당첨번호관리 화면 호출(ajax)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/windatamngajax")
+	public String windatamngajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			int loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 당첨번호관리 화면 호출(ajax)");
+			
+			setModelMap(modelMap, request);
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/WinDataMain");
+			modelMap.addAttribute("isAjax", "Y");
+			
+		} else {
+			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
+		}
+		return POPUP;
+	}
+	
+	/**
+	 * 당첨번호관리 화면 호출(plugin)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/windatamngplugin")
+	public String windatamngplugin(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			int loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 당첨번호관리 화면 호출(plugin)");
+			
+			setModelMap(modelMap, request);
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/WinDataMain_Plugin");
+			
+			return POPUP;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";
+			
+		}
+	}
+	
+	/**
+	 * 예상번호관리 화면 호출
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException 
+	 * @throws ServletException 
+	 */
+	@RequestMapping("/sysmng/exptdatamng")
+	public String exptdatamng(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, ServletException, IOException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			int loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 예상번호관리 화면 호출");
+			
+			setModelMap(modelMap, request);
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ExptDataMain");
+			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/ExptDataMain_Plugin");
+			modelMap.addAttribute("isAjax", "N");
+			
+			//2018.05.02
+			//권한에 의한 초기화면 호출시에는 PLUGIN으로 설정해야 함.
+			return BASE_PLUGIN;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";			
+			
+		}
+	}
+	
+	/**
+	 * 예상번호관리 화면 호출(ajax)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/exptdatamngajax")
+	public String exptdatamngajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			int loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 예상번호관리 화면 호출(ajax)");
+			
+			setModelMap(modelMap, request);
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ExptDataMain");
+			modelMap.addAttribute("isAjax", "Y");
+			
+		} else {
+			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
+		}
+		return POPUP;
+	}
+	
+	/**
+	 * 예상번호관리 화면 호출(plugin)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/exptdatamngplugin")
+	public String exptdatamngplugin(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			int loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 예상번호관리 화면 호출(plugin)");
+			
+			setModelMap(modelMap, request);
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/ExptDataMain_Plugin");
+			
+			return POPUP;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";
+			
+		}
+	}
+	
+	/**
+	 * 서비스관리 화면 호출
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException 
+	 * @throws ServletException 
+	 */
+	@RequestMapping("/sysmng/servicemng")
+	public String servicemng(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, ServletException, IOException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			int loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 서비스관리 화면 호출");
+			
+			setModelMap(modelMap, request);
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ServiceMain");
+			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/ServiceMain_Plugin");
+			modelMap.addAttribute("isAjax", "N");
+			
+			//2018.05.02
+			//권한에 의한 초기화면 호출시에는 PLUGIN으로 설정해야 함.
+			return BASE_PLUGIN;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";			
+			
+		}
+	}
+	
+	/**
+	 * 서비스관리 화면 호출(ajax)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/servicemngajax")
+	public String servicemngajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			int loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 서비스관리 화면 호출(ajax)");
+			
+			setModelMap(modelMap, request);
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ServiceMain");
+			modelMap.addAttribute("isAjax", "Y");
+			
+		} else {
+			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
+		}
+		return POPUP;
+	}
+	
+	/**
+	 * 서비스관리 화면 호출(plugin)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/servicemngplugin")
+	public String servicemngplugin(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			int loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 서비스관리 화면 호출(plugin)");
+			
+			setModelMap(modelMap, request);
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/ServiceMain_Plugin");
+			
+			return POPUP;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";
+			
+		}
+	}
+	
+	/**
+	 * 프로모션관리 화면 호출
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException 
+	 * @throws ServletException 
+	 */
+	@RequestMapping("/sysmng/promotionmng")
+	public String promotionmng(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, ServletException, IOException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			int loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 프로모션관리 화면 호출");
+			
+			setModelMap(modelMap, request);
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/PromotionMain");
+			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/PromotionMain_Plugin");
+			modelMap.addAttribute("isAjax", "N");
+			
+			//2018.05.02
+			//권한에 의한 초기화면 호출시에는 PLUGIN으로 설정해야 함.
+			return BASE_PLUGIN;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";			
+			
+		}
+	}
+	
+	/**
+	 * 프로모션관리 화면 호출(ajax)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/promotionmngajax")
+	public String promotionmngajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			int loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 프로모션관리 화면 호출(ajax)");
+			
+			setModelMap(modelMap, request);
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/PromotionMain");
+			modelMap.addAttribute("isAjax", "Y");
+			
+		} else {
+			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
+		}
+		return POPUP;
+	}
+	
+	/**
+	 * 프로모션관리 화면 호출(plugin)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/promotionmngplugin")
+	public String promotionmngplugin(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			int loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 프로모션관리 화면 호출(plugin)");
+			
+			setModelMap(modelMap, request);
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/PromotionMain_Plugin");
+			
+			return POPUP;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";
+			
+		}
+	}
+	
+	/**
+	 * 사용자요청관리 화면 호출
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException 
+	 * @throws ServletException 
+	 */
+	@RequestMapping("/sysmng/requestmng")
+	public String requestmng(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, ServletException, IOException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			int loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 사용자요청관리 화면 호출");
+			
+			setModelMap(modelMap, request);
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/RequestMain");
+			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/RequestMain_Plugin");
+			modelMap.addAttribute("isAjax", "N");
+			
+			//2018.05.02
+			//권한에 의한 초기화면 호출시에는 PLUGIN으로 설정해야 함.
+			return BASE_PLUGIN;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";			
+			
+		}
+	}
+	
+	/**
+	 * 사용자요청관리 화면 호출(ajax)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/requestmngajax")
+	public String requestmngajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			int loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 사용자요청관리 화면 호출(ajax)");
+			
+			setModelMap(modelMap, request);
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/RequestMain");
+			modelMap.addAttribute("isAjax", "Y");
+			
+		} else {
+			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
+		}
+		return POPUP;
+	}
+	
+	/**
+	 * 사용자요청관리 화면 호출(plugin)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/requestmngplugin")
+	public String requestmngplugin(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			int loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 사용자요청관리 화면 호출(plugin)");
+			
+			setModelMap(modelMap, request);
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/RequestMain_Plugin");
+			
+			return POPUP;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";
+			
+		}
+	}
 	
 	/**
 	 * 업무권한관리 화면 호출
@@ -551,15 +1057,17 @@ public class SysmngController extends DefaultSMController {
 		Map map = new HashMap();
 		map.put("auth_cd", authCd);
 
-		ArrayList<CaseInsensitiveMap> authTaskInfoList = sysmngService.getAuthTaskInfoList(map);
+		ArrayList<TaskInfoDto> authTaskInfoList = sysmngService.getAuthTaskInfoList(map);
 
+		//Tree Data 설정
+//		JSONArray treeData = sysmngService.getAuthTaskInfoTree(authTaskInfoList, 0, authTaskInfoListCnt, 1);
+		JSONArray treeData = null;
+		
 		int authTaskInfoListCnt = 0;
 		if (authTaskInfoList != null  && authTaskInfoList.size() > 0) {
 			authTaskInfoListCnt = authTaskInfoList.size();
+			treeData = sysmngService.getAuthTaskInfoTree(authTaskInfoList, 0, authTaskInfoListCnt, 1);
 		}
-		
-		//Tree Data 설정
-		JSONArray treeData = sysmngService.getAuthTaskInfoTree(authTaskInfoList, 0, authTaskInfoListCnt, 1);
 		
 		JSONObject jsonRtn = new JSONObject();
 		jsonRtn.put("id", "root");
@@ -991,7 +1499,7 @@ public class SysmngController extends DefaultSMController {
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("auth_cd", authCd);
 
-		ArrayList<CaseInsensitiveMap> authMenuInfoList = sysmngService.getAuthMenuInfoList(map);
+		ArrayList<MenuInfoDto> authMenuInfoList = sysmngService.getAuthMenuInfoList(map);
 
 		int authMenuInfoListCnt = 0;
 		if (authMenuInfoList != null  && authMenuInfoList.size() > 0) {

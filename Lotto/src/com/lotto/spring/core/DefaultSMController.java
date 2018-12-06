@@ -33,6 +33,7 @@ public class DefaultSMController extends DefaultController {
     protected final static String POPUP       	= "popup";
 	protected final static String POPUP_MSG     = "popup_msg";	//2016.04.01 msg 팝업용 화면
     protected final static String BASE_PLUGIN   = "base/plugin";	//2017.11.27
+    protected final static String ERROR       	= "baseerror";
 	
 //    protected final static String LOCKBASE    = "lockbase";
 //    protected final static String BASE        = "base";
@@ -49,7 +50,6 @@ public class DefaultSMController extends DefaultController {
 //    protected final static String SYSCODEMNG  = "syscodemng";
 //    protected final static String ONLYCONT    = "onlycont";
 //    protected final static String EXT         = "ext";
-//    protected final static String ERROR       = "baseerror";
 //    protected final static String NO_ACCESS   = "baseerror"; // 접근권한 없음.
 //    protected final static String PLUGIN   = "plugin";
     

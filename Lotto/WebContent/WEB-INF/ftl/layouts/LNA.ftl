@@ -61,8 +61,6 @@
 	    	}
 	    	
 	    	function openContent(cid) {
-	    		clearCurrInterval("#currIntervalId");
-	    		
 	    		var url = $("#"+cid+"_url").val();
 	    		$("#currCid").val(cid);	//2018.02.01 set current cid
 	    		$("#currUrl").val(url);	//2018.02.03 set current url
@@ -74,7 +72,8 @@
 					async: false,
 					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 					error:function(xhr, textStatus, errorThrown){
-						alert(xhr.responseText);				
+						//alert(xhr.responseText);
+						window.location.href = "/error.do";
 					},
 					success: function(result){
 						$('#main').html(result);
@@ -91,8 +90,6 @@
 	    	
 	    	//2018.02.01 change content view
 	    	function changeContent(url) {
-	    		clearCurrInterval("#currIntervalId");
-	    		
 	    		var cid = $("#currCid").val();	//2018.02.01 set current cid
 	    		$("#currUrl").val(url);	//2018.02.03 set current url
 	    		
