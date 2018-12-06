@@ -29,6 +29,7 @@ import com.lotto.spring.domain.dao.UserSession;
 import com.lotto.spring.domain.dto.MenuInfoDto;
 import com.lotto.spring.domain.dto.TaskInfoDto;
 import com.lotto.spring.domain.dto.UserInfoDto;
+import com.lotto.spring.domain.dto.WinDataDto;
 import com.lotto.spring.service.CommonService;
 import com.lotto.spring.service.SysmngService;
 
@@ -460,6 +461,63 @@ public class SysmngController extends DefaultSMController {
 			
 		}
 	}
+	
+	/**
+	 * 당첨번호정보 목록 조회
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws SQLException
+	 */
+	@RequestMapping("/sysmng/getWinDataList")
+	public void getWinDataList(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		//2016.05.23 cremazer
+  		//ORACLE 인 경우 대문자 설정
+  		if ("ORACLE".equals(systemInfo.getDatabase())) {
+  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+  		}
+  		
+		// 로그인 아이디
+		int loginUserNo = userInfo.getUser_no();
+		log.info("[" + loginUserNo + "][C] 당첨번호정보 목록 조회");
+		String accessip = request.getRemoteHost();
+		
+		dto.setReg_user_no(loginUserNo);
+		dto.setAccess_ip(accessip);
+		
+		
+		List<WinDataDto> winDataList = sysmngService.getWinDataList(dto);
+		int winDataListCnt = sysmngService.getWinDataListCnt(dto);
+
+		int total_pages = 0;
+		if( winDataListCnt > 0 ) {
+			total_pages = (int) Math.ceil((double)winDataListCnt/Double.parseDouble(dto.getRows()));
+		} else { 
+			total_pages = 0; 
+		}  
+		
+        //토탈 값 구하기 끝
+        // Content Page - File which will included in tiles definition
+ 
+		JSONObject json = new JSONObject();
+  
+//		JSONArray jsonArr = JSONArray.fromObject(userList);
+		
+
+		json.put("cnt", winDataList.size());
+		json.put("total", total_pages);
+		json.put("page", dto.getPage());
+		json.put("records", winDataListCnt);
+		json.put("rows", winDataList);		
+		json.put("status", "success");		
+		writeJSON(response, json); 
+	} 
 	
 	/**
 	 * 예상번호관리 화면 호출

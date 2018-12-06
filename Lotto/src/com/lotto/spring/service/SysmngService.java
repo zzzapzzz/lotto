@@ -11,6 +11,7 @@ import com.chello.base.spring.core.DefaultService;
 import com.lotto.spring.domain.dto.MenuInfoDto;
 import com.lotto.spring.domain.dto.TaskInfoDto;
 import com.lotto.spring.domain.dto.UserInfoDto;
+import com.lotto.spring.domain.dto.WinDataDto;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -110,6 +111,26 @@ public class SysmngService extends DefaultService {
 		return flag;
 	}
 	
+	/**
+	 * 당첨번호 목록 조회 (Dto)
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<WinDataDto> getWinDataList(WinDataDto dto) {
+		return (ArrayList<WinDataDto>) baseDao.getList("sysmngMapper.getWinDataList", dto);
+	}
+	
+	/**
+	 * 당첨번호 목록 건수 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public int getWinDataListCnt(WinDataDto dto) {
+		return (Integer) baseDao.getSingleRow("sysmngMapper.getWinDataListCnt", dto);
+	}
 	
 	/**
 	 * 권한코드 목록 조회

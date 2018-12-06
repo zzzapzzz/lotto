@@ -11,7 +11,16 @@
 				<!-- widget grid -->
 				<section id="widget-grid" class="">
 
+					<!-- search condition -->
 					<div class="well">
+						<div class="form-group">
+						<label class="col-md-1 control-label" for="brand">회차</label>
+						<div class="col-lg-2">
+							<select class="form-control" id="win_count">
+							</select> 
+						</div>
+						<div id="search" class="btn btn-default btn-primary"><i class="fa fa-search"></i> 조회</div>
+					</div>
 					</div>
 					
 					<!-- row -->
