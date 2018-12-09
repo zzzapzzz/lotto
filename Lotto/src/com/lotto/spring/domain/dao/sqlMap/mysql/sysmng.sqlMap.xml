@@ -238,6 +238,14 @@
 		</foreach>
 	</insert>
 	
+	<!-- 당첨번호 조회 -->
+	<select id="getWinData" resultType="winDataDto">
+		/* sysmng.getWinData */
+		SELECT *		
+		FROM TB_LOTTO_INFO
+		WHERE WIN_COUNT = #{win_count}			
+	</select>
+	
 	<!-- 마지막 당첨번호 조회 -->
 	<select id="getLastWinData" resultType="winDataDto">
 		/* sysmng.getLastWinData */
@@ -253,6 +261,25 @@
 		INSERT INTO TB_LOTTO_INFO (WIN_COUNT,NUM1,NUM2,NUM3,NUM4,NUM5,NUM6,BONUS_NUM,TOTAL,SUM_END_NUM,LOW_HIGH,ODD_EVEN,AC)
 		VALUES (#{win_count},#{num1},#{num2},#{num3},#{num4},#{num5},#{num6},#{bonus_num},#{total},#{sum_end_num},#{low_high},#{odd_even},#{ac})
 	</insert>
+	
+	<!-- 당첨번호 수정 -->
+	<update id="modifyWinData" parameterType="java.util.Map">		
+		/* sysmng.modifyWinData */
+		UPDATE TB_LOTTO_INFO
+		SET   NUM1 = #{num1}
+			, NUM2 = #{num2}
+			, NUM3 = #{num3}
+			, NUM4 = #{num4}
+			, NUM5 = #{num5}
+			, NUM6 = #{num6}
+			, BONUS_NUM = #{bonus_num}
+			, TOTAL = #{total}
+			, SUM_END_NUM = #{sum_end_num}
+			, LOW_HIGH = #{low_high}
+			, ODD_EVEN = #{odd_even}
+			, AC = #{ac}
+		WHERE WIN_COUNT = #{win_count}
+	</update>
 	
 	<!-- 권한코드 목록 조회 -->
 	<select id="getAuthCodeList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">		

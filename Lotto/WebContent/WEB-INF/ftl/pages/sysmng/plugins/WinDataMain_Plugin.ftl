@@ -210,8 +210,31 @@
 			}
 			
 			function changeModifyGo() {
+				var idArray = $("#jqgrid").jqGrid('getDataIDs');		
+				var checkCnt = 0;
+				var win_count = "";
+				
+				for(var i = 0 ; i < idArray.length ; i++){		
+					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ) {
+						var rowdata = $("#jqgrid").getRowData(idArray[i]);
+						win_count = rowdata.win_count;
+						checkCnt = checkCnt + 1;
+					}
+				}
+			
+				if (checkCnt == 0) {
+					alert("선택 항목이 없습니다.");
+					return;			
+				} else if (checkCnt > 1) {
+					alert("하나만 선택하여야 합니다.");
+					return;
+				}
+				
+	    		var param = {
+					win_count : Number(win_count)
+				}
 				var url = "${APP_ROOT}/sysmng/modifyWinDataajax.do";
-				changeContent(url);
+				changeContent(url, param);
 			}
 			
 			function deleteGo() {

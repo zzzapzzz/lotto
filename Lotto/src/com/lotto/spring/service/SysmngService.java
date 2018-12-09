@@ -133,7 +133,17 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
-	 * 당첨번호 목록 건수 조회
+	 * 당첨번호 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public WinDataDto getWinData(WinDataDto dto) {
+		return (WinDataDto) baseDao.getSingleRow("sysmngMapper.getWinData", dto);
+	}
+	
+	/**
+	 * 마지막 당첨번호 조회
 	 * 
 	 * @param dto
 	 * @return
@@ -168,6 +178,22 @@ public class SysmngService extends DefaultService {
 	public boolean insertWinData(WinDataDto dto) {
 		boolean flag = false;		
 		int i = (Integer) baseDao.insert("sysmngMapper.insertWinData", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * 당첨번호 수정
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean modifyWinData(WinDataDto dto) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.update("sysmngMapper.modifyWinData", dto);
 		//2018.04.25 리턴값 버그로 true 처리
 //		if(i > 0) {
 			flag = true;

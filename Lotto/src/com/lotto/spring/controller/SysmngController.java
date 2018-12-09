@@ -769,7 +769,7 @@ public class SysmngController extends DefaultSMController {
 	 * @throws UnsupportedEncodingException
 	 */
 	@RequestMapping("/sysmng/modifyWinDataajax")
-	public String modifyWinDataajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+	public String modifyWinDataajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses, @ModelAttribute WinDataDto dto) throws SQLException, UnsupportedEncodingException {
 		
 		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
 		
@@ -785,6 +785,10 @@ public class SysmngController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/WinDataModify");
 			modelMap.addAttribute("isAjax", "Y");
+			
+			//수정할 당첨번호 조회
+			WinDataDto winData = sysmngService.getWinData(dto);
+			modelMap.addAttribute("winData", winData);
 			
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
@@ -860,7 +864,7 @@ public class SysmngController extends DefaultSMController {
 			dto.setSum_end_num(iSumEndNum);			//끝수합
 			dto.setAc(iAc);							//AC
 			
-			boolean result = sysmngService.insertWinData(dto);
+			boolean result = sysmngService.modifyWinData(dto);
 			
 			jsonObj.put("status", "success");
 			jsonObj.put("msg", "수정했습니다.");

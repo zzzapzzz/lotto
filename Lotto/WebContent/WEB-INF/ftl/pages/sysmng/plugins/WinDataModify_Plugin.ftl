@@ -9,9 +9,6 @@
 			// plugin 화면 초기화
 			function initPlugin() {
 				
-				//회차값 자동설정
-				setNextWinData();
-				
 				$.validator.addMethod("lessThan", function(value, element, params){
 					// true : SUCCESS , false : FAIL 
 				    return !isNaN(value) && (Number(value) <= Number(params)); 
@@ -97,7 +94,7 @@
 			        
 			            $.ajax({
 							type: "POST",
-							url: "${APP_ROOT}/sysmng/insertWinData.do",
+							url: "${APP_ROOT}/sysmng/modifyWinData.do",
 			                data: $(form).serialize(),
 							dataType: "json",
 							contentType: "application/x-www-form-urlencoded; charset=UTF-8",
@@ -152,34 +149,6 @@
 			    		$("#bonus_num").focus();        
 			        }
 			    });
-			}
-			
-			function setNextWinData() {
-	            $.ajax({
-					type: "POST",
-					url: "${APP_ROOT}/sysmng/getLastWinData.do",
-					dataType: "json",
-					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-					error:function(xhr, textStatus, errorThrown){
-						alert(xhr.responseText);				
-					},
-					success: function(result){
-						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
-						if (result.status == "usernotfound") {
-		               		location.href = "/index.do";
-		               		return;
-		            	}
-
-						if (result.status == "success") {
-							var nextWinCount = Number(result.lastWinData.win_count) + 1;
-							$("#win_count").val(nextWinCount);
-							$("#num1").focus();
-		            	} else {
-		            		alert(result.msg);
-		            	}
-					}
-				});
-				
 			}
 			
 			function cancel() {

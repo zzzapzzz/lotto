@@ -123,6 +123,34 @@
 				});
 	    	}
 	    	
+	    	//2018.12.10 change content view
+	    	function changeContent(url, param) {
+	    		var cid = $("#currCid").val();	//2018.02.01 set current cid
+	    		$("#currUrl").val(url);	//2018.02.03 set current url
+	    		
+	    		$.ajax({
+					type: "POST",
+					url: url,
+					data: param,
+					dataType: "html",
+					async: false,
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						$('#main').html(result);
+						
+						
+						var isPlugin = $("#isPlugin").val();
+						if ("Y" == isPlugin) {
+							openPlugin(cid);
+						}
+						
+					}
+				});
+	    	}
+	    	
 	    	function openPlugin(cid) {
 	    		//var url = $("#"+cid+"_url").val();
 	    		var url = $("#currUrl").val();	//2018.02.03 set current url
