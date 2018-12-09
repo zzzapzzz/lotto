@@ -133,6 +133,49 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
+	 * 당첨번호 목록 건수 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public WinDataDto getLastWinData() {
+		return (WinDataDto) baseDao.getSingleRow("sysmngMapper.getLastWinData");
+	}
+	
+	/**
+	 * 당첨번호 목록 등록
+	 * 
+	 * @param map
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public boolean insertWinDataList(Map map) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.insert("sysmngMapper.insertWinDataList", map);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * 당첨번호 등록
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean insertWinData(WinDataDto dto) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.insert("sysmngMapper.insertWinData", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
 	 * 권한코드 목록 조회
 	 * 
 	 * @param map

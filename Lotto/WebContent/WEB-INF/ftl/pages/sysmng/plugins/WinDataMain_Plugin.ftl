@@ -13,14 +13,14 @@
 				if ("N" == isAjax) {
 					initPlugin();
 				}
-
+				
 			});
 
 			function initPlugin() {
 				pageSetUp();
 
 				var param = {		
-					win_count : 99999999
+					win_count : 99999999	//DTO int형 변수 초기값 설정
 				};
 				
 				jQuery("#jqgrid").jqGrid({
@@ -114,7 +114,12 @@
 				$(".ui-icon.ui-icon-seek-end").removeClass().addClass("fa fa-fast-forward");
 				
 				$("#search").click(searchGo);
-				$("#win_count").change(searchGo);
+				$("#add").click(changeWriteGo);
+				$("#modify").click(changeModifyGo);
+				$('#del').click(deleteGo);
+				$("#uploadFile").click(uploadFileGo);
+				
+				$("#cond_win_count").change(searchGo);
 				
 				$("#searchKey").keydown(function (e) {
 			        if(e.keyCode == 13){
@@ -128,9 +133,65 @@
 				$("#jqgrid").jqGrid('setGridWidth', $("#content").width());
 			});
 			
+			function uploadFileGo() {
+				$("#excel").val("");
+				
+				$("#status").html("");
+		        var percentVal = '0%';
+		        $(".bar").attr("width", percentVal);
+		        $(".percent").html(percentVal);
+		        
+				var url = "javascript:uploadFile();";
+				$("#uploadfile-form").attr("action", url);
+				
+				layer_popup('uploadPopup', 'C');
+			}
+			
+			function uploadFile() {
+				
+				var excel = $("#excel").val();
+				var result = checkExcelFile("excel",1);
+				if (result) {
+					var url = "${APP_ROOT}/sysmng/uploadFileForWinData.do";
+					$("#uploadfile-form").attr("action", url);
+				
+					var options = {
+						beforeSend: function() {
+					        $("#status").html("");
+					        var percentVal = '0%';
+					        $(".bar").attr("width", percentVal);
+					        $(".percent").html(percentVal);
+					    },
+					    uploadProgress: function(event, position, total, percentComplete) {
+					        var percentVal = percentComplete + '%';
+					        $(".bar").attr("width", percentVal);
+					        $(".percent").html(percentVal);
+					    },
+                        success : function(data) {
+					        
+                        	if ("success" == data.status) {
+                        		isDim ? $('.dim-layer').fadeOut() : $el.fadeOut();
+                            	alert("모든 데이터가 업로드 되었습니다.");
+                            	
+                            	searchGo();
+                        	} else {
+                        		alert(data.msg);
+                        	}
+                        },            
+                        error: function(request, errordata, errorObject) { 
+                        	alert(errorObject.toString()); 
+                        },
+                        type : "POST",
+                        dataType: 'json'
+                    };
+                    $("#uploadfile-form").ajaxSubmit(options);
+				}
+
+			}
+			
 			function searchGo() {
 				var param = {		
-					win_count : $("#win_count").val()
+					win_count : $("#cond_win_count").val()
 				};	
 				
 				var page = 1;
@@ -142,4 +203,126 @@
 		
 				$("#jqgrid").setGridParam({	url: '${APP_ROOT}/sysmng/getWinDataList.do', datatype:'json', postData: param, page: page, sortname: '', sortorder: ''   }).trigger("reloadGrid");
 			}
+			
+			function changeWriteGo() {
+				var url = "${APP_ROOT}/sysmng/writeWinDataajax.do";
+				changeContent(url);
+			}
+			
+			function changeModifyGo() {
+				var url = "${APP_ROOT}/sysmng/modifyWinDataajax.do";
+				changeContent(url);
+			}
+			
+			function deleteGo() {
+				var idArray = $("#jqgrid").jqGrid('getDataIDs');		
+				var checkCnt = 0;
+				var win_count = "";
+				
+				for(var i = 0 ; i < idArray.length ; i++){		
+					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ) {
+						var rowdata = $("#jqgrid").getRowData(idArray[i]);
+						win_count = rowdata.win_count;
+						checkCnt = checkCnt + 1;
+					}
+				}
+			
+				if (checkCnt == 0) {
+					alert("선택 항목이 없습니다.");
+					return;			
+				} else if (checkCnt > 1) {
+					alert("하나만 선택하여야 합니다.");
+					return;
+				}
+		
+				if (confirm("[" + win_count + "] 회차 로또 번호정보를 삭제하시겠습니까?")) {
+					var param = {
+						win_count : Number(win_count)
+					}
+					
+					$.ajax({
+						type: "POST",
+						url: "${APP_ROOT}/sysmng/deleteWinData.do",
+						data: param,
+						dataType: "json",
+						async: false,
+						contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+						error:function(xhr, textStatus, errorThrown){
+							alert(xhr.responseText);				
+						},
+						success: function(result){
+							// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+							if (result.status == "usernotfound") {
+			               		location.href = "/index.do"; 
+			               		return;
+			            	}
+			            	
+		               		showSmallBox(result.msg);
+			            	
+							if (result.status == "success") {
+								searchGo();
+			            	}
+			            	
+						}
+					});
+				}
+			}
+			
+			function layer_popup(el, type){
+				
+				if ("winDataInfoPopup" == el) {
+					$("#uploadPopup").addClass("hide");
+					$("#winDataInfoPopup").removeClass("hide");
+				} else {
+					$("#winDataInfoPopup").addClass("hide");
+					$("#uploadPopup").removeClass("hide");
+				}
+			
+		        var $el = $("#"+el);        //레이어의 id를 $el 변수에 저장
+		        //isDim = $el.prev().hasClass('dimBg');   //dimmed 레이어를 감지하기 위한 boolean 변수
+		        isDim = $(".dim-layer div:first").hasClass('dimBg');   //dimmed 레이어를 감지하기 위한 boolean 변수
+		
+		        isDim ? $('.dim-layer').fadeIn() : $el.fadeIn();
+		
+		        var $elWidth = ~~($el.outerWidth()),
+		            $elHeight = ~~($el.outerHeight()),
+		            docWidth = $(document).width(),
+		            docHeight = $(document).height();
+				
+		        // 화면의 중앙에 레이어를 띄운다.
+		        if ($elHeight < docHeight || $elWidth < docWidth) {
+		            $el.css({
+		                marginTop: -$elHeight /2,
+		                marginLeft: -$elWidth/2
+		            })
+		        } else {
+		            $el.css({top: 0, left: 0});
+		        }
+				
+		        $('#btnClose').click(function(){
+		            isDim ? $('.dim-layer').fadeOut() : $el.fadeOut(); // 닫기 버튼을 클릭하면 레이어가 닫힌다.
+		            return false;
+		        });
+		        
+		        $('.btn-layerClose').click(function(){
+		            isDim ? $('.dim-layer').fadeOut() : $el.fadeOut(); // 닫기 버튼을 클릭하면 레이어가 닫힌다.
+		            return false;
+		        });
+		        
+		        $('#btnUploadClose').click(function(){
+		            isDim ? $('.dim-layer').fadeOut() : $el.fadeOut(); // 닫기 버튼을 클릭하면 레이어가 닫힌다.
+		            return false;
+		        });
+		
+		        $('.layer .dimBg').click(function(){
+		            $('.dim-layer').fadeOut();
+		            return false;
+		        });
+		        
+		        if ("C" == type) {
+		        	$("#win_count").focus();
+		        } else if ("U" == type) {
+		        	$("#num1").focus();
+		        }
+		    }
 		</script>
