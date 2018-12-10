@@ -17,15 +17,15 @@
 			});
 
 			function initPlugin() {
-				pageSetUp();
-
+				/*
 				var param = {		
 					win_count : 99999999	//DTO int형 변수 초기값 설정
 				};
+				*/
 				
 				jQuery("#jqgrid").jqGrid({
 					url: '${APP_ROOT}/sysmng/getWinDataList.do',
-					postData: param,
+					//postData: param,
 					datatype: 'json', //Data 형식   'json/xml/local'
 		        	jsonReader : {  // 이부분 추가 하셔야 json 쓰시기 편리 합니다.
 							page: "page", 
@@ -119,7 +119,7 @@
 				$('#del').click(deleteGo);
 				$("#uploadFile").click(uploadFileGo);
 				
-				$("#cond_win_count").change(searchGo);
+				$("#search_win_count").change(searchGo);
 				
 				$("#searchKey").keydown(function (e) {
 			        if(e.keyCode == 13){
@@ -191,7 +191,7 @@
 			
 			function searchGo() {
 				var param = {		
-					win_count : $("#cond_win_count").val()
+					win_count : Number($("#search_win_count").val())
 				};	
 				
 				var page = 1;

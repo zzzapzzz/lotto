@@ -42,7 +42,7 @@ public class DefaultDto {
 		this.page = page;
 	}
 	public String getRows() {
-		return rows;
+		return rows==null?"99999999":rows;
 	}
 	public void setRows(String rows) {
 		this.rows = rows;

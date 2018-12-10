@@ -10,13 +10,20 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
+import com.lotto.common.LottoUtil;
 import com.lotto.spring.core.DefaultSMController;
 import com.lotto.spring.domain.dao.UserSession;
+import com.lotto.spring.domain.dto.WinDataDto;
+import com.lotto.spring.service.SysmngService;
+
+import net.sf.json.JSONObject;
 
 @Controller
 @SessionAttributes({"UserInfo", "SystemInfo"})
@@ -28,6 +35,9 @@ public class WinController extends DefaultSMController {
 		super();
 	}
 
+	@Autowired(required = true)
+    private SysmngService sysmngService;
+	
 	/**
 	 * 당첨번호 화면 호출
 	 * 
@@ -127,5 +137,39 @@ public class WinController extends DefaultSMController {
 			return "redirect:/fhrmdlsapdls.do";
 			
 		}
+	}
+	
+	/**
+	 * 당첨번호 조회
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/win/getWinData")
+	public void insertWinData(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 당첨번호 조회");
+			
+			WinDataDto winData = sysmngService.getWinData(dto);
+			
+			jsonObj.put("data", winData);
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+        
 	}
 }

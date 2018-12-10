@@ -3,7 +3,7 @@
 				<input type="hidden" id="isPlugin" value="Y" />
 
 				<div class="row">
-					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
+					<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 						<h1 class="page-title txt-color-blueDark"><i class="fa-fw fa ${CurrMenuInfo.lna_element?if_exists}"></i> ${CurrMenuInfo.p_menu_nm?if_exists} <#if CurrMenuInfo.p_menu_nm != CurrMenuInfo.menu_nm> <span>> ${CurrMenuInfo.menu_nm?if_exists}</span></#if></h1>
 					</div>
 				</div>
@@ -15,7 +15,7 @@
 					<div class="well">
 						<label class="col-md-1 control-label" for="brand">회차</label>
 						<div class="col-lg-2">
-							<select class="form-control" id="cond_win_count">
+							<select class="form-control" id="search_win_count">
 							</select> 
 						</div>
 						<div id="search" class="btn btn-default btn-primary"><i class="fa fa-search"></i> 조회</div>

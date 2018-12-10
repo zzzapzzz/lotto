@@ -171,7 +171,7 @@
 		            	}
 
 						if (result.status == "success") {
-							var nextWinCount = Number(result.lastWinData.win_count) + 1;
+							var nextWinCount = Number(result.data.win_count) + 1;
 							$("#win_count").val(nextWinCount);
 							$("#num1").focus();
 		            	} else {
