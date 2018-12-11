@@ -13,5 +13,7 @@
 		<typeAlias alias="taskInfoDto" type="com.lotto.spring.domain.dto.TaskInfoDto"/>
 		<typeAlias alias="menuInfoDto" type="com.lotto.spring.domain.dto.MenuInfoDto"/>
 		<typeAlias alias="winDataDto" type="com.lotto.spring.domain.dto.WinDataDto"/>
+		<typeAlias alias="countSumDto" type="com.lotto.spring.domain.dto.CountSumDto"/>
+		<typeAlias alias="excludeDto" type="com.lotto.spring.domain.dto.ExcludeDto"/>
 	</typeAliases> 
 </configuration>

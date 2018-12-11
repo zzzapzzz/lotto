@@ -742,7 +742,22 @@ public class SysmngController extends DefaultSMController {
 			dto.setSum_end_num(iSumEndNum);			//끝수합
 			dto.setAc(iAc);							//AC
 			
+			// 당첨번호 등록
 			boolean result = sysmngService.insertWinData(dto);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto(); 
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			// 회차합정보 등록
+			sysmngService.insertCountSumInfo(winDataList);
+
+			// 제외수정보 등록
+			sysmngService.insertExcludeInfo(winDataList);
+			
+			// 궁합수정보 등록
+			
+			// 미출현번호대 구간정보 등록
 			
 			jsonObj.put("status", "success");
 			jsonObj.put("msg", "등록했습니다.");
@@ -868,6 +883,41 @@ public class SysmngController extends DefaultSMController {
 			
 			jsonObj.put("status", "success");
 			jsonObj.put("msg", "수정했습니다.");
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+        
+	}
+	
+	/**
+	 * 당첨번호 삭제
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/sysmng/deleteWinData")
+	public void deleteWinData(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 당첨번호 삭제");
+			
+			boolean result = sysmngService.deleteWinData(dto);
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("msg", "삭제했습니다.");
 			
 		} else {
 			jsonObj.put("status", "usernotfound");

@@ -1,7 +1,8 @@
 package com.lotto.spring.domain.dto;
 
 /**
- * 메뉴권한정보
+ * 메뉴권한 정보
+ * 
  * @author cremazer
  * @since 2018.12.02
  */

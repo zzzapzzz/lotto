@@ -1,5 +1,11 @@
 package com.lotto.spring.domain.dto;
 
+/**
+ * 기본 DTO
+ * 
+ * @author cremazer
+ *
+ */
 public class DefaultDto {
 	
 	/** 행번호 */

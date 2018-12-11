@@ -1,5 +1,11 @@
 package com.lotto.spring.domain.dto;
 
+/**
+ * 회원 정보
+ * 
+ * @author cremazer
+ *
+ */
 public class UserInfoDto extends DefaultDto{
 	/** 회원번호 */
 	private int user_no;

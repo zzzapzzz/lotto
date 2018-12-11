@@ -281,6 +281,20 @@
 		WHERE WIN_COUNT = #{win_count}
 	</update>
 	
+	<!-- 당첨번호 삭제 -->
+	<delete id="deleteWinData" parameterType="java.util.Map">		
+		/* sysmng.deleteWinData */
+		DELETE TB_LOTTO_INFO
+		WHERE WIN_COUNT = #{win_count}
+	</delete>
+	
+	<!-- 회차합정보 등록 -->
+	<insert id="insertCountSumInfo" parameterType="countSumDto">
+		/* sysmng.insertCountSumInfo */
+		INSERT INTO TB_COUNT_SUM_INFO (WIN_COUNT,COUNT_SUM,CONT_CNT,NOT_CONT_CNT,CONT_NUM,NOT_CONT_NUM)
+		VALUES (#{win_count},#{count_sum},#{cont_cnt},#{not_cont_cnt},#{cont_num},#{not_cont_num})
+	</insert>
+	
 	<!-- 권한코드 목록 조회 -->
 	<select id="getAuthCodeList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">		
 		/* sysmng.getAuthCodeList */

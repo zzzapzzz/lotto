@@ -1,6 +1,7 @@
 package com.lotto.spring.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -8,6 +9,8 @@ import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.springframework.stereotype.Service;
 
 import com.chello.base.spring.core.DefaultService;
+import com.lotto.common.LottoUtil;
+import com.lotto.spring.domain.dto.CountSumDto;
 import com.lotto.spring.domain.dto.MenuInfoDto;
 import com.lotto.spring.domain.dto.TaskInfoDto;
 import com.lotto.spring.domain.dto.UserInfoDto;
@@ -201,6 +204,145 @@ public class SysmngService extends DefaultService {
 		return flag;
 	}
 	
+	/**
+	 * 당첨번호 삭제
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean deleteWinData(WinDataDto dto) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.delete("sysmngMapper.deleteWinData", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * 회차합정보 등록
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean insertCountSumInfo(List<WinDataDto> winDataList) {
+		
+		CountSumDto dto = this.getLastContainCnt(winDataList);
+		
+		boolean flag = false;
+		int i = (Integer) baseDao.insert("sysmngMapper.insertCountSumInfo", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * <div id=description><b>회차별 회차합 정보 구하기</b></div ><br>
+     * <div id=detail>회차별 회차합 정보를 추출하고, 포함/미포함 번호의 개수를 설정한다.</div ><br>
+     * 
+	 * @param list 전체데이터
+	 * @return
+	 */
+	private CountSumDto getLastContainCnt(List<WinDataDto> list) {
+		CountSumDto dto = new CountSumDto();
+		
+		WinDataDto sourceData = list.get(0);	//해당 회차정보
+		// 회차번호 설정
+		int win_count = sourceData.getWin_count();
+		dto.setWin_count(win_count);
+		
+		int count_sum = 0;	//회차합
+		int lastContainCnt = 0;	//10회차 내 마지막 포함숫자가 있는 회차합
+		int[] sourceNumbers = LottoUtil.getNumbers(sourceData);
+		int cont_cnt = 0;	//포함개수
+		int not_cont_cnt = sourceNumbers.length - cont_cnt;	//미포함개수(6 - 포함개수)
+		
+		String cont_num = "";	// 포함숫자 목록
+		String not_cont_num = "";	// 미포함숫자 목록
+		
+		HashMap<Integer, Integer> containMap = new HashMap<Integer, Integer>();
+		
+		// 이전 회차에서 10회차까지 포함정보를 구한다.
+		for (int targetIdx = 1; targetIdx <= 10; targetIdx++) {
+			//회차합 증가
+			count_sum++;
+			
+			WinDataDto targetData = list.get(targetIdx);	//과거 회차정보
+			int[] targetNumbers = LottoUtil.getNumbers(targetData);
+			
+			// 해당회차의 번호와 대상회차의 번호를 비교
+			for (int i = 0; i < sourceNumbers.length; i++) {
+				if(containMap.containsKey(sourceNumbers[i])){
+					continue;
+				}
+				
+				for (int number : targetNumbers) {
+					if(sourceNumbers[i] == number){
+						containMap.put(sourceNumbers[i], number);
+						cont_cnt++;
+						not_cont_cnt = sourceNumbers.length - cont_cnt; 
+						lastContainCnt = count_sum;
+						break;
+					}
+				}
+			}//source for
+			
+			
+			//과거 10회차 이내 포함개수가 6개이면 반복 종료
+			if(cont_cnt == 6){
+				break;
+			}
+		}
+		
+		for (int number = 1; number <= 45; number++) {
+			if (containMap.containsKey(number)) {
+				// 포함숫자 설정
+				if (!"".equals(cont_num)) {
+					cont_num = cont_num + ",";
+				}
+				cont_num = cont_num + number;
+			} else {
+				// 미포함숫자 설정
+				if (!"".equals(not_cont_num)) {
+					not_cont_num = not_cont_num + ",";
+				}
+				not_cont_num = not_cont_num + number;
+			}
+		}
+		
+		//회차합 정보 설정
+		dto.setCount_sum(lastContainCnt);
+		dto.setCont_cnt(cont_cnt);
+		dto.setNot_cont_cnt(not_cont_cnt);
+		dto.setCont_num(cont_num);
+		dto.setNot_cont_num(not_cont_num);
+		return dto;
+	}
+	
+	/**
+	 * 제외수정보 등록
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean insertExcludeInfo(List<WinDataDto> winDataList) {
+		
+//		CountSumDto dto = this.getLastContainCnt(winDataList);
+		
+		//TODO 제외수 규칙 분석 및 등록기능 추가
+		
+		boolean flag = false;
+//		int i = (Integer) baseDao.insert("sysmngMapper.insertExcludeInfo", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+
 	/**
 	 * 권한코드 목록 조회
 	 * 

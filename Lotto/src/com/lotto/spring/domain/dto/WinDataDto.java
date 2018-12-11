@@ -1,7 +1,13 @@
 package com.lotto.spring.domain.dto;
 
+/**
+ * 당첨번호 정보
+ * 
+ * @author cremazer
+ *
+ */
 public class WinDataDto extends DefaultDto{
-	/** 회원번호 */
+	/** 당첨회차 */
 	private int win_count;
 	/** 번호1 */
 	private int num1;
