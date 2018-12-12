@@ -494,7 +494,6 @@ public class SysmngController extends DefaultSMController {
 		dto.setReg_user_no(loginUserNo);
 		dto.setAccess_ip(accessip);
 		
-		
 		List<WinDataDto> winDataList = sysmngService.getWinDataList(dto);
 		int winDataListCnt = sysmngService.getWinDataListCnt(dto);
 
@@ -745,8 +744,9 @@ public class SysmngController extends DefaultSMController {
 			// 당첨번호 등록
 			boolean result = sysmngService.insertWinData(dto);
 			
-			// 당첨번호 전체 목록 조회
-			WinDataDto winDataDto = new WinDataDto(); 
+			// 당첨번호 전체 목록 오름차순 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
 			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
 			
 			// 회차합정보 등록
@@ -755,7 +755,21 @@ public class SysmngController extends DefaultSMController {
 			// 제외수정보 등록
 			sysmngService.insertExcludeInfo(winDataList);
 			
+			// 총합정보 등록
+			sysmngService.insertTotalInfo(winDataList);
+			
+			// 끝수합정보 등록
+			sysmngService.insertEndNumInfo(winDataList);
+			
 			// 궁합수정보 등록
+			sysmngService.insertMCNumInfo(winDataList);
+			
+			// 저고비율정보 등록
+			sysmngService.insertLowHighInfo(winDataList);
+			
+			// 홀수짝수비율정보 등록
+			sysmngService.insertOddEvenInfo(winDataList);
+			
 			
 			// 미출현번호대 구간정보 등록
 			

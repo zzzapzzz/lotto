@@ -7,7 +7,7 @@ package com.lotto.spring.domain.dto;
  *
  */
 public class ExcludeDto extends DefaultDto{
-	/** 당첨회차 (EX_COUNT) */
+	/** 예상회차 (EX_COUNT) */
 	private int ex_count;
 	/** 번호1규칙 (NUM1_RULE) */
 	private int num1_rule;

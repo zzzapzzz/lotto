@@ -209,8 +209,24 @@
 			WHERE 1=1
 			<if test='win_count != null and win_count != "" and win_count != 99999999'>
 			AND WIN_COUNT = #{win_count}
-			</if>
-			ORDER BY WIN_COUNT DESC
+			</if>			
+			ORDER BY 
+			<choose>
+    			<when test="sidx!=null and sidx != """>
+    				${sidx} 
+			    </when>
+			    <otherwise>
+			    	WIN_COUNT 
+			    </otherwise>
+  			</choose>
+			<choose>
+    			<when test="sord != null and sord != """>
+    				${sord} 
+			    </when>
+			    <otherwise>
+			    	DESC 
+			    </otherwise>
+  			</choose>
 		) AA
 		<if test='startNum != "" and endNum != ""'>
 		WHERE row_num BETWEEN #{startNum} AND #{endNum}
@@ -293,6 +309,13 @@
 		/* sysmng.insertCountSumInfo */
 		INSERT INTO TB_COUNT_SUM_INFO (WIN_COUNT,COUNT_SUM,CONT_CNT,NOT_CONT_CNT,CONT_NUM,NOT_CONT_NUM)
 		VALUES (#{win_count},#{count_sum},#{cont_cnt},#{not_cont_cnt},#{cont_num},#{not_cont_num})
+	</insert>
+	
+	<!-- 제외수정보 등록 -->
+	<insert id="insertExcludeInfo" parameterType="excludeDto">
+		/* sysmng.insertExcludeInfo */
+		INSERT INTO TB_COUNT_SUM_INFO (EX_COUNT,NUM1_RULE,NUM2_RULE,NUM3_RULE,NUM4_RULE,NUM5_RULE,NUM6_RULE,EXCLUDE_NUM)
+		VALUES (#{ex_count},#{num1_rule},#{num2_rule},#{num3_rule},#{num4_rule},#{num5_rule},#{num6_rule},#{exclude_num})
 	</insert>
 	
 	<!-- 권한코드 목록 조회 -->

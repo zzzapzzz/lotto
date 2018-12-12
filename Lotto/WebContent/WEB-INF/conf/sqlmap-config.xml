@@ -15,5 +15,10 @@
 		<typeAlias alias="winDataDto" type="com.lotto.spring.domain.dto.WinDataDto"/>
 		<typeAlias alias="countSumDto" type="com.lotto.spring.domain.dto.CountSumDto"/>
 		<typeAlias alias="excludeDto" type="com.lotto.spring.domain.dto.ExcludeDto"/>
+		<typeAlias alias="totalDto" type="com.lotto.spring.domain.dto.TotalDto"/>
+		<typeAlias alias="endNumDto" type="com.lotto.spring.domain.dto.EndNumDto"/>
+		<typeAlias alias="mcNumDto" type="com.lotto.spring.domain.dto.MCNumDto"/>
+		<typeAlias alias="lowHighDto" type="com.lotto.spring.domain.dto.LowHighDto"/>
+		<typeAlias alias="oddEvenDto" type="com.lotto.spring.domain.dto.OddEvenDto"/>
 	</typeAliases> 
 </configuration>
