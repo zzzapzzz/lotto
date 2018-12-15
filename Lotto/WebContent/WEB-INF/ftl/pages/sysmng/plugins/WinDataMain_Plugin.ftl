@@ -51,8 +51,8 @@
 					rowNum : 100,
 					rowList : [10, 20, 30, 100],
 					pager : '#pjqgrid',
-					//sortname : 'idx',
-					//sortorder : 'DESC',
+					sortname : 'WIN_COUNT',
+					sortorder : 'DESC',
 					toolbarfilter : true,
 					viewrecords : true,
 					loadComplete: function(data) {		/** 데이터 로딩시 함수 **/

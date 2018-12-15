@@ -20,5 +20,6 @@
 		<typeAlias alias="mcNumDto" type="com.lotto.spring.domain.dto.MCNumDto"/>
 		<typeAlias alias="lowHighDto" type="com.lotto.spring.domain.dto.LowHighDto"/>
 		<typeAlias alias="oddEvenDto" type="com.lotto.spring.domain.dto.OddEvenDto"/>
+		<typeAlias alias="zeroRangeDto" type="com.lotto.spring.domain.dto.ZeroRangeDto"/>
 	</typeAliases> 
 </configuration>

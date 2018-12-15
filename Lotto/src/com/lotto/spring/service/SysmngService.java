@@ -12,12 +12,17 @@ import org.springframework.stereotype.Service;
 import com.chello.base.spring.core.DefaultService;
 import com.lotto.common.LottoUtil;
 import com.lotto.spring.domain.dto.CountSumDto;
+import com.lotto.spring.domain.dto.EndNumDto;
 import com.lotto.spring.domain.dto.ExcludeDto;
+import com.lotto.spring.domain.dto.LowHighDto;
+import com.lotto.spring.domain.dto.MCNumDto;
 import com.lotto.spring.domain.dto.MenuInfoDto;
+import com.lotto.spring.domain.dto.OddEvenDto;
 import com.lotto.spring.domain.dto.TaskInfoDto;
 import com.lotto.spring.domain.dto.TotalDto;
 import com.lotto.spring.domain.dto.UserInfoDto;
 import com.lotto.spring.domain.dto.WinDataDto;
+import com.lotto.spring.domain.dto.ZeroRangeDto;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -235,6 +240,23 @@ public class SysmngService extends DefaultService {
 		
 		boolean flag = false;
 		int i = (Integer) baseDao.insert("sysmngMapper.insertCountSumInfo", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * 회차합정보 삭제
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean deleteCountSumInfo(CountSumDto dto) {
+		
+		boolean flag = false;
+		int i = (Integer) baseDao.delete("sysmngMapper.deleteCountSumInfo", dto);
 		//2018.04.25 리턴값 버그로 true 처리
 //		if(i > 0) {
 			flag = true;
@@ -622,6 +644,24 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
+	 * 제외수정보 삭제
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean deleteExcludeInfo(ExcludeDto dto) {
+		
+		boolean flag = false;
+		int i = (Integer) baseDao.delete("sysmngMapper.deleteExcludeInfo", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	
+	/**
 	 * 총합정보 등록
 	 * 
 	 * @param winDataList
@@ -722,8 +762,24 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
+	 * 총합정보 삭제
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean deleteTotalInfo(TotalDto dto) {
+		
+		boolean flag = false;
+		int i = (Integer) baseDao.delete("sysmngMapper.deleteTotalInfo", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
 	 * 끝수합정보 등록
-	 * TODO
 	 * 
 	 * @param winDataList
 	 * @return
@@ -732,9 +788,69 @@ public class SysmngService extends DefaultService {
 		
 		WinDataDto lastData = winDataList.get(winDataList.size()-1);
 		
+		int[] arrEndNumRange = this.getLowEndNumHighEndNum(winDataList);
+    	String endNumRange = arrEndNumRange[0] + "~" + arrEndNumRange[1];
+    	
+    	EndNumDto dto = new EndNumDto();
+    	dto.setWin_count(lastData.getWin_count());
+    	dto.setLow_endnum(arrEndNumRange[0]);
+    	dto.setHigh_endnum(arrEndNumRange[1]);
+    	dto.setEndnum_range(endNumRange);
     	
 		boolean flag = false;
-//		int i = (Integer) baseDao.insert("sysmngMapper.insertEndNumInfo", dto);
+		int i = (Integer) baseDao.insert("sysmngMapper.insertEndNumInfo", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * @description <div id=description><b>끝수합 범위 구하기</b></div >
+	 *              <div id=detail>전체 끝수합의 범위를 구한다.</div >
+	 * @param winDataList
+	 * @return
+	 */
+	public int[] getLowEndNumHighEndNum(List<WinDataDto> winDataList){
+		int[] data = {0,0};
+		
+		//끝수합 설정
+		for(WinDataDto winData : winDataList){
+			int[] numbers = LottoUtil.getNumbers(winData);
+			int total = 0;
+			
+			for(int index = 0 ; index < numbers.length ; index++){
+				total += numbers[index] % 10;
+			}
+			
+			if(data[0] == 0){	//초기값 설정
+				data[0] = total;
+				data[1] = total;
+			}else{
+				if(data[0] > total){	//최저 끝수합 설정
+					data[0] = total;
+				}
+				
+				if(data[1] < total){	//최고 끝수합 설정
+					data[1] = total;
+				}
+			}
+		}
+		
+		return data;
+	}
+	
+	/**
+	 * 끝수합정보 삭제
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean deleteEndNumInfo(EndNumDto dto) {
+		
+		boolean flag = false;
+		int i = (Integer) baseDao.delete("sysmngMapper.deleteEndNumInfo", dto);
 		//2018.04.25 리턴값 버그로 true 처리
 //		if(i > 0) {
 			flag = true;
@@ -744,18 +860,234 @@ public class SysmngService extends DefaultService {
 	
 	/**
 	 * 궁합수정보 등록
-	 * TODO
 	 * 
 	 * @param winDataList
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public boolean insertMCNumInfo(List<WinDataDto> winDataList) {
 		
 		WinDataDto lastData = winDataList.get(winDataList.size()-1);
 		
+		//번호별 궁합/불협수
+		Map<Integer, Map<String, ArrayList<Integer>>> mcNumberMap = this.getMcNumber(winDataList);
     	
+		Map mcInfoMap = this.getMCInfoMap(mcNumberMap, lastData);
+		
 		boolean flag = false;
-//		int i = (Integer) baseDao.insert("sysmngMapper.insertMCNumInfo", dto);
+		int i = (Integer) baseDao.insert("sysmngMapper.insertMCNumInfo", mcInfoMap);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private Map getMCInfoMap(Map<Integer, Map<String, ArrayList<Integer>>> mcNumberMap, WinDataDto lastData) {
+		Map mcInfoMap = new HashMap();
+    	List mcInfoList = new ArrayList();
+    	for (int num = 1; num <= 45; num++) {
+    		Map dataMap = new HashMap();	//등록할 객체
+    		
+			Map<String, ArrayList<Integer>> mcMap = mcNumberMap.get(num);
+			ArrayList<Integer> mcList = mcMap.get("mc");
+			ArrayList<Integer> notMcList = mcMap.get("notMc");
+			String mcInfo = "";
+			String notMcInfo = "";
+			
+			//궁합수 출력
+			for (int i = 0; i < mcList.size(); i++) {
+				if (!"".equals(mcInfo)) {
+					mcInfo += ",";
+				}
+				mcInfo += mcList.get(i);
+			}
+			
+			//불협수 출력
+			for (int i = 0; i < notMcList.size(); i++) {
+				if (!"".equals(notMcInfo)) {
+					notMcInfo += ",";
+				}
+				notMcInfo += notMcList.get(i);
+			}
+			
+			//객체 설정
+			dataMap.put("win_count", lastData.getWin_count());
+			dataMap.put("num", num);
+			dataMap.put("mc_num", mcInfo);
+			dataMap.put("not_mc_num", notMcInfo);
+			
+			mcInfoList.add(dataMap);
+		}
+    	mcInfoMap.put("mcInfoList", mcInfoList);
+		return mcInfoMap;
+	}
+
+	/**
+	 * @description <div id=description><b>궁합/불협수 설정</b></div >
+	 *              <div id=detail>각 숫자별로 가장 많이 나온 3수를 궁합수, 가장 나오지 않은 수를 불협수로 설정한다.</div >
+	 * @param winDataList 전체리스트
+	 * @return
+	 */
+	@SuppressWarnings({ "unchecked" })
+	public Map<Integer, Map<String, ArrayList<Integer>>> getMcNumber(List<WinDataDto> winDataList) {
+		/** 번호별 전체 저장 변수 */
+		Map<Integer, Map<String, ArrayList<Integer>>> mcNumberMap = new HashMap<Integer, Map<String,ArrayList<Integer>>>();
+		/** 해당 번호의 궁합/불협수 목록 저장 변수 */
+		Map<String, ArrayList<Integer>> mcMap;
+		
+		/*
+		 * 1 ~ 45까지의 숫자를 전체데이터로부터 함께 나온 수와 나오지 않는 수를 찾는다.
+		 */
+		for (int number = 1; number <= 45; number++) {
+			mcMap = new HashMap<String, ArrayList<Integer>>();
+			
+			/** 함께 당첨번호로 출현한 번호별 개수 저장 배열 */
+			int[] existCnt = new int[45];
+			for (int i = 0; i < existCnt.length; i++) {
+				existCnt[i] = 0;
+			}
+			
+			/** 가장 많은 개수를 저장할 배열 */
+			int[] bestMcCnt = new int[3];
+			for (int i = 0; i < bestMcCnt.length; i++) {
+				bestMcCnt[i] = 0;
+			}
+			
+			/** 가장 많은 개수에 해당하는 숫자를 저장할 배열 */
+			int[] bestMcNumbers = new int[3];
+			for (int i = 0; i < bestMcNumbers.length; i++) {
+				bestMcNumbers[i] = 0;
+			}
+			
+			
+			//함께 당첨번호로 출현한 번호 저장 맵
+			Map<Integer, Integer> existMap = new HashMap<Integer, Integer>();
+			//궁합수 저장 맵
+			Map<Integer, Integer> existMcMap = new HashMap<Integer, Integer>();
+			//궁합수 저장 리스트(가장 좋은 3수)
+			ArrayList<Integer> mcList = new ArrayList<Integer>();
+			//불협수 저장 리스트 : 한번도 함께 나온적이 없는 번호
+			ArrayList<Integer> notMcList = new ArrayList<Integer>();
+			
+			//전체 데이터 검색
+			for (int i = 0; i < winDataList.size(); i++) {
+				//번호 존재 여부
+				boolean isExist = false;
+				WinDataDto data = winDataList.get(i);
+				int[] numbers = LottoUtil.getNumbers(data);
+				
+				//번호 비교
+				for (int j = 0; j < numbers.length; j++) {
+					if(number == numbers[j]){
+						isExist = true;
+						break;
+					}
+				}
+				
+				//번호가 없으면 다음회차 검색
+				if(!isExist) 
+					continue;
+				
+				//번호가 있으면 함께 나온 숫자 저장
+				for (int j = 0; j < numbers.length; j++) {
+					if(number == numbers[j]){
+						//같은 번호는 skip
+						continue;
+					}else{
+						//번호가 이미 저장된 번호인지 확인 
+						if(existMap.containsKey(numbers[j])){
+							//있으면 개수만 추가한다.
+							existCnt[numbers[j]-1] += 1;							
+						}else{
+							//없으면 등록하고 개수를 추가한다.
+							existMap.put(numbers[j], numbers[j]);
+							existCnt[numbers[j]-1] += 1; 
+						}
+					}
+				}//숫자 저장 for
+			}//전체 데이터 for
+			
+			//궁합수 저장
+			//가장 많이 나온 숫자 3개 저장
+			for (int num = 0; num < existCnt.length; num++) {
+				int cnt = existCnt[num];
+				
+				//숫자별 개수 체크
+//				if(count == 1)
+//					System.out.println( (num+1) + " : " + cnt);
+				
+				if(cnt >= bestMcCnt[0]){	//첫 번째 큰수
+					//개수 설정
+					bestMcCnt[2] = bestMcCnt[1];
+					bestMcCnt[1] = bestMcCnt[0];
+					bestMcCnt[0] = cnt;
+					
+					//번호 설정
+					bestMcNumbers[2] = bestMcNumbers[1];
+					bestMcNumbers[1] = bestMcNumbers[0];
+					bestMcNumbers[0] = num+1;
+					
+				}else if(cnt >= bestMcCnt[1]){	//두 번째 큰수
+					//개수 설정
+					bestMcCnt[2] = bestMcCnt[1];
+					bestMcCnt[1] = cnt;
+					
+					//번호 설정
+					bestMcNumbers[2] = bestMcNumbers[1];
+					bestMcNumbers[1] = num+1;
+				}else if(cnt >= bestMcCnt[2]){	//세 번째 큰수
+					//개수 설정
+					bestMcCnt[2] = cnt;
+					
+					//번호 설정
+					bestMcNumbers[2] = num+1;
+				}
+			}
+			
+			//가장 많이 나온 상위 3가지 개수에 해당하는 번호를 모두 저장한다.
+			for(int i = 0; i < bestMcCnt.length; i++) {
+				for (int num = 0; num < existCnt.length; num++) {
+					if(bestMcCnt[i] == existCnt[num]){
+						//저장되어 있지 않은 궁합수는 궁합수 목록에 추가한다.
+						if(!existMcMap.containsKey(num+1)){
+							mcList.add(num+1);
+							existMcMap.put(num+1, num+1);
+						}
+					}
+				}
+				
+			}
+			
+			//불협수 저장
+			for(int i = 1; i <= 45; i++) {
+				if(!existMap.containsKey(i) 
+						&& number != i){
+					notMcList.add(i);
+				}
+			}
+			
+			//저장
+			mcMap.put("mc", (ArrayList<Integer>)LottoUtil.dataSort(mcList));
+			mcMap.put("notMc", (ArrayList<Integer>)LottoUtil.dataSort(notMcList));
+			mcNumberMap.put(number, mcMap);
+			
+		}//숫자별 for
+		
+		return mcNumberMap;
+	}
+
+	/**
+	 * 궁합수정보 삭제
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean deleteMCNumInfo(MCNumDto dto) {
+		
+		boolean flag = false;
+		int i = (Integer) baseDao.delete("sysmngMapper.deleteMCNumInfo", dto);
 		//2018.04.25 리턴값 버그로 true 처리
 //		if(i > 0) {
 			flag = true;
@@ -765,18 +1097,32 @@ public class SysmngService extends DefaultService {
 	
 	/**
 	 * 저고비율정보 등록
-	 * TODO
 	 * 
 	 * @param winDataList
 	 * @return
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public boolean insertLowHighInfo(List<WinDataDto> winDataList) {
 		
 		WinDataDto lastData = winDataList.get(winDataList.size()-1);
 		
-		
+		String[] headTitle = LottoUtil.getRatioTitle();
+    	String[] arrLowHigh = this.getLowHighRatio(winDataList, headTitle);
+    	
+    	Map lowHighMap = new HashMap();
+    	List lowHighList = new ArrayList();
+    	for (int i = 0; i < arrLowHigh.length; i++) {
+    		Map dataMap = new HashMap();	//등록할 객체
+			dataMap.put("win_count", lastData.getWin_count());
+			dataMap.put("lowhigh_type", headTitle[i]);
+			dataMap.put("ratio", arrLowHigh[i]);
+			
+			lowHighList.add(dataMap);
+		}
+    	lowHighMap.put("lowHighList", lowHighList);
+    	
 		boolean flag = false;
-//		int i = (Integer) baseDao.insert("sysmngMapper.insertLowHighInfo", dto);
+		int i = (Integer) baseDao.insert("sysmngMapper.insertLowHighInfo", lowHighMap);
 		//2018.04.25 리턴값 버그로 true 처리
 //		if(i > 0) {
 		flag = true;
@@ -785,26 +1131,255 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
+	 * @description <div id=description><b>고저 비율 구하기</b></div >
+     *              <div id=detail>고저 비율을 구한다.</div >
+     * @param winDataList
+	 * @param ratioTitle
+	 * @return
+	 */
+	public String[] getLowHighRatio(List<WinDataDto> winDataList, String[] ratioTitle){
+		String[] result = new String[ratioTitle.length];
+		int[] count = new int[ratioTitle.length];
+		
+		//비율의 누적횟수 초기화
+		for(int index = 0 ; index < count.length ; index++){
+			count[index] = 0;
+		}
+		
+		//해당비율 누적 구하기
+		for(WinDataDto winData : winDataList){
+			for(int index = 0 ; index < ratioTitle.length ; index++){
+				if(winData.getLow_high().equals(ratioTitle[index])){
+					count[index] += 1;
+				}
+			}
+		}
+		
+		for(int index = 0 ; index < count.length ; index++){
+			result[index] = ""+LottoUtil.getRatio(count[index], winDataList.size());
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * 저고비율정보 삭제
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean deleteLowHighInfo(LowHighDto dto) {
+		
+		boolean flag = false;
+		int i = (Integer) baseDao.delete("sysmngMapper.deleteLowHighInfo", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
 	 * 홀수짝수비율 등록
-	 * TODO
 	 * 
 	 * @param winDataList
 	 * @return
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public boolean insertOddEvenInfo(List<WinDataDto> winDataList) {
 		
 		WinDataDto lastData = winDataList.get(winDataList.size()-1);
 		
+		String[] headTitle = LottoUtil.getRatioTitle();
+		String[] arrOddEven = this.getOddEvenRatio(winDataList, headTitle);
 		
+		Map oddEvenMap = new HashMap();
+    	List oddEvenList = new ArrayList();
+    	for (int i = 0; i < arrOddEven.length; i++) {
+    		Map dataMap = new HashMap();	//등록할 객체
+			dataMap.put("win_count", lastData.getWin_count());
+			dataMap.put("oddeven_type", headTitle[i]);
+			dataMap.put("ratio", arrOddEven[i]);
+			
+			oddEvenList.add(dataMap);
+		}
+    	oddEvenMap.put("oddEvenList", oddEvenList);
+    	
 		boolean flag = false;
-//		int i = (Integer) baseDao.insert("sysmngMapper.insertOddEvenInfo", dto);
+		int i = (Integer) baseDao.insert("sysmngMapper.insertOddEvenInfo", oddEvenMap);
 		//2018.04.25 리턴값 버그로 true 처리
 //		if(i > 0) {
 		flag = true;
 //		}
 		return flag;
 	}
+	
+	/**
+	 * @description <div id=description><b>홀짝 비율 구하기</b></div >
+     *              <div id=detail>홀짝 비율을 구한다.</div >
+     * @param winDataList
+	 * @param ratioTitle
+	 * @return
+	 */
+	public String[] getOddEvenRatio(List<WinDataDto> winDataList, String[] ratioTitle){
+		String[] result = new String[ratioTitle.length];
+		int[] count = new int[ratioTitle.length];
+		
+		//비율의 누적횟수 초기화
+		for(int index = 0 ; index < count.length ; index++){
+			count[index] = 0;
+		}
+		
+		//해당비율 누적 구하기
+		for(WinDataDto winData : winDataList){
+			for(int index = 0 ; index < ratioTitle.length ; index++){
+				if(winData.getOdd_even().equals(ratioTitle[index])){
+					count[index] += 1;
+				}
+			}
+		}
+		
+		for(int index = 0 ; index < count.length ; index++){
+			result[index] = ""+LottoUtil.getRatio(count[index], winDataList.size());
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * 홀짝비율정보 삭제
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean deleteOddEvenInfo(OddEvenDto dto) {
+		
+		boolean flag = false;
+		int i = (Integer) baseDao.delete("sysmngMapper.deleteOddEvenInfo", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * 미출현구간대 정보 등록
+	 * 
+	 * @param winDataList
+	 * @return
+	 */
+	public boolean insertZeroRangeInfo(List<WinDataDto> winDataList) {
+		
+		ZeroRangeDto dto = new ZeroRangeDto();
+		
+		WinDataDto lastData = winDataList.get(winDataList.size()-1);
+		
+		int[] containGroupCnt = this.getZeroCntRangeData(lastData);
+		/** 숫자가 없는 자리 수의 개수 */
+		int zeroCnt = 0;
+		String zeroRange = "";
+		
+		//숫자가 포함되지 않은 자릿수의 개수를 구한다.
+		for (int index = 0; index < containGroupCnt.length; index++) {
 
+			if (containGroupCnt[index] == 0) {
+				zeroCnt++;
+
+				if (index == 0) {
+					zeroRange += "1~10";
+				} else if (index == 1) {
+					if (zeroRange.length() > 0) {
+						zeroRange += ", ";
+					}
+					zeroRange += "11~20";
+				} else if (index == 2) {
+					if (zeroRange.length() > 0) {
+						zeroRange += ", ";
+					}
+					zeroRange += "21~30";
+				} else if (index == 3) {
+					if (zeroRange.length() > 0) {
+						zeroRange += ", ";
+					}
+					zeroRange += "31~40";
+				} else if (index == 4) {
+					if (zeroRange.length() > 0) {
+						zeroRange += ", ";
+					}
+					zeroRange += "41~45";
+				}
+			}
+		}
+				
+		dto.setWin_count(lastData.getWin_count());
+		dto.setRange1(containGroupCnt[0]);
+		dto.setRange2(containGroupCnt[1]);
+		dto.setRange3(containGroupCnt[2]);
+		dto.setRange4(containGroupCnt[3]);
+		dto.setRange5(containGroupCnt[4]);
+		dto.setZero_cnt(zeroCnt);
+		dto.setZero_range(zeroRange);
+		
+		
+		boolean flag = false;
+		int i = (Integer) baseDao.insert("sysmngMapper.insertZeroRangeInfo", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+		flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * 미출현 번호대 구간 분석자료 가져오기
+	 * 2018.12.15
+	 * 
+	 * @param lastData
+	 * @return
+	 */
+	public int[] getZeroCntRangeData(WinDataDto lastData) {
+		int[] numbers = LottoUtil.getNumbers(lastData);
+		
+		/** 각 자리의 포함개수 */
+		int[] containGroupCnt = {0,0,0,0,0};
+		
+		//각 자리의 포함개수를 구한다.
+		for(int index = 0 ; index < numbers.length ; index++){
+			int mok = numbers[index]/10;
+			/*
+			 * 10의자리수는 작은 자리 수로 설정한다.
+			 * 10 : 1의 자리
+			 * 20 : 10의 자리
+			 * 30 : 20의 자리
+			 * 40 : 30의 자리
+			 */
+			if(mok > 0 && (numbers[index] % 10 == 0)){
+				mok -= 1;
+			}
+			containGroupCnt[mok] = containGroupCnt[mok] + 1;
+		}
+		
+		return containGroupCnt;
+	}
+
+	/**
+	 * 미출현구간대 정보 삭제
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean deleteZeroRangeInfo(ZeroRangeDto dto) {
+		
+		boolean flag = false;
+		int i = (Integer) baseDao.delete("sysmngMapper.deleteZeroRangeInfo", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
 	/**
 	 * 권한코드 목록 조회
 	 * 

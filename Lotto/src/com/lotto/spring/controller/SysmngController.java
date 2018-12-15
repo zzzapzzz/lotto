@@ -29,10 +29,18 @@ import com.lotto.common.WebUtil;
 import com.lotto.spring.core.DefaultSMController;
 import com.lotto.spring.domain.dao.SystemSession;
 import com.lotto.spring.domain.dao.UserSession;
+import com.lotto.spring.domain.dto.CountSumDto;
+import com.lotto.spring.domain.dto.EndNumDto;
+import com.lotto.spring.domain.dto.ExcludeDto;
+import com.lotto.spring.domain.dto.LowHighDto;
+import com.lotto.spring.domain.dto.MCNumDto;
 import com.lotto.spring.domain.dto.MenuInfoDto;
+import com.lotto.spring.domain.dto.OddEvenDto;
 import com.lotto.spring.domain.dto.TaskInfoDto;
+import com.lotto.spring.domain.dto.TotalDto;
 import com.lotto.spring.domain.dto.UserInfoDto;
 import com.lotto.spring.domain.dto.WinDataDto;
+import com.lotto.spring.domain.dto.ZeroRangeDto;
 import com.lotto.spring.service.ExcelService;
 import com.lotto.spring.service.SysmngService;
 
@@ -605,7 +613,7 @@ public class SysmngController extends DefaultSMController {
 		
 		HttpSession session = request.getSession();
 		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
-		String userIp = WebUtil.getUser_IP(request, response);
+//		String userIp = WebUtil.getUser_IP(request, response);
 		
 		JSONObject jsonObj = new JSONObject();
 		
@@ -636,7 +644,83 @@ public class SysmngController extends DefaultSMController {
 	    				Map map = new HashMap();
 	    				map.put("list", list);
 	    				
+	    				// 기존정보 삭제
+	    				log.info("[" + loginUserNo + "]\t기존정보 삭제");
+	    				log.info("[" + loginUserNo + "]\t\t당첨번호정보 전체 삭제");
+	    				sysmngService.deleteWinData(new WinDataDto());
+	    				
+	    				log.info("[" + loginUserNo + "]\t\t회차합정보 전체 삭제");
+	    				sysmngService.deleteCountSumInfo(new CountSumDto());
+	    				
+	    				log.info("[" + loginUserNo + "]\t\t제외수정보 전체 삭제");
+	    				sysmngService.deleteExcludeInfo(new ExcludeDto());
+	    				
+	    				log.info("[" + loginUserNo + "]\t\t총합정보 전체 삭제");
+	    				sysmngService.deleteTotalInfo(new TotalDto());
+	    				
+	    				log.info("[" + loginUserNo + "]\t\t끝수합정보 전체 삭제");
+	    				sysmngService.deleteEndNumInfo(new EndNumDto());
+	    				
+	    				log.info("[" + loginUserNo + "]\t\t궁합수정보 전체 삭제");
+	    				sysmngService.deleteMCNumInfo(new MCNumDto());
+	    				
+	    				log.info("[" + loginUserNo + "]\t\t저고비율정보 전체 삭제");
+	    				sysmngService.deleteLowHighInfo(new LowHighDto());
+	    				
+	    				log.info("[" + loginUserNo + "]\t\t홀짝비율정보 전체 삭제");
+	    				sysmngService.deleteOddEvenInfo(new OddEvenDto());
+	    				
+	    				log.info("[" + loginUserNo + "]\t\t미출현구간대 정보 전체 삭제");
+	    				sysmngService.deleteZeroRangeInfo(new ZeroRangeDto());
+	    				
+	    				
+	    				log.info("[" + loginUserNo + "]\t당첨번호 목록 등록");
 	    				sysmngService.insertWinDataList(map);
+	    				
+	    				// 당첨번호 전체 목록 오름차순 조회
+	    				log.info("[" + loginUserNo + "]\t당첨번호 전체 목록 오름차순 조회");
+	    				WinDataDto winDataDto = new WinDataDto();
+	    				winDataDto.setSord("ASC");
+	    				List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+	    				List<WinDataDto> procWinDataList = new ArrayList<WinDataDto>(); 
+	    				
+	    				
+	    				// 부가정보 일괄 등록
+	    				log.info("[" + loginUserNo + "]\t부가정보 일괄 등록");
+	    				
+	    				for (int i = 0; i < winDataList.size(); i++) {
+	    					log.info("[" + loginUserNo + "]\t\t" + (i+1) + "회차 등록 처리");
+	    					
+	    					procWinDataList.add(winDataList.get(i));
+
+	    					// 저고비율정보 등록
+	    					sysmngService.insertLowHighInfo(procWinDataList);
+	    					
+	    					// 홀짝비율정보 등록
+	    					sysmngService.insertOddEvenInfo(procWinDataList);
+	    					
+	    					// 총합정보 등록
+		    				sysmngService.insertTotalInfo(procWinDataList);
+		    				
+		    				// 끝수합정보 등록
+		    				sysmngService.insertEndNumInfo(procWinDataList);
+		    				
+		    				if (i >= 10) {
+		    					// 회차합정보 등록
+		    					// 10회차합부터 처리되므로 10회차 이전 데이터는 처리하지 않음.
+		    					sysmngService.insertCountSumInfo(procWinDataList);
+		    					
+		    					// 제외수정보 등록
+		    					// 이전 데이터를 비교해야 하므로, 11회차부터 등록 처리함.
+		    					sysmngService.insertExcludeInfo(procWinDataList);
+		    				}
+		    				
+		    				// 궁합수정보 등록
+		    				sysmngService.insertMCNumInfo(procWinDataList);		    				
+		    				
+		    				//미출현구간대 정보 등록
+		    				sysmngService.insertZeroRangeInfo(procWinDataList);
+						}
 	    				
 	    				log.info("[" + loginUserNo + "]\t모든 데이터가 업로드 되었습니다.");
 	    				jsonObj.put("status", "success");
@@ -742,27 +826,12 @@ public class SysmngController extends DefaultSMController {
 			dto.setAc(iAc);							//AC
 			
 			// 당첨번호 등록
-			boolean result = sysmngService.insertWinData(dto);
+			sysmngService.insertWinData(dto);
 			
 			// 당첨번호 전체 목록 오름차순 조회
 			WinDataDto winDataDto = new WinDataDto();
 			winDataDto.setSord("ASC");
 			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
-			
-			// 회차합정보 등록
-			sysmngService.insertCountSumInfo(winDataList);
-
-			// 제외수정보 등록
-			sysmngService.insertExcludeInfo(winDataList);
-			
-			// 총합정보 등록
-			sysmngService.insertTotalInfo(winDataList);
-			
-			// 끝수합정보 등록
-			sysmngService.insertEndNumInfo(winDataList);
-			
-			// 궁합수정보 등록
-			sysmngService.insertMCNumInfo(winDataList);
 			
 			// 저고비율정보 등록
 			sysmngService.insertLowHighInfo(winDataList);
@@ -770,8 +839,23 @@ public class SysmngController extends DefaultSMController {
 			// 홀수짝수비율정보 등록
 			sysmngService.insertOddEvenInfo(winDataList);
 			
+			// 총합정보 등록
+			sysmngService.insertTotalInfo(winDataList);
 			
-			// 미출현번호대 구간정보 등록
+			// 끝수합정보 등록
+			sysmngService.insertEndNumInfo(winDataList);
+			
+			// 회차합정보 등록
+			sysmngService.insertCountSumInfo(winDataList);
+			
+			// 제외수정보 등록
+			sysmngService.insertExcludeInfo(winDataList);
+			
+			// 궁합수정보 등록
+			sysmngService.insertMCNumInfo(winDataList);
+			
+			//미출현번호대 구간정보 등록
+			sysmngService.insertZeroRangeInfo(winDataList);
 			
 			jsonObj.put("status", "success");
 			jsonObj.put("msg", "등록했습니다.");
@@ -1002,6 +1086,12 @@ public class SysmngController extends DefaultSMController {
 			log.info("["+loginUserId+"][C] 예상번호관리 화면 호출(ajax)");
 			
 			setModelMap(modelMap, request);
+			
+			// 당첨번호 전체 목록 오름차순 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("DESC");
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+						
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ExptDataMain");
 			modelMap.addAttribute("isAjax", "Y");
