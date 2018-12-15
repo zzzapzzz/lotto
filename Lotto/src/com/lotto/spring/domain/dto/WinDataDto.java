@@ -33,6 +33,10 @@ public class WinDataDto extends DefaultDto{
 	private String odd_even;
 	/** 산술적복잡도(AC) */
 	private int ac;
+	/** 등록일자 */
+	private String cr_dt;
+	/** 수정일자 */
+	private String up_dt;
 	
 	public int getWin_count() {
 		return win_count;
@@ -111,6 +115,18 @@ public class WinDataDto extends DefaultDto{
 	}
 	public void setAc(int ac) {
 		this.ac = ac;
+	}
+	public String getCr_dt() {
+		return cr_dt;
+	}
+	public void setCr_dt(String cr_dt) {
+		this.cr_dt = cr_dt;
+	}
+	public String getUp_dt() {
+		return up_dt;
+	}
+	public void setUp_dt(String up_dt) {
+		this.up_dt = up_dt;
 	}
 	
 }

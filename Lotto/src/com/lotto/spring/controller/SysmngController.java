@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1086,11 +1088,45 @@ public class SysmngController extends DefaultSMController {
 			log.info("["+loginUserId+"][C] 예상번호관리 화면 호출(ajax)");
 			
 			setModelMap(modelMap, request);
-			
-			// 당첨번호 전체 목록 오름차순 조회
+
+			// 당첨번호 전체 목록 조회
 			WinDataDto winDataDto = new WinDataDto();
 			winDataDto.setSord("DESC");
 			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+
+			
+			// 다음 발표일자
+			Calendar calendar = Calendar.getInstance();
+			int year = 0;
+			int month = 0;
+			int day = 0;
+			
+			Date today = calendar.getTime();
+			if(today.getDay() == 6){
+				// 오늘이 토요일이라면
+				year = today.getYear();
+				month = today.getMonth()+1;
+				day = today.getDate();
+			} else {
+				// 오늘 이후의 가장빠른 토요일 날짜 구하기
+				calendar.add(Calendar.DAY_OF_MONTH, 1);    //1일 후
+				for (int i = 0; i < calendar.DAY_OF_WEEK; i++) {
+					Date date = calendar.getTime();
+//				System.out.println(date.getDay());
+//				System.out.println(date.getMonth()+1);
+//				System.out.println(date.getDate());
+					year = date.getYear();
+					month = date.getMonth()+1;
+					day = date.getDate();
+					if(date.getDay() == 6){
+						break;
+					}
+					calendar.add(Calendar.DAY_OF_MONTH, 1);    //1일 후
+				}
+			}
+			
+			
+			
 						
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ExptDataMain");
