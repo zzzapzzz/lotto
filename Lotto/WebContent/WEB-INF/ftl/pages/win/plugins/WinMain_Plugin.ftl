@@ -72,7 +72,7 @@
 			        	}
 			        	
 			        	$("#win_data_title").html("");
-			        	$("#win_data_title").append('로또 ' + result.data.win_count + '회차 당첨번호');
+			        	$("#win_data_title").append('로또 <font color="red"><b>' + result.data.win_count + '회</b></font>차 당첨번호');
 			        	
 			        	$("#win_numbers").html("");
 			        	$("#win_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + result.data.num1 +'.png" alt="' + result.data.num1 + '"/>');
@@ -89,8 +89,17 @@
 			        	$("#total").html(result.data.total);
 			        	$("#sum_end_num").html(result.data.sum_end_num);
 			        	$("#ac").html(result.data.ac);
+
+						$("#count_sum").html(result.countSumInfo.count_sum);
+			        	$("#cont_cnt").html(result.countSumInfo.cont_cnt);
+			        	$("#not_cont_cnt").html(result.countSumInfo.not_cont_cnt);
+			        	
+			        	$("#mcMatchedData").html(result.mcMatchedData);
+			        	
+			        	$("#zeroRange").html(result.zeroRange);
+			        				        	
 					}
 				});
 			}
-
+			
 		</script>

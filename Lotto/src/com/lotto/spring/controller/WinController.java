@@ -3,6 +3,7 @@ package com.lotto.spring.controller;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -17,10 +18,12 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
-import com.lotto.common.LottoUtil;
 import com.lotto.spring.core.DefaultSMController;
 import com.lotto.spring.domain.dao.UserSession;
+import com.lotto.spring.domain.dto.CountSumDto;
+import com.lotto.spring.domain.dto.MCNumDto;
 import com.lotto.spring.domain.dto.WinDataDto;
+import com.lotto.spring.domain.dto.ZeroRangeDto;
 import com.lotto.spring.service.SysmngService;
 
 import net.sf.json.JSONObject;
@@ -148,7 +151,7 @@ public class WinController extends DefaultSMController {
 	 * @throws IOException
 	 */
 	@RequestMapping("/win/getWinData")
-	public void insertWinData(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws IOException {
+	public void getWinData(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws IOException {
 		
 		HttpSession session = request.getSession();
 	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
@@ -159,9 +162,57 @@ public class WinController extends DefaultSMController {
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 당첨번호 조회");
 			
+			// 당첨번호정보 조회
 			WinDataDto winData = sysmngService.getWinData(dto);
 			
+			// 회차합 조회
+			CountSumDto countSumInfo = sysmngService.getCountSumInfo(dto);
+			
+			// 궁합수 조회
+			List<MCNumDto> mcNumList = sysmngService.getMcNumList(dto);
+			String mcMatchedData = sysmngService.getMcMatchedData(winData, mcNumList);
+			
+			// 미출현번호대 조회
+			ZeroRangeDto zeroRangeInfo = sysmngService.getZeroRangeInfo(dto);
+			
 			jsonObj.put("data", winData);
+			jsonObj.put("countSumInfo", countSumInfo);
+			jsonObj.put("mcMatchedData", mcMatchedData);
+			jsonObj.put("zeroRange", zeroRangeInfo.getZero_range());
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+        
+	}
+	
+	/**
+	 * 회차합 조회
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/win/getCountSumInfo")
+	public void getCountSumInfo(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 회차합 조회");
+			
+			CountSumDto countSumData = sysmngService.getCountSumInfo(dto);
+			
+			jsonObj.put("data", countSumData);
 			
 		} else {
 			jsonObj.put("status", "usernotfound");

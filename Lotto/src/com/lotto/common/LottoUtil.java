@@ -2,7 +2,9 @@ package com.lotto.common;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -203,4 +205,70 @@ public final class LottoUtil {
 		
 		return ac;
 	}
+	
+	/**
+	 * @description <div id=description><b>마지막 입력된 당첨번호의 날짜 구하기</b></div >
+	 *              <div id=detail>마지막 입력된 당첨번호의 날짜(Calendar)를 구한다.</div >
+	 * @param lastData
+	 * @return
+	 */
+	public static Calendar getLastDataCalendar(WinDataDto lastData){
+		
+		String lastCrDt = lastData.getCr_dt();
+		
+		Calendar lastCrDtCal = Calendar.getInstance();
+		lastCrDtCal.set(Calendar.YEAR, Integer.parseInt(lastCrDt.substring(0, 4)));
+		lastCrDtCal.set(Calendar.MONTH, Integer.parseInt(lastCrDt.substring(4, 6)) - 1);
+		lastCrDtCal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(lastCrDt.substring(6, 8)));
+		lastCrDtCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(lastCrDt.substring(8, 10)));
+		lastCrDtCal.set(Calendar.MINUTE, Integer.parseInt(lastCrDt.substring(10, 12)));
+		lastCrDtCal.set(Calendar.SECOND, Integer.parseInt(lastCrDt.substring(12, 14)));
+		
+		return lastCrDtCal;
+	}
+	
+	/**
+	 * @description <div id=description><b>다음 회차 날짜 구하기</b></div >
+	 *              <div id=detail>다음 로또 당첨번호 발표 날짜(Calendar)를 구한다.<br>
+	 *              마감은 토요일 20시 설정
+	 *              </div >
+	 * @return
+	 */
+	public static Calendar getNextAccounceCalendar(){
+		
+		Calendar nextAnnounceCal = Calendar.getInstance();
+
+		// 현재 Calendar
+		Calendar todayCal = Calendar.getInstance();
+					
+		// 오늘이 토요일인가?
+		if (7 == todayCal.get(Calendar.DAY_OF_WEEK)
+				&& 20 > todayCal.get(Calendar.HOUR)
+				) {
+			// 조회시간이 토요일, 마감시간 이전이면 당일날 마감일시로 설정
+			
+			nextAnnounceCal.set(Calendar.HOUR_OF_DAY, 20);
+			nextAnnounceCal.set(Calendar.MINUTE, 0);
+			nextAnnounceCal.set(Calendar.SECOND, 0);
+		} else {
+			// 조회시간이 토요일이 아니라면 다음 토요일로 설정
+			
+			nextAnnounceCal.add(Calendar.DAY_OF_MONTH, 1);    //1일 후
+			for (int i = 0; i < nextAnnounceCal.DAY_OF_WEEK; i++) {
+				Date date = nextAnnounceCal.getTime();
+				if(date.getDay() == 6){
+					break;
+				}
+				nextAnnounceCal.add(Calendar.DAY_OF_MONTH, 1);    //1일 후
+			}
+		}
+		
+		// 마감시간 설정 (20시)
+		nextAnnounceCal.set(Calendar.HOUR_OF_DAY, 20);
+		nextAnnounceCal.set(Calendar.MINUTE, 0);
+		nextAnnounceCal.set(Calendar.SECOND, 0);
+		
+		return nextAnnounceCal;
+	}
+	
 }

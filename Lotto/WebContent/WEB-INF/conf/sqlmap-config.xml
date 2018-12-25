@@ -21,5 +21,6 @@
 		<typeAlias alias="lowHighDto" type="com.lotto.spring.domain.dto.LowHighDto"/>
 		<typeAlias alias="oddEvenDto" type="com.lotto.spring.domain.dto.OddEvenDto"/>
 		<typeAlias alias="zeroRangeDto" type="com.lotto.spring.domain.dto.ZeroRangeDto"/>
+		<typeAlias alias="exDataDto" type="com.lotto.spring.domain.dto.ExDataDto"/>
 	</typeAliases> 
 </configuration>

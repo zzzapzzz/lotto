@@ -204,6 +204,8 @@
 				, LOW_HIGH
 				, ODD_EVEN
 				, AC
+				, DATE_FORMAT(CR_DT, '%Y%m%d%H%i%s') AS CR_DT
+				, DATE_FORMAT(UP_DT, '%Y%m%d%H%i%s') AS UP_DT
 				, @rownum := @rownum+1 AS row_num
 			FROM TB_LOTTO_INFO, (SELECT @rownum :=0) AS R		
 			WHERE 1=1
@@ -340,6 +342,15 @@
 		</if>
 	</delete>
 	
+	<!-- 제외수정보 조회 -->
+	<select id="getExcludeInfo" parameterType="exDataDto" resultType="excludeDto">
+		/* sysmng.getExcludeInfo */
+		SELECT
+			  EX_COUNT,NUM1_RULE,NUM2_RULE,NUM3_RULE,NUM4_RULE,NUM5_RULE,NUM6_RULE,EXCLUDE_NUM
+		FROM TB_EXCLUDE_INFO
+		WHERE EX_COUNT = #{ex_count}
+	</select>
+	
 	<!-- 총합정보 등록 -->
 	<insert id="insertTotalInfo" parameterType="totalDto">
 		/* sysmng.insertTotalInfo */
@@ -367,6 +378,18 @@
 		</if>
 	</delete>
 	
+	<!-- 총합정보 조회 -->
+	<select id="getTotalInfo" parameterType="winDataDto" resultType="totalDto">
+		/* sysmng.getTotalInfo */
+		SELECT
+			  WIN_COUNT
+			, LOW_TOTAL
+			, HIGH_TOTAL
+			, TOTAL_RANGE
+		FROM TB_TOTAL_INFO
+		WHERE WIN_COUNT = #{win_count}
+	</select>
+	
 	<!-- 끝수합정보 등록 -->
 	<insert id="insertEndNumInfo" parameterType="endNumDto">
 		/* sysmng.insertEndNumInfo */
@@ -393,6 +416,18 @@
 		AND WIN_COUNT = #{win_count}
 		</if>
 	</delete>
+	
+	<!-- 끝수합정보 조회 -->
+	<select id="getEndNumInfo" parameterType="winDataDto" resultType="endNumDto">
+		/* sysmng.getEndNumInfo */
+		SELECT
+			  WIN_COUNT
+			, LOW_ENDNUM
+			, HIGH_ENDNUM
+			, ENDNUM_RANGE
+		FROM TB_ENDNUM_INFO
+		WHERE WIN_COUNT = #{win_count}
+	</select>
 	
 	<!-- 궁합수정보 등록 -->
 	<insert id="insertMCNumInfo" parameterType="java.util.Map">
@@ -422,6 +457,19 @@
 		AND WIN_COUNT = #{win_count}
 		</if>
 	</delete>
+	
+	<!-- 궁합수 목록 조회 -->
+	<select id="getMcNumList" parameterType="winDataDto" resultType="mcNumDto">		
+		/* sysmng.getMcNumList */
+		SELECT 
+			  WIN_COUNT
+			, NUM
+			, MC_NUM
+			, NOT_MC_NUM
+		FROM TB_MCNUM_INFO
+		WHERE WIN_COUNT = #{win_count}
+		ORDER BY NUM		
+	</select>
 	
 	<!-- 저고비율정보 등록 -->
 	<insert id="insertLowHighInfo" parameterType="java.util.Map">
@@ -511,6 +559,77 @@
 		AND WIN_COUNT = #{win_count}
 		</if>
 	</delete>
+	
+	<!-- 미출현구간대 정보 조회 -->
+	<select id="getZeroRangeInfo" parameterType="winDataDto" resultType="zeroRangeDto">		
+		/* sysmng.getZeroRangeInfo */
+		SELECT 
+			  WIN_COUNT
+			, RANGE1
+			, RANGE2
+			, RANGE3
+			, RANGE4
+			, RANGE5
+			, ZERO_CNT
+			, ZERO_RANGE
+		FROM TB_ZERO_RANGE_INFO
+		WHERE WIN_COUNT = #{win_count}		
+	</select>
+	
+	<!-- 예상번호 목록 조회 -->
+	<select id="getExDataList" parameterType="exDataDto" resultType="exDataDto">
+		/* sysmng.getExDataList */
+		SELECT *
+		FROM
+		(
+			SELECT 
+				  EX_COUNT
+				, NUM1
+				, NUM2
+				, NUM3
+				, NUM4
+				, NUM5
+				, NUM6
+				, TOTAL
+				, SUM_END_NUM
+				, LOW_HIGH
+				, ODD_EVEN
+				, AC
+				, @rownum := @rownum+1 AS row_num
+			FROM TB_EXPT_NUM, (SELECT @rownum :=0) AS R		
+			WHERE 1=1
+			AND EX_COUNT = #{ex_count}
+			ORDER BY 
+			<choose>
+    			<when test='sidx!=null and sidx != ""'>
+    				${sidx} 
+			    </when>
+			    <otherwise>
+			    	SEQ 
+			    </otherwise>
+  			</choose>
+			<choose>
+    			<when test='sord != null and sord != ""'>
+    				${sord} 
+			    </when>
+			    <otherwise>
+			    	ASC 
+			    </otherwise>
+  			</choose>
+		) AA
+		<if test='startNum != "" and endNum != ""'>
+		WHERE row_num BETWEEN #{startNum} AND #{endNum}
+		</if>
+	</select>
+	
+	<!-- 예상번호 목록 건수 조회 -->
+	<select id="getExDataListCnt" parameterType="exDataDto" resultType="Integer">
+		/* sysmng.getExDataListCnt */
+		SELECT COUNT(*)				
+		FROM TB_EXPT_NUM
+		WHERE 1=1
+		AND EX_COUNT = #{ex_count}
+	</select>
 	
 	<!-- 권한코드 목록 조회 -->
 	<select id="getAuthCodeList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">		
@@ -709,4 +828,40 @@
 		
 		</foreach>	
 	</insert>
+	
+	<!-- 최근 당첨회차 저고비율 조회 -->
+	<select id="getLowHighDataList" parameterType="winDataDto" resultType="lowHighDto">		
+		/* sysmng.getLowHighDataList */
+		SELECT 
+			  WIN_COUNT
+			, LOWHIGH_TYPE
+			, RATIO
+		FROM TB_LOWHIGH_INFO
+		WHERE WIN_COUNT = #{win_count}		
+	</select>
+	
+	<!-- 최근 당첨회차 홀짝비율 조회 -->
+	<select id="getOddEvenDataList" parameterType="winDataDto" resultType="oddEvenDto">		
+		/* sysmng.getOddEvenDataList */
+		SELECT 
+			  WIN_COUNT
+			, ODDEVEN_TYPE
+			, RATIO
+		FROM TB_ODDEVEN_INFO
+		WHERE WIN_COUNT = #{win_count}		
+	</select>
+	
+	<!-- 회차합 조회 -->
+	<select id="getCountSumInfo" parameterType="winDataDto" resultType="countSumDto">		
+		/* sysmng.getCountSumInfo */
+		SELECT 
+			  WIN_COUNT
+			, COUNT_SUM
+			, CONT_CNT
+			, NOT_CONT_CNT
+			, CONT_NUM
+			, NOT_CONT_NUM
+		FROM TB_COUNT_SUM_INFO
+		WHERE WIN_COUNT = #{win_count}		
+	</select>
 </mapper>

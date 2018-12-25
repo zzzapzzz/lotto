@@ -13,6 +13,7 @@ import com.chello.base.spring.core.DefaultService;
 import com.lotto.common.LottoUtil;
 import com.lotto.spring.domain.dto.CountSumDto;
 import com.lotto.spring.domain.dto.EndNumDto;
+import com.lotto.spring.domain.dto.ExDataDto;
 import com.lotto.spring.domain.dto.ExcludeDto;
 import com.lotto.spring.domain.dto.LowHighDto;
 import com.lotto.spring.domain.dto.MCNumDto;
@@ -347,6 +348,15 @@ public class SysmngService extends DefaultService {
 		dto.setNot_cont_cnt(not_cont_cnt);
 		dto.setCont_num(cont_num);
 		dto.setNot_cont_num(not_cont_num);
+		
+		log.info("### 회차합 설정정보 ###");
+		log.info("wincount = " + dto.getWin_count());
+		log.info("lastContainCnt = " + dto.getCount_sum());
+		log.info("cont_cnt = " + dto.getCont_cnt());
+		log.info("not_cont_cnt = " + dto.getNot_cont_cnt());
+		log.info("cont_num = " + dto.getCont_num());
+		log.info("not_cont_num = " + dto.getNot_cont_num());
+		
 		return dto;
 	}
 	
@@ -696,6 +706,7 @@ public class SysmngService extends DefaultService {
 	 * @param winDataList 
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public int[] getLowTotalHighTotal(List<WinDataDto> winDataList){
 		int[] data = {0,0};
 		int totalCnt = winDataList.size();	//전체횟수
@@ -1380,6 +1391,226 @@ public class SysmngService extends DefaultService {
 		return flag;
 	}
 	
+	/**
+	 * 미출현구간대 정보 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public ZeroRangeDto getZeroRangeInfo(WinDataDto dto) {
+		return (ZeroRangeDto) baseDao.getSingleRow("sysmngMapper.getZeroRangeInfo", dto);
+	}
+	
+	/**
+	 * 예상번호 목록 조회 (Dto)
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<ExDataDto> getExDataList(ExDataDto dto) {
+		return (ArrayList<ExDataDto>) baseDao.getList("sysmngMapper.getExDataList", dto);
+	}
+	
+	/**
+	 * 예상번호 목록 건수 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public int getExDataListCnt(ExDataDto dto) {
+		return (Integer) baseDao.getSingleRow("sysmngMapper.getExDataListCnt", dto);
+	}
+	
+	/**
+	 * 최근 당첨회차 저고비율 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<LowHighDto> getLowHighDataList(WinDataDto dto) {
+		return (ArrayList<LowHighDto>) baseDao.getList("sysmngMapper.getLowHighDataList", dto);
+	}
+	
+	/**
+	 * 최근 당첨회차 홀짝비율 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<OddEvenDto> getOddEvenDataList(WinDataDto dto) {
+		return (ArrayList<OddEvenDto>) baseDao.getList("sysmngMapper.getOddEvenDataList", dto);
+	}
+	
+	/**
+	 * 회차합 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public CountSumDto getCountSumInfo(WinDataDto dto) {
+		return (CountSumDto) baseDao.getSingleRow("sysmngMapper.getCountSumInfo", dto);
+	}
+	
+	/**
+	 * @description <div id=description><b>10회차합 구하기</b></div >
+     *              <div id=detail>지난 10회동안 출현했던 번호들을 구한다.</div >
+     * @param winDataList
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Integer> getContain10List(List<WinDataDto> winDataList) {
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		List<Integer> containList = new ArrayList<Integer>();
+		
+		for(int index = winDataList.size() - 10 ; index < winDataList.size() ; index++){
+			int[] numbers = LottoUtil.getNumbers(winDataList.get(index));
+			
+			for(int number : numbers){
+				if(!map.containsKey(number)){
+					containList.add(number);
+					map.put(number, number);
+				}
+			}
+		}
+		
+		return (List<Integer>) LottoUtil.dataSort(containList);
+	}
+	
+	/**
+	 * @description <div id=description><b>10회차동안 출현하지 않은 번호 구하기</b></div >
+     *              <div id=detail>10회차동안 출현하지 않은 번호들을 구한다.</div >
+     * @param contain10List
+	 * @return
+	 */
+	public List<Integer> getNotContain10List(List<Integer> contain10List){
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		List<Integer> notContainList = new ArrayList<Integer>();
+		
+		for(int number : contain10List){
+			map.put(number, number);
+		}
+		
+		for(int number = 1 ; number <= 45 ; number++){
+			if(!map.containsKey(number)){
+				notContainList.add(number);
+			}
+		}
+		
+		return notContainList;
+	}
+	
+	/**
+	 * 총합정보 조회
+	 * 
+	 * @param lastData
+	 * @return
+	 */
+	public TotalDto getTotalInfo(WinDataDto lastData) {
+		return (TotalDto) baseDao.getSingleRow("sysmngMapper.getTotalInfo", lastData);
+	}
+	
+	/**
+	 * 끝수합정보 조회
+	 * 
+	 * @param lastData
+	 * @return
+	 */
+	public EndNumDto getEndNumInfo(WinDataDto lastData) {
+		return (EndNumDto) baseDao.getSingleRow("sysmngMapper.getEndNumInfo", lastData);
+	}
+	
+	/**
+	 * 제외수정보 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public ExcludeDto getExcludeInfo(ExDataDto dto) {
+		return (ExcludeDto) baseDao.getSingleRow("sysmngMapper.getExcludeInfo", dto);
+	}
+	
+	/**
+	 * 궁합수 목록 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<MCNumDto> getMcNumList(WinDataDto dto) {
+		return (ArrayList<MCNumDto>) baseDao.getList("sysmngMapper.getMcNumList", dto);
+	}
+	
+	/**
+	 * 궁합수 매칭정보 확인
+	 * 
+	 * @param winData 당첨번호 
+	 * @param mcNumList 궁합수 목록
+	 * @return 궁합수 매칭정보
+	 */
+	public String getMcMatchedData(WinDataDto winData, List<MCNumDto> mcNumList) {
+		String result = "";
+		
+		//당첨번호 설정
+		int[] numbers = LottoUtil.getNumbers(winData);
+		int matchedCount = 0;	//맞은 궁합수 개수
+		
+		Map<Integer, ArrayList<Integer>> mcMap = this.getMcNumberMap(mcNumList);
+		
+		for (int i = 0; i < numbers.length; i++) {
+			ArrayList<Integer> mcList = mcMap.get(numbers[i]);
+			
+			//궁합수 출력
+			for (int j = 0; j < numbers.length; j++) {
+				if (i == j) {
+					continue;
+				} else {
+					//궁합수에 당첨번호가 포함되어 있을 경우
+					if (mcList.contains(numbers[j])) {
+						matchedCount++;	//맞은 궁함수 개수 증가
+						//출력결과 설정
+						if (!"".equals(result)) {
+							result += ", ";
+						}
+						result += numbers[i] + "-" + numbers[j];
+					}
+				}
+			}
+		}
+		
+		if (matchedCount > 0) {
+			result = matchedCount+"개 : " + result; 
+		}
+		return result;
+	}
+	
+	/**
+	 * 궁합수 Map 데이터 조회
+	 *  
+	 * @param mcNumList
+	 * @return
+	 */
+	private Map<Integer, ArrayList<Integer>> getMcNumberMap(List<MCNumDto> mcNumList) {
+		Map<Integer, ArrayList<Integer>> mcMap = new HashMap<Integer, ArrayList<Integer>>();
+		
+		for (int i = 1; i <= mcNumList.size(); i++) {
+			ArrayList<Integer> list = new ArrayList<Integer>();
+			
+			MCNumDto dto = mcNumList.get(i-1);
+			String mcNum = dto.getMc_num();
+			String[] arrMcNum = mcNum.split(",");
+			for (int j = 0; j < arrMcNum.length; j++) {
+				list.add(Integer.parseInt(arrMcNum[j]));
+			}
+			
+			mcMap.put(i, list);
+		}
+		
+		return mcMap;
+	}
+
 	/**
 	 * 권한코드 목록 조회
 	 * 

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -33,6 +34,7 @@ import com.lotto.spring.domain.dao.SystemSession;
 import com.lotto.spring.domain.dao.UserSession;
 import com.lotto.spring.domain.dto.CountSumDto;
 import com.lotto.spring.domain.dto.EndNumDto;
+import com.lotto.spring.domain.dto.ExDataDto;
 import com.lotto.spring.domain.dto.ExcludeDto;
 import com.lotto.spring.domain.dto.LowHighDto;
 import com.lotto.spring.domain.dto.MCNumDto;
@@ -543,7 +545,7 @@ public class SysmngController extends DefaultSMController {
 	 * @throws UnsupportedEncodingException
 	 */
 	@RequestMapping("/sysmng/writeWinDataajax")
-	public String writeWinData(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+	public String writeWinDataajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
 		
 		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
 		
@@ -1094,40 +1096,41 @@ public class SysmngController extends DefaultSMController {
 			winDataDto.setSord("DESC");
 			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
 
+			// 최근 당첨번호
+			WinDataDto lastData = winDataList.get(0);
+			int lastWinCount = lastData.getWin_count();
+					
+			// 최근 당첨번호 Calendar
+			Calendar lastCrDtCal = LottoUtil.getLastDataCalendar(lastData);
 			
-			// 다음 발표일자
-			Calendar calendar = Calendar.getInstance();
-			int year = 0;
-			int month = 0;
-			int day = 0;
+			// 다음 발표일자 Calendar (조회시간 기준)
+			Calendar nextAnnounceCal = LottoUtil.getNextAccounceCalendar();
+			Date date = nextAnnounceCal.getTime();             
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy년 MM월 dd일");
+			String nextAnnounceDate = sdf.format(date);  
+			modelMap.addAttribute("nextAnnounceDate", nextAnnounceDate);
 			
-			Date today = calendar.getTime();
-			if(today.getDay() == 6){
-				// 오늘이 토요일이라면
-				year = today.getYear();
-				month = today.getMonth()+1;
-				day = today.getDate();
-			} else {
-				// 오늘 이후의 가장빠른 토요일 날짜 구하기
-				calendar.add(Calendar.DAY_OF_MONTH, 1);    //1일 후
-				for (int i = 0; i < calendar.DAY_OF_WEEK; i++) {
-					Date date = calendar.getTime();
-//				System.out.println(date.getDay());
-//				System.out.println(date.getMonth()+1);
-//				System.out.println(date.getDate());
-					year = date.getYear();
-					month = date.getMonth()+1;
-					day = date.getDate();
-					if(date.getDay() == 6){
-						break;
-					}
-					calendar.add(Calendar.DAY_OF_MONTH, 1);    //1일 후
+			// 두 날짜 비교
+			long diffSec = (nextAnnounceCal.getTimeInMillis() - lastCrDtCal.getTimeInMillis()) / 1000;		
+			long diffDays = diffSec / (24*60*60);
+			
+			// 다음 예상번호
+			int nextWinCount = lastWinCount + ((int)diffDays / 7) + ((int)diffDays % 7 > 0 ? 1 : 0);
+//			System.out.println("다음 예상번호 : " + nextWinCount);
+			modelMap.addAttribute("nextWinCount", nextWinCount);		
+			
+			
+			// 미입력 회차 확인
+			if ((int)diffDays / 7 >= 1) {
+				if ((int)diffDays % 7 > 0	// 1의 경우 당일날짜일 수 있음.
+						|| (int)diffDays / 7 >= 2
+						) {
+//					System.out.println("미입력된 당첨번호가 존재합니다.");
+					modelMap.addAttribute("isUnregistered", "Y");
+					modelMap.addAttribute("unregisteredMsg", "미입력된 당첨번호가 존재합니다.");
+					modelMap.addAttribute("lastWinCount", lastWinCount);
 				}
 			}
-			
-			
-			
-						
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ExptDataMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -1169,6 +1172,371 @@ public class SysmngController extends DefaultSMController {
 			
 		}
 	}
+	
+	/**
+	 * 예상번호정보 목록 조회
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws SQLException
+	 */
+	@RequestMapping("/sysmng/getExDataList")
+	public void getExDataList(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute ExDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		//2016.05.23 cremazer
+  		//ORACLE 인 경우 대문자 설정
+  		if ("ORACLE".equals(systemInfo.getDatabase())) {
+  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+  		}
+  		
+		// 로그인 아이디
+		int loginUserNo = userInfo.getUser_no();
+		log.info("[" + loginUserNo + "][C] 예상번호정보 목록 조회");
+		String accessip = request.getRemoteHost();
+		
+		dto.setReg_user_no(loginUserNo);
+		dto.setAccess_ip(accessip);
+		
+		List<ExDataDto> exDataList = sysmngService.getExDataList(dto);
+		int exDataListCnt = sysmngService.getExDataListCnt(dto);
+
+		int total_pages = 0;
+		if( exDataListCnt > 0 ) {
+			total_pages = (int) Math.ceil((double)exDataListCnt/Double.parseDouble(dto.getRows()));
+		} else { 
+			total_pages = 0; 
+		}  
+		
+        //토탈 값 구하기 끝
+        // Content Page - File which will included in tiles definition
+ 
+		JSONObject json = new JSONObject();
+  
+//		JSONArray jsonArr = JSONArray.fromObject(userList);
+		
+
+		json.put("cnt", exDataList.size());
+		json.put("total", total_pages);
+		json.put("page", dto.getPage());
+		json.put("records", exDataListCnt);
+		json.put("rows", exDataList);		
+		json.put("status", "success");		
+		writeJSON(response, json); 
+	}
+	
+	/**
+	 * 예상번호 분석 화면 호출(ajax)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/analysisExDataajax")
+	public String analysisExDataajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses, @ModelAttribute ExDataDto dto) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			long loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 예상번호 분석 화면 호출(ajax)");
+			
+			setModelMap(modelMap, request);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("DESC");
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			// 최근 당첨번호
+			WinDataDto lastData = winDataList.get(0);
+			
+			// 예상회차 설정
+			modelMap.addAttribute("ex_count", dto.getEx_count());
+			modelMap.addAttribute("nextAnnounceDate", dto.getNextAnnounceDate());
+			
+			// 분석정보 설정
+			modelMap.addAttribute("last_count", lastData.getWin_count());
+			modelMap.addAttribute("last_lowhigh", lastData.getLow_high());			
+			modelMap.addAttribute("last_oddeven", lastData.getOdd_even());
+			
+			// 비율 타이틀 설정
+			modelMap.addAttribute("ratioTitle", LottoUtil.getRatioTitle());
+			
+			// 총합 정보 설정
+			TotalDto totalDto = sysmngService.getTotalInfo(lastData);
+			modelMap.addAttribute("total_range", totalDto.getTotal_range());
+			
+			// 끝수합 정보 설정
+			EndNumDto endNumDto = sysmngService.getEndNumInfo(lastData);
+			modelMap.addAttribute("endnum_range", endNumDto.getEndnum_range());
+			
+			//CurrMenuInfo overwrite
+			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/exptdatamng"));
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ExDataAnalysis");
+			modelMap.addAttribute("isAjax", "Y");
+			
+		} else {
+			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
+		}
+		return POPUP;
+	}
+	
+	/**
+	 * 예상번호 분석 화면 호출(plugin)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/analysisExDataplugin")
+	public String analysisExDataplugin(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			long loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 예상번호 분석 화면 호출(plugin)");
+			
+			setModelMap(modelMap, request);
+			
+			//CurrMenuInfo overwrite
+			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/exptdatamng"));
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/ExDataAnalysis_Plugin");
+			
+			return POPUP;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";
+			
+		}
+	}
+	
+	/**
+	 * 예상번호 30목록 조회
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws SQLException
+	 */
+	@RequestMapping("/sysmng/getExData30List")
+	public void getExData30List(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute ExDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		JSONObject json = new JSONObject();
+		
+		//2016.05.23 cremazer
+  		//ORACLE 인 경우 대문자 설정
+  		if ("ORACLE".equals(systemInfo.getDatabase())) {
+  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+  		}
+  		
+		// 로그인 아이디
+		int loginUserNo = userInfo.getUser_no();
+		log.info("[" + loginUserNo + "][C] 예상번호 30목록 조회");
+		String accessip = request.getRemoteHost();
+		
+		dto.setReg_user_no(loginUserNo);
+		dto.setAccess_ip(accessip);
+		
+		List<ExDataDto> exDataList = sysmngService.getExDataList(dto);
+		
+		// TODO 30목록 추출
+		
+		if (exDataList != null && exDataList.size() > 0) {
+			json.put("ex_numbers_cnt", exDataList.size());
+//			JSONArray jsonArr = JSONArray.fromObject(userList);
+			json.put("ex_numbers", exDataList);
+		} else {
+			json.put("ex_numbers_cnt", 0);
+		}
+		
+		json.put("status", "success");		
+		writeJSON(response, json); 
+	}
+	
+	/**
+	 * 최근 당첨회차 저고비율 조회
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/sysmng/getLowHighData")
+	public void getLowHighData(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 최근 당첨회차 저고비율 조회");
+			
+			// 최근 당첨회차 저고비율 조회
+			List<LowHighDto> lowHighDataList = sysmngService.getLowHighDataList(dto);
+			
+			jsonObj.put("lowHighDataList", lowHighDataList);
+			jsonObj.put("status", "success");
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+        
+	}
+	
+	/**
+	 * 최근 당첨회차 홀짝비율 조회
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/sysmng/getOddEvenData")
+	public void getOddEvenData(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 최근 당첨회차 홀짝비율 조회");
+			
+			// 최근 당첨회차 홀짝비율 조회
+			List<OddEvenDto> oddEvenDataList = sysmngService.getOddEvenDataList(dto);
+			
+			jsonObj.put("oddEvenDataList", oddEvenDataList);
+			jsonObj.put("status", "success");
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+        
+	}
+	
+	/**
+	 * 회차합 목록 조회
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/sysmng/getCountSumDataList")
+	public void getCountSumData(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 회차합 조회");
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			// 10회차 포함번호 목록 조회
+			List<Integer> contain10List = sysmngService.getContain10List(winDataList);
+			// 10회차 미포함번호 목록 조회
+			List<Integer> notContain10List = sysmngService.getNotContain10List(contain10List);
+			
+			jsonObj.put("contain10List", contain10List);
+			jsonObj.put("notContain10List", notContain10List);
+			jsonObj.put("status", "success");
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+        
+	}
+	
+	/**
+	 * 제외수 목록 조회
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/sysmng/getExcludeNumberList")
+	public void getExcludeNumberList(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute ExDataDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 제외수 목록 조회");
+			
+			List<Integer> excludeNumberList = new ArrayList<Integer>(); 
+			
+			ExcludeDto excludeDto = sysmngService.getExcludeInfo(dto);
+			String excludeNum = excludeDto.getExclude_num();
+			excludeNum = excludeNum.replaceAll(" ", "");
+			String[] arrExcludeNum = excludeNum.split(",");
+			int[] iArrExcludeNum = new int[arrExcludeNum.length];
+			for (int i = 0; i < arrExcludeNum.length; i++) {
+				iArrExcludeNum[i] = Integer.parseInt(arrExcludeNum[i]);
+			}
+			iArrExcludeNum = (int[]) LottoUtil.dataSort(iArrExcludeNum);
+			
+			for (int i = 0; i < iArrExcludeNum.length; i++) {
+				excludeNumberList.add(iArrExcludeNum[i]);
+			}
+			jsonObj.put("excludeNumberList", excludeNumberList);
+			jsonObj.put("status", "success");
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+        
+	}
+	
 	
 	/**
 	 * 서비스관리 화면 호출

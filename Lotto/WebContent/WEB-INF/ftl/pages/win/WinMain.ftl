@@ -34,7 +34,7 @@
 					
 					<!-- table1 -->
 					<div class="table-responsive">
-						<table class="table table-bordered" style="text-align: center; margin-left: auto; margin-right: auto;">
+						<table class="table table-bordered" style="font-size:15px; text-align: center; margin-left: auto; margin-right: auto;">
 							<thead>
 								<tr>
 									<th>저고비율</th>
@@ -51,6 +51,46 @@
 									<td><span id="total"></span></td>
 									<td><span id="sum_end_num"></span></td>
 									<td><span id="ac"></span></td>
+								</tr>
+							</tbody>
+						</table>
+						<table class="table table-bordered" style="text-align: center; margin-left: auto; margin-right: auto;">
+							<thead>
+								<tr>
+									<th>회차합</th>
+									<th>포함개수</th>
+									<th calspan="3">미포함개수</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><span id="count_sum"></span></td>
+									<td><span id="cont_cnt"></span></td>
+									<td calspan="3"><span id="not_cont_cnt"></span></td>
+								</tr>
+							</tbody>
+						</table>
+						<table class="table table-bordered" style="text-align: center; margin-left: auto; margin-right: auto;">
+							<thead>
+								<tr>
+									<th calspan="5">궁합수</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td calspan="5"><span id="mcMatchedData"></span></td>
+								</tr>
+							</tbody>
+						</table>
+						<table class="table table-bordered" style="text-align: center; margin-left: auto; margin-right: auto;">
+							<thead>
+								<tr>
+									<th calspan="5">미출현 번호대</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td calspan="5"><span id="zeroRange"></span></td>
 								</tr>
 							</tbody>
 						</table>
