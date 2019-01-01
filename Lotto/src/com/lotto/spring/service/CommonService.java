@@ -1,11 +1,9 @@
 package com.lotto.spring.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
-import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.chello.base.spring.core.DefaultService;
@@ -13,13 +11,7 @@ import com.chello.base.spring.core.DefaultService;
 @Service("commonService")
 public class CommonService extends DefaultService {
 
-	private Logger log = Logger.getLogger(this.getClass());
-	
-	public static HashMap<String, Object> INVENTORY;
-	private Object m_lock = new Object();
-	
-	public static HashMap<String, Object> ITEM_LIST;
-	private Object i_lock = new Object();
+//	private Logger log = Logger.getLogger(this.getClass());
 	
 	/**
 	 * 코드 목록 조회
@@ -27,6 +19,7 @@ public class CommonService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public ArrayList<CaseInsensitiveMap> getCodeList(Map map) {
 		return (ArrayList<CaseInsensitiveMap>) baseDao.getList("commonMapper.getCodeList", map);
 	}
@@ -38,6 +31,7 @@ public class CommonService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public CaseInsensitiveMap getLastLog(Map map) {
 		return (CaseInsensitiveMap) baseDao.getSingleRow("commonMapper.getLastLog", map);
 	}
@@ -49,6 +43,7 @@ public class CommonService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public boolean logInsert(Map map) {
 		boolean flag = false;
 		int i = (Integer) baseDao.insert("commonMapper.logInsert", map);

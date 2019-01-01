@@ -36,6 +36,7 @@ import com.lotto.spring.domain.dto.CountSumDto;
 import com.lotto.spring.domain.dto.EndNumDto;
 import com.lotto.spring.domain.dto.ExDataDto;
 import com.lotto.spring.domain.dto.ExcludeDto;
+import com.lotto.spring.domain.dto.ExptPtrnAnlyDto;
 import com.lotto.spring.domain.dto.LowHighDto;
 import com.lotto.spring.domain.dto.MCNumDto;
 import com.lotto.spring.domain.dto.MenuInfoDto;
@@ -43,9 +44,11 @@ import com.lotto.spring.domain.dto.OddEvenDto;
 import com.lotto.spring.domain.dto.TaskInfoDto;
 import com.lotto.spring.domain.dto.TotalDto;
 import com.lotto.spring.domain.dto.UserInfoDto;
+import com.lotto.spring.domain.dto.WinDataAnlyDto;
 import com.lotto.spring.domain.dto.WinDataDto;
 import com.lotto.spring.domain.dto.ZeroRangeDto;
 import com.lotto.spring.service.ExcelService;
+import com.lotto.spring.service.PatternAnalysisService;
 import com.lotto.spring.service.SysmngService;
 
 import net.sf.json.JSONArray;
@@ -60,6 +63,9 @@ public class SysmngController extends DefaultSMController {
 	
 	@Autowired(required = true)
 	private ExcelService excelService;
+	
+	@Autowired(required = true)
+	private PatternAnalysisService patternAnalysisService;
 	
 	private Logger log = Logger.getLogger(this.getClass());
 	
@@ -1227,6 +1233,51 @@ public class SysmngController extends DefaultSMController {
 		json.put("rows", exDataList);		
 		json.put("status", "success");		
 		writeJSON(response, json); 
+	}
+	
+	/**
+	 * 예상번호 추출
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws IOException
+	 */
+	@RequestMapping("/sysmng/extractExpectedNumber")
+	public void extractExpectedNumber(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute ExDataDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 예상번호 추출");
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			List<WinDataAnlyDto> winDataList = sysmngService.getWinDataAnlyList(winDataDto);
+						
+			// 예측패턴 조회
+			ExptPtrnAnlyDto exptPtrnAnlyInfo = patternAnalysisService.getExpectPattern(winDataList);
+			
+			// 예상번호 추출 및 등록
+			sysmngService.insertExptNum(winDataList, exptPtrnAnlyInfo);
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("msg", "예상번호를 추출했습니다.");
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+        
 	}
 	
 	/**

@@ -110,9 +110,9 @@
 				$(".ui-icon.ui-icon-seek-end").wrap("<div class='btn btn-sm btn-default'></div>");
 				$(".ui-icon.ui-icon-seek-end").removeClass().addClass("fa fa-fast-forward");
 				
-				$("#exDataAnalysis").click(changeAnalysisGo);
-				$("#exDataExtraction").click(changeExtractionGo);
+				$("#exDataExtraction").click(extractionGo);
 				$("#beforeExDataResult").click(changeExDataResultGo);
+				$("#exDataAnalysis").click(changeAnalysisGo);
 			}
 			
 			$(window).on('resize.jqGrid', function() {
@@ -128,10 +128,37 @@
 				var url = "${APP_ROOT}/sysmng/analysisExDataajax.do";
 				changeContent(url, param);
 			}
-			function changeExtractionGo() {
-				var url = "${APP_ROOT}/sysmng/extractExDataajax.do";
-				changeContent(url);
+			
+			function extractionGo() {
+				var param = {
+					ex_count : ex_count
+				};
+				
+				$.ajax({
+					type: "POST",
+					url: "${APP_ROOT}/sysmng/extractExpectedNumber.do",
+					data: param,
+					dataType: "json",
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+		               		location.href = "/index.do";
+		               		return;
+		            	}
+
+						if (result.status == "success") {
+			    			
+		            	} else {
+		            		alert(result.msg);
+		            	}
+					}
+				});
 			}
+			
 			function changeExDataResultGo() {
 				var url = "${APP_ROOT}/sysmng/resultExDataajax.do";
 				changeContent(url);

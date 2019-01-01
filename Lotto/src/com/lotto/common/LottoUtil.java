@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.lotto.spring.domain.dto.ExptPtrnAnlyDto;
+import com.lotto.spring.domain.dto.WinDataAnlyDto;
 import com.lotto.spring.domain.dto.WinDataDto;
 
 public final class LottoUtil {
@@ -17,6 +19,47 @@ public final class LottoUtil {
 		super();
 	};
 
+	// 패턴유형
+	/** 회차합 포함개수 */
+	public static final int CONTAIN_CNT_BY_COUNT = 1;
+	/** 전회차 추출번호 */
+	public static final int PREV_COUNT = 2; 
+	/** 저고비율 */
+	public static final int LOW_HIGH_RATIO = 3; 
+	/** 홀짝비율 */
+	public static final int ODD_EVEN_RATIO = 4; 
+	/** 총합의 범위 */
+	public static final int TOTAL_RANGE = 5; 
+	/** 연속수의 개수 */
+	public static final int CONSECUTIVELY_NUMBERS = 6; 
+	/** 끝수합의 범위 */
+	public static final int SUM_END_NUMBER_RANGE = 7; 
+	/** 그룹 내 포함개수 */
+	public static final int CONTAIN_GROUP_CNT = 8;
+	/** 끝자리가 같은 수의 개수 */
+	public static final int END_NUMBER_CNT = 9;
+	/** 소수 개수 */
+	public static final int SOTSU_CNT = 10;
+	/** 3의 배수 개수 */
+	public static final int NUMBER_OF_3_CNT = 11;
+	/** 합성수의 개수 */
+	public static final int NUMBER_OF_NOT_3_CNT = 12;
+	/** AC */
+	public static final int AC = 13;
+	/** 궁합수 개수 */
+	public static final int MC_MATCH_CNT = 14;
+	
+	
+	/** 총합범위유형 100이하 */
+	public static final int TOTAL_RANGE_TYPE_1 = 1;
+	/** 총합범위유형 101 ~ 150 */
+	public static final int TOTAL_RANGE_TYPE_2 = 2;
+	/** 총합범위유형 151 ~ 200 */
+	public static final int TOTAL_RANGE_TYPE_3 = 3;
+	/** 총합범위유형 201 이상 */
+	public static final int TOTAL_RANGE_TYPE_4 = 4;
+	
+	
 	/**
 	 * 번호 배열 가져오기
 	 * 
@@ -34,6 +77,24 @@ public final class LottoUtil {
 
 		return numbers;
 	}
+	
+	/**
+	 * 번호 배열 가져오기
+	 * 
+	 * @param data
+	 * @return
+	 */
+	public static int[] getNumbers(WinDataAnlyDto data) {
+		int[] numbers = { 0, 0, 0, 0, 0, 0 };
+		numbers[0] = data.getNum1();
+		numbers[1] = data.getNum2();
+		numbers[2] = data.getNum3();
+		numbers[3] = data.getNum4();
+		numbers[4] = data.getNum5();
+		numbers[5] = data.getNum6();
+		
+		return numbers;
+	}
 
 	/**
 	 * @description <div id=description><b>데이터 정렬</b></div >
@@ -41,6 +102,7 @@ public final class LottoUtil {
      * @param data
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public static Object dataSort(Object data){
 		Object obj = new Object();
 		
@@ -234,6 +296,7 @@ public final class LottoUtil {
 	 *              </div >
 	 * @return
 	 */
+	@SuppressWarnings({ "static-access", "deprecation" })
 	public static Calendar getNextAccounceCalendar(){
 		
 		Calendar nextAnnounceCal = Calendar.getInstance();
@@ -270,5 +333,112 @@ public final class LottoUtil {
 		
 		return nextAnnounceCal;
 	}
+
+	public static boolean comparePattern(ExptPtrnAnlyDto sourcePattern, ExptPtrnAnlyDto targetPattern, int patternType) {
+		if (patternType == CONTAIN_CNT_BY_COUNT) {
+			if (sourcePattern.getCount_sum() == targetPattern.getCount_sum()
+					&& sourcePattern.getCont_cnt() == targetPattern.getCont_cnt()
+					&& sourcePattern.getNot_cont_cnt() == targetPattern.getNot_cont_cnt()) {
+				return true;
+			}
+		} else if (patternType == PREV_COUNT) {
+			if (sourcePattern.getSame_num_cnt() == targetPattern.getSame_num_cnt()
+					&& sourcePattern.getUp_1_cnt() == targetPattern.getUp_1_cnt()
+					&& sourcePattern.getDown_1_cnt() == targetPattern.getDown_1_cnt()) {
+				return true;
+			}
+		} else if (patternType == LOW_HIGH_RATIO) {
+			if (sourcePattern.getLow_high().equals(targetPattern.getLow_high())) {
+				return true;
+			}
+		} else if (patternType == ODD_EVEN_RATIO) {
+			if (sourcePattern.getOdd_even().equals(targetPattern.getOdd_even())) {
+				return true;
+			}
+		} else if (patternType == TOTAL_RANGE) {
+			if (sourcePattern.getTotal_range_type() == targetPattern.getTotal_range_type()) {
+				return true;
+			}
+		} else if (patternType == CONSECUTIVELY_NUMBERS) {
+			if (sourcePattern.getC_num_cnt() == targetPattern.getC_num_cnt()) {
+				return true;
+			}
+		} else if (patternType == CONTAIN_GROUP_CNT) {
+			// 그룹내 미포함 구간 비교
+			if (sourcePattern.getZeroCntRange().size() == targetPattern.getZeroCntRange().size()) {
+				for (int i = 0; i < sourcePattern.getZeroCntRange().size(); i++) {
+					if (sourcePattern.getZeroCntRange().get(i) != targetPattern.getZeroCntRange().get(i)) {
+						return false;
+					}
+				}
+				// 모든 미포함 구간이 일치하면 같은 패턴임.
+				return true;
+			}
+		} else if (patternType == END_NUMBER_CNT) {
+			if (sourcePattern.getEnd_num_same_cnt() == targetPattern.getEnd_num_same_cnt()) {
+				return true;
+			}
+		} else if (patternType == SOTSU_CNT) {
+			if (sourcePattern.getP_num_cnt() == targetPattern.getP_num_cnt()) {
+				return true;
+			}
+		} else if (patternType == NUMBER_OF_3_CNT) {
+			if (sourcePattern.getMulti_3_cnt() == targetPattern.getMulti_3_cnt()) {
+				return true;
+			}
+		} else if (patternType == NUMBER_OF_NOT_3_CNT) {
+			if (sourcePattern.getComp_num_cnt() == targetPattern.getComp_num_cnt()) {
+				return true;
+			}
+		} else if (patternType == AC) {
+			if (sourcePattern.getAc() == targetPattern.getAc()) {
+				return true;
+			}
+		} else if (patternType == MC_MATCH_CNT) {
+			if (sourcePattern.getMcnum_cnt() == targetPattern.getMcnum_cnt()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 	
+	/**
+	 * @description <div id=description><b>소수 구하기</b></div >
+	 *              <div id=detail>소수인지 아닌지 확인한다.</div >
+	 * @param number
+	 * @return
+	 */
+	public static boolean getSotsu(int number){
+		boolean result = false;
+		
+		if(number < 2) return false;
+		
+		for(int i = 2 ; i <= number ; i++){
+			if(number % i == 0){
+				if(number == i){
+					return true;
+				}else{
+					break;
+				}
+			}
+		}
+		
+		return result;
+	}
+
+	/**
+	 * 임의의 회차합 가져오기
+	 * 
+	 * @return 7~10
+	 */
+	public static int getRandomContainCnt() {
+		int containCnt = 0;
+		
+		do {
+			containCnt = (int)(Math.random()*10) + 1; 
+		} while (!(containCnt >= 7 && containCnt <= 10));	//2017.10.29 not조건 수정
+		
+		return containCnt;
+	}
 }

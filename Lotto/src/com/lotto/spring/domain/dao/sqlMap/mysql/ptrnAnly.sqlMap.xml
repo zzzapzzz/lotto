@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">  
+  
+<mapper namespace="ptrnAnlyMapper">
+	
+	<!-- 예상패턴분석 정보 삭제 -->
+	<delete id="deleteExptPtrnAnlyInfo" parameterType="exptPtrnAnlyDto">		
+		/* ptrnAnlyMapper.deleteExptPtrnAnlyInfo */
+		DELETE FROM TB_EXPT_PTRN_ANLY
+		<if test='ex_count != null and ex_count != ""'>
+		WHERE EX_COUNT = #{ex_count}
+		</if>
+	</delete>
+	
+	<!-- 예상패턴분석 정보 등록 -->
+	<insert id="insertExptPtrnAnlyInfo" parameterType="exptPtrnAnlyDto">
+		/* ptrnAnlyMapper.insertExptPtrnAnlyInfo */
+		INSERT INTO TB_EXPT_PTRN_ANLY 
+		(
+			  EX_COUNT
+			, COUNT_SUM
+			, CONT_CNT
+			, NOT_CONT_CNT
+			, SAME_NUM_CNT
+			, UP_1_CNT
+			, DOWN_1_CNT
+			, LOW_HIGH
+			, ODD_EVEN
+			, TOTAL_RANGE_TYPE
+			, TOTAL_RANGE
+			, END_SUM_RANGE
+			, C_NUM_CNT
+			, NOT_CONT_GRP
+			, END_NUM_SAME_CNT
+			, P_NUM_CNT
+			, MULTI_3_CNT
+			, COMP_NUM_CNT
+			, AC
+			, MCNUM_CNT
+		)
+		VALUES 
+		(
+			  #{ex_count}
+			, #{count_sum}
+			, #{cont_cnt}
+			, #{not_cont_cnt}
+			, #{same_num_cnt}
+			, #{up_1_cnt}
+			, #{down_1_cnt}
+			, #{low_high}
+			, #{odd_even}
+			, #{total_range_type}
+			, #{total_range}
+			, #{end_sum_range}
+			, #{c_num_cnt}
+			, #{not_cont_grp}
+			, #{end_num_same_cnt}
+			, #{p_num_cnt}
+			, #{multi_3_cnt}
+			, #{comp_num_cnt}
+			, #{ac}
+			, #{mcnum_cnt}
+		)
+	</insert>
+	
+	<!-- 패턴정보 삭제 -->
+	<delete id="deletePtrnInfo">		
+		/* ptrnAnlyMapper.deletePtrnInfo */
+		DELETE FROM TB_PATTERN_INFO
+	</delete>
+	
+	<!-- 패턴정보 목록 등록 -->
+	<insert id="insertPtrnInfoList" parameterType="java.util.Map">
+		/* ptrnAnlyMapper.insertPtrnInfoList */
+		INSERT INTO TB_PATTERN_INFO 
+		(
+			  PTRN_TYPE
+			, SEQ
+			, START_COUNT
+			, PTRN_CNT
+			, PTRN_INFO
+			, NEXT_INFO
+		)
+		VALUES 
+		<foreach collection="list" item="item" open="" separator="," close="">
+		(
+			  #{item.ptrn_type}
+			, #{item.seq}
+			, #{item.start_count}
+			, #{item.ptrn_cnt}
+			, #{item.ptrn_info}
+			, #{item.next_info}
+		)
+		</foreach>
+	</insert>
+</mapper>

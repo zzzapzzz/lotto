@@ -15,6 +15,7 @@ import com.lotto.spring.domain.dto.CountSumDto;
 import com.lotto.spring.domain.dto.EndNumDto;
 import com.lotto.spring.domain.dto.ExDataDto;
 import com.lotto.spring.domain.dto.ExcludeDto;
+import com.lotto.spring.domain.dto.ExptPtrnAnlyDto;
 import com.lotto.spring.domain.dto.LowHighDto;
 import com.lotto.spring.domain.dto.MCNumDto;
 import com.lotto.spring.domain.dto.MenuInfoDto;
@@ -22,6 +23,7 @@ import com.lotto.spring.domain.dto.OddEvenDto;
 import com.lotto.spring.domain.dto.TaskInfoDto;
 import com.lotto.spring.domain.dto.TotalDto;
 import com.lotto.spring.domain.dto.UserInfoDto;
+import com.lotto.spring.domain.dto.WinDataAnlyDto;
 import com.lotto.spring.domain.dto.WinDataDto;
 import com.lotto.spring.domain.dto.ZeroRangeDto;
 
@@ -132,6 +134,17 @@ public class SysmngService extends DefaultService {
 	@SuppressWarnings("unchecked")
 	public List<WinDataDto> getWinDataList(WinDataDto dto) {
 		return (ArrayList<WinDataDto>) baseDao.getList("sysmngMapper.getWinDataList", dto);
+	}
+	
+	/**
+	 * 당첨번호 분석정보 목록 조회 (Dto)
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<WinDataAnlyDto> getWinDataAnlyList(WinDataDto dto) {
+		return (ArrayList<WinDataAnlyDto>) baseDao.getList("sysmngMapper.getWinDataAnlyList", dto);
 	}
 	
 	/**
@@ -1090,6 +1103,160 @@ public class SysmngService extends DefaultService {
 	}
 
 	/**
+	 * @description <div id=description><b>궁합/불협수 설정</b></div >
+	 *              <div id=detail>각 숫자별로 가장 많이 나온 3수를 궁합수, 가장 나오지 않은 수를 불협수로 설정한다.</div >
+	 * @param winDataList 전체리스트
+	 * @return
+	 */
+	@SuppressWarnings({ "unchecked" })
+	public Map<Integer, Map<String, ArrayList<Integer>>> getMcNumberByAnly(List<WinDataAnlyDto> winDataList) {
+		/** 번호별 전체 저장 변수 */
+		Map<Integer, Map<String, ArrayList<Integer>>> mcNumberMap = new HashMap<Integer, Map<String,ArrayList<Integer>>>();
+		/** 해당 번호의 궁합/불협수 목록 저장 변수 */
+		Map<String, ArrayList<Integer>> mcMap;
+		
+		/*
+		 * 1 ~ 45까지의 숫자를 전체데이터로부터 함께 나온 수와 나오지 않는 수를 찾는다.
+		 */
+		for (int number = 1; number <= 45; number++) {
+			mcMap = new HashMap<String, ArrayList<Integer>>();
+			
+			/** 함께 당첨번호로 출현한 번호별 개수 저장 배열 */
+			int[] existCnt = new int[45];
+			for (int i = 0; i < existCnt.length; i++) {
+				existCnt[i] = 0;
+			}
+			
+			/** 가장 많은 개수를 저장할 배열 */
+			int[] bestMcCnt = new int[3];
+			for (int i = 0; i < bestMcCnt.length; i++) {
+				bestMcCnt[i] = 0;
+			}
+			
+			/** 가장 많은 개수에 해당하는 숫자를 저장할 배열 */
+			int[] bestMcNumbers = new int[3];
+			for (int i = 0; i < bestMcNumbers.length; i++) {
+				bestMcNumbers[i] = 0;
+			}
+			
+			
+			//함께 당첨번호로 출현한 번호 저장 맵
+			Map<Integer, Integer> existMap = new HashMap<Integer, Integer>();
+			//궁합수 저장 맵
+			Map<Integer, Integer> existMcMap = new HashMap<Integer, Integer>();
+			//궁합수 저장 리스트(가장 좋은 3수)
+			ArrayList<Integer> mcList = new ArrayList<Integer>();
+			//불협수 저장 리스트 : 한번도 함께 나온적이 없는 번호
+			ArrayList<Integer> notMcList = new ArrayList<Integer>();
+			
+			//전체 데이터 검색
+			for (int i = 0; i < winDataList.size(); i++) {
+				//번호 존재 여부
+				boolean isExist = false;
+				WinDataAnlyDto data = winDataList.get(i);
+				int[] numbers = LottoUtil.getNumbers(data);
+				
+				//번호 비교
+				for (int j = 0; j < numbers.length; j++) {
+					if(number == numbers[j]){
+						isExist = true;
+						break;
+					}
+				}
+				
+				//번호가 없으면 다음회차 검색
+				if(!isExist) 
+					continue;
+				
+				//번호가 있으면 함께 나온 숫자 저장
+				for (int j = 0; j < numbers.length; j++) {
+					if(number == numbers[j]){
+						//같은 번호는 skip
+						continue;
+					}else{
+						//번호가 이미 저장된 번호인지 확인 
+						if(existMap.containsKey(numbers[j])){
+							//있으면 개수만 추가한다.
+							existCnt[numbers[j]-1] += 1;							
+						}else{
+							//없으면 등록하고 개수를 추가한다.
+							existMap.put(numbers[j], numbers[j]);
+							existCnt[numbers[j]-1] += 1; 
+						}
+					}
+				}//숫자 저장 for
+			}//전체 데이터 for
+			
+			//궁합수 저장
+			//가장 많이 나온 숫자 3개 저장
+			for (int num = 0; num < existCnt.length; num++) {
+				int cnt = existCnt[num];
+				
+				//숫자별 개수 체크
+//				if(count == 1)
+//					System.out.println( (num+1) + " : " + cnt);
+				
+				if(cnt >= bestMcCnt[0]){	//첫 번째 큰수
+					//개수 설정
+					bestMcCnt[2] = bestMcCnt[1];
+					bestMcCnt[1] = bestMcCnt[0];
+					bestMcCnt[0] = cnt;
+					
+					//번호 설정
+					bestMcNumbers[2] = bestMcNumbers[1];
+					bestMcNumbers[1] = bestMcNumbers[0];
+					bestMcNumbers[0] = num+1;
+					
+				}else if(cnt >= bestMcCnt[1]){	//두 번째 큰수
+					//개수 설정
+					bestMcCnt[2] = bestMcCnt[1];
+					bestMcCnt[1] = cnt;
+					
+					//번호 설정
+					bestMcNumbers[2] = bestMcNumbers[1];
+					bestMcNumbers[1] = num+1;
+				}else if(cnt >= bestMcCnt[2]){	//세 번째 큰수
+					//개수 설정
+					bestMcCnt[2] = cnt;
+					
+					//번호 설정
+					bestMcNumbers[2] = num+1;
+				}
+			}
+			
+			//가장 많이 나온 상위 3가지 개수에 해당하는 번호를 모두 저장한다.
+			for(int i = 0; i < bestMcCnt.length; i++) {
+				for (int num = 0; num < existCnt.length; num++) {
+					if(bestMcCnt[i] == existCnt[num]){
+						//저장되어 있지 않은 궁합수는 궁합수 목록에 추가한다.
+						if(!existMcMap.containsKey(num+1)){
+							mcList.add(num+1);
+							existMcMap.put(num+1, num+1);
+						}
+					}
+				}
+				
+			}
+			
+			//불협수 저장
+			for(int i = 1; i <= 45; i++) {
+				if(!existMap.containsKey(i) 
+						&& number != i){
+					notMcList.add(i);
+				}
+			}
+			
+			//저장
+			mcMap.put("mc", (ArrayList<Integer>)LottoUtil.dataSort(mcList));
+			mcMap.put("notMc", (ArrayList<Integer>)LottoUtil.dataSort(notMcList));
+			mcNumberMap.put(number, mcMap);
+			
+		}//숫자별 for
+		
+		return mcNumberMap;
+	}
+	
+	/**
 	 * 궁합수정보 삭제
 	 * 
 	 * @param dto
@@ -1609,6 +1776,135 @@ public class SysmngService extends DefaultService {
 		}
 		
 		return mcMap;
+	}
+	
+	/**
+	 * 예상번호 추출 및 등록
+	 * 
+	 * @param winDataList 전체데이터 (오름차순) 
+	 * @param exptPtrnAnlyInfo 예상패턴분석정보
+	 */
+	public void insertExptNum(List<WinDataAnlyDto> winDataList, ExptPtrnAnlyDto exptPtrnAnlyInfo) {
+		
+		/*********************************************************
+		 * 예상 회차합 번호추출
+		 *********************************************************/
+		//예상 회차합이 낮을 경우, 7~10으로 임의 설정
+		int expectContainCnt = 0;
+		if (exptPtrnAnlyInfo != null) {
+			// 예상 회차합
+			expectContainCnt = exptPtrnAnlyInfo.getCount_sum();
+			if (expectContainCnt < 7) {
+	//			expectContainCnt = 10;
+				expectContainCnt = LottoUtil.getRandomContainCnt();
+				log.warn("예상 회차합 (7미만) : " + exptPtrnAnlyInfo.getCount_sum());
+			} else {
+				//2017.06.12
+				expectContainCnt = LottoUtil.getRandomContainCnt();
+			}
+		} else {
+			expectContainCnt = LottoUtil.getRandomContainCnt();
+		}
+
+		//입력한 회차합 출현숫자
+		List<Integer> numberOfInputCountList = this.getNumbersOfInputCount(winDataList, expectContainCnt);		
+		//입력한 회차합 미출현 숫자
+		List<Integer> numberOfNotInputCountList = this.getNumbersOfInputCount(numberOfInputCountList);	
+		
+		
+		/*********************************************************
+		 * 제외수 적용 번호추출
+		 *********************************************************/
+		//제외수를 저장할 list
+		List<Integer> deleteTargetList = new ArrayList<Integer>();
+		// 제외수 규칙 조회
+		ExDataDto exDataDto = new ExDataDto();
+		exDataDto.setEx_count(exptPtrnAnlyInfo.getEx_count());
+		ExcludeDto excludeDto = this.getExcludeInfo(exDataDto);
+		String[] excludeNum = excludeDto.getExclude_num().replaceAll(" ", "").split(",");
+		for (int i = 0; i < excludeNum.length; i++) {
+			deleteTargetList.add(Integer.parseInt(excludeNum[i]));
+		}
+		
+		//제외수를 포함하지 않는 회차합 숫자들
+		List<Integer> numberOfContainList = this.getListWithExcludedNumber(numberOfInputCountList, deleteTargetList);
+		//제외수를 포함하지 않는 회차합이 아닌 숫자들
+		List<Integer> numberOfNotContainList = this.getListWithExcludedNumber(numberOfNotInputCountList, deleteTargetList);
+		
+	}
+
+	private List<Integer> getListWithExcludedNumber(List<Integer> list,
+			List<Integer> deleteTargetList) {
+		List<Integer> controlList = new ArrayList<Integer>();
+		
+		for (int i = 0; i < list.size(); i++) {
+			//제외수 존재여부
+			boolean isExist = false;
+			for (int j = 0; j < deleteTargetList.size(); j++) {
+				//번호가 제외수인지 확인한다.
+				if(list.get(i) == deleteTargetList.get(j)){
+					isExist = true;
+					break;
+				}
+			}
+			
+			if(!isExist){
+				controlList.add(list.get(i));
+			}
+		}
+		
+		return controlList;
+	}
+
+	/**
+	 *  @description <div id=description><b>입력한 회차동안 출현하지 않은 번호 구하기</b></div >
+     *              <div id=detail>입력한 회차동안 출현하지 않은 번호들을 구한다.</div >
+     *              
+	 * @param numberOfInputCountList 입력한 회차합 출현숫자 목록
+	 * @return
+	 */
+	public List<Integer> getNumbersOfInputCount(List<Integer> numberOfInputCountList) {
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		List<Integer> notContainList = new ArrayList<Integer>();
+		
+		for(int number : numberOfInputCountList){
+			map.put(number, number);
+		}
+		
+		for(int number = 1 ; number <= 45 ; number++){
+			if(!map.containsKey(number)){
+				notContainList.add(number);
+			}
+		}
+		
+		return notContainList;
+	}
+
+	/**
+	 * @description <div id=description><b>입력한 회차합 구하기</b></div >
+     *              <div id=detail>입력한 지난 회전까지 출현했던 번호들을 구한다.</div >
+     *              
+	 * @param winDataList 전체데이터 (오름차순)
+	 * @param expectContainCnt 예상 회차합
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Integer> getNumbersOfInputCount(List<WinDataAnlyDto> winDataList, int expectContainCnt) {
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		List<Integer> containList = new ArrayList<Integer>();
+		
+		for(int index = winDataList.size() - expectContainCnt ; index < winDataList.size() ; index++){
+			int[] numbers = LottoUtil.getNumbers(winDataList.get(index));
+			
+			for(int number : numbers){
+				if(!map.containsKey(number)){
+					containList.add(number);
+					map.put(number, number);
+				}
+			}
+		}
+		
+		return (List<Integer>) LottoUtil.dataSort(containList);
 	}
 
 	/**
