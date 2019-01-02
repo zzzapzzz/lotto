@@ -22,6 +22,9 @@ public class PatternAnalysisService extends DefaultService {
 	@Autowired(required = true)
     private SysmngService sysmngService;
 	
+	@Autowired(required = true)
+	private LottoDataService lottoDataService;
+	
 	/**
 	 * @description <div id=description><b>예측패턴 조회</b></div >
 	 *              <div id=detail>예측패턴 정보를 조회한다.</div >
@@ -831,7 +834,7 @@ public class PatternAnalysisService extends DefaultService {
 	 * @return 패턴
 	 */
 	public void getMcMatchCntPattern(ExptPtrnAnlyDto ptrnInfo, List<WinDataAnlyDto> winDataList, WinDataAnlyDto sourceData) {
-		Map<Integer, Map<String, ArrayList<Integer>>> mcNumberMap = sysmngService.getMcNumberByAnly(winDataList);
+		Map<Integer, Map<String, ArrayList<Integer>>> mcNumberMap = lottoDataService.getMcNumberByAnly(winDataList);
 		int[] dataNumbers = LottoUtil.getNumbers(sourceData);
 		int mcMatchCnt = 0;
 		

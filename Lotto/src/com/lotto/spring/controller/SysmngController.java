@@ -48,6 +48,7 @@ import com.lotto.spring.domain.dto.WinDataAnlyDto;
 import com.lotto.spring.domain.dto.WinDataDto;
 import com.lotto.spring.domain.dto.ZeroRangeDto;
 import com.lotto.spring.service.ExcelService;
+import com.lotto.spring.service.LottoDataService;
 import com.lotto.spring.service.PatternAnalysisService;
 import com.lotto.spring.service.SysmngService;
 
@@ -60,6 +61,9 @@ public class SysmngController extends DefaultSMController {
 	
 	@Autowired(required = true)
     private SysmngService sysmngService;
+	
+	@Autowired(required = true)
+	private LottoDataService lottoDataService;
 	
 	@Autowired(required = true)
 	private ExcelService excelService;
@@ -1260,15 +1264,26 @@ public class SysmngController extends DefaultSMController {
 			WinDataDto winDataDto = new WinDataDto();
 			winDataDto.setSord("ASC");
 			List<WinDataAnlyDto> winDataList = sysmngService.getWinDataAnlyList(winDataDto);
-						
-			// 예측패턴 조회
-			ExptPtrnAnlyDto exptPtrnAnlyInfo = patternAnalysisService.getExpectPattern(winDataList);
-			
-			// 예상번호 추출 및 등록
-			sysmngService.insertExptNum(winDataList, exptPtrnAnlyInfo);
-			
-			jsonObj.put("status", "success");
-			jsonObj.put("msg", "예상번호를 추출했습니다.");
+			if (winDataList != null && winDataList.size() > 0) {
+				// 번호간 차이 설정
+				lottoDataService.setDifNumbers(winDataList);
+				
+				// 당첨번호 배열 설정
+				lottoDataService.setNumbers(winDataList);
+				
+				// 예측패턴 조회
+				ExptPtrnAnlyDto exptPtrnAnlyInfo = patternAnalysisService.getExpectPattern(winDataList);
+				
+				// 예상번호 추출 및 등록
+				sysmngService.insertExptNum(winDataList, exptPtrnAnlyInfo);
+
+				
+				jsonObj.put("status", "success");
+				jsonObj.put("msg", "예상번호를 추출했습니다.");
+			} else {
+				jsonObj.put("status", "fail");
+				jsonObj.put("msg", "예상번호를 추출 실패.(당첨번호 목록 없음.)");
+			}
 			
 		} else {
 			jsonObj.put("status", "usernotfound");
@@ -1522,9 +1537,9 @@ public class SysmngController extends DefaultSMController {
 			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
 			
 			// 10회차 포함번호 목록 조회
-			List<Integer> contain10List = sysmngService.getContain10List(winDataList);
+			List<Integer> contain10List = lottoDataService.getContain10List(winDataList);
 			// 10회차 미포함번호 목록 조회
-			List<Integer> notContain10List = sysmngService.getNotContain10List(contain10List);
+			List<Integer> notContain10List = lottoDataService.getNotContain10List(contain10List);
 			
 			jsonObj.put("contain10List", contain10List);
 			jsonObj.put("notContain10List", notContain10List);

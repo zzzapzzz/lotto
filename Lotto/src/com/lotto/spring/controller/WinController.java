@@ -24,6 +24,7 @@ import com.lotto.spring.domain.dto.CountSumDto;
 import com.lotto.spring.domain.dto.MCNumDto;
 import com.lotto.spring.domain.dto.WinDataDto;
 import com.lotto.spring.domain.dto.ZeroRangeDto;
+import com.lotto.spring.service.LottoDataService;
 import com.lotto.spring.service.SysmngService;
 
 import net.sf.json.JSONObject;
@@ -40,6 +41,9 @@ public class WinController extends DefaultSMController {
 
 	@Autowired(required = true)
     private SysmngService sysmngService;
+	
+	@Autowired(required = true)
+	private LottoDataService lottoDataService;
 	
 	/**
 	 * 당첨번호 화면 호출
@@ -170,7 +174,7 @@ public class WinController extends DefaultSMController {
 			
 			// 궁합수 조회
 			List<MCNumDto> mcNumList = sysmngService.getMcNumList(dto);
-			String mcMatchedData = sysmngService.getMcMatchedData(winData, mcNumList);
+			String mcMatchedData = lottoDataService.getMcMatchedData(winData, mcNumList);
 			
 			// 미출현번호대 조회
 			ZeroRangeDto zeroRangeInfo = sysmngService.getZeroRangeInfo(dto);

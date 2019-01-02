@@ -47,6 +47,8 @@ public class WinDataAnlyDto extends DefaultDto{
 	
 	//번호간 차이
 	private int[] difNumbers;
+	//당첨번호 배열
+	private int[] numbers;
 	
 	public int getWin_count() {
 		return win_count;
@@ -161,6 +163,12 @@ public class WinDataAnlyDto extends DefaultDto{
 	}
 	public void setDifNumbers(int[] difNumbers) {
 		this.difNumbers = difNumbers;
+	}
+	public int[] getNumbers() {
+		return numbers;
+	}
+	public void setNumbers(int[] numbers) {
+		this.numbers = numbers;
 	}
 	
 }

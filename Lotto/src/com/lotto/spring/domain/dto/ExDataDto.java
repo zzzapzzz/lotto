@@ -37,6 +37,11 @@ public class ExDataDto extends DefaultDto{
 	/** 다음발표일 */
 	private String nextAnnounceDate;
 	
+	//번호간 차이
+	private int[] difNumbers;
+	//당첨번호 배열
+	private int[] numbers;
+		
 	public int getEx_count() {
 		return ex_count;
 	}
@@ -120,6 +125,18 @@ public class ExDataDto extends DefaultDto{
 	}
 	public void setNextAnnounceDate(String nextAnnounceDate) {
 		this.nextAnnounceDate = nextAnnounceDate;
+	}
+	public int[] getDifNumbers() {
+		return difNumbers;
+	}
+	public void setDifNumbers(int[] difNumbers) {
+		this.difNumbers = difNumbers;
+	}
+	public int[] getNumbers() {
+		return numbers;
+	}
+	public void setNumbers(int[] numbers) {
+		this.numbers = numbers;
 	}
 	
 	
