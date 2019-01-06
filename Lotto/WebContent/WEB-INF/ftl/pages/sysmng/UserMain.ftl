@@ -20,6 +20,7 @@
 						<span id="search" class="btn btn-default btn-primary"><i class="fa fa-search"></i> 조회</span>
 					</div>
 					
+					
 					<span id="add" class="btn btn-success"><i class="fa fa-pencil"></i> 등록</span>
 					<span id="modify" class="btn btn-warning"><i class="fa fa-edit"></i> 수정</span>
 					<span id="del" class="btn btn-danger"><i class="fa fa-trash-o"></i> 삭제</span>

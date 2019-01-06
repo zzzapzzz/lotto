@@ -24,9 +24,13 @@
 			}
 			
 			function setWinCountList() {
+				var param = {
+					page: '1'
+				};
 				$.ajax({
 					type: "POST",
 					url: "/sysmng/getWinDataList.do",
+					data: param,
 					dataType: "json",
 					async: false,
 					contentType: "application/x-www-form-urlencoded; charset=UTF-8",

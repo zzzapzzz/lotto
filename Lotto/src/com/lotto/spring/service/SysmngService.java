@@ -1,6 +1,8 @@
 package com.lotto.spring.service;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,13 +47,8 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public ArrayList<CaseInsensitiveMap> getUserList(Map map) {
-		return (ArrayList<CaseInsensitiveMap>) baseDao.getList("sysmngMapper.getUserList", map);
-	}
-	
-	public ArrayList<UserInfoDto> getUserList2(Map map) {
-		return (ArrayList<UserInfoDto>) baseDao.getList("sysmngMapper.getUserList2", map);
+	public ArrayList<UserInfoDto> getUserList(Map map) {
+		return (ArrayList<UserInfoDto>) baseDao.getList("sysmngMapper.getUserList", map);
 	}
 	
 	/**
@@ -778,12 +775,12 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
-	 * 예상번호 추출 및 등록
+	 * 예상번호 목록 추출 및 등록
 	 * 
 	 * @param winDataList 전체데이터 (오름차순) 
 	 * @param exptPtrnAnlyInfo 예상패턴분석정보
 	 */
-	public void insertExptNum(List<WinDataAnlyDto> winDataList, ExptPtrnAnlyDto exptPtrnAnlyInfo) {
+	public void insertExptNumList(List<WinDataAnlyDto> winDataList, ExptPtrnAnlyDto exptPtrnAnlyInfo) {
 		
 		/*********************************************************
 		 * 예상 회차합 번호추출
@@ -816,6 +813,8 @@ public class SysmngService extends DefaultService {
 		 *********************************************************/
 		//제외수를 저장할 list
 		List<Integer> deleteTargetList = new ArrayList<Integer>();
+		//제외수를 저장할 map
+		Map<Integer, Integer> deleteTargetMap = new HashMap<Integer, Integer>();
 		// 제외수 규칙 조회
 		ExDataDto exDataDto = new ExDataDto();
 		exDataDto.setEx_count(exptPtrnAnlyInfo.getEx_count());
@@ -823,6 +822,135 @@ public class SysmngService extends DefaultService {
 		String[] excludeNum = excludeDto.getExclude_num().replaceAll(" ", "").split(",");
 		for (int i = 0; i < excludeNum.length; i++) {
 			deleteTargetList.add(Integer.parseInt(excludeNum[i]));
+			deleteTargetMap.put(Integer.parseInt(excludeNum[i]), Integer.parseInt(excludeNum[i]));
+		}
+		
+		//제외수를 포함하지 않는 회차합 숫자들
+		List<Integer> numberOfContainList = lottoDataService.getListWithExcludedNumber(numberOfInputCountList, deleteTargetList);
+		//제외수를 포함하지 않는 회차합이 아닌 숫자들
+		List<Integer> numberOfNotContainList = lottoDataService.getListWithExcludedNumber(numberOfNotInputCountList, deleteTargetList);
+		
+		/*********************************************************
+		 * 예상데이터 랜덤 조합 추출 및 등록
+		 *********************************************************/
+		/** 추출된 조합숫자 목록 */
+		List<ExDataDto> expectDataList = lottoDataService.getExDataList(exptPtrnAnlyInfo, numberOfContainList, numberOfNotContainList, deleteTargetMap);
+		
+		
+		if (expectDataList != null && expectDataList.size() > 0) {
+			log.info("추출된 목록 건수 = " + expectDataList.size());
+			//추출된 번호 전체를 패턴과 비교하여 예측패턴과 가장 많이 일치하는 번호 목록을 구한다.
+			
+			// 기존 예상번호 삭제 (예상회차 -2회차 이전 데이터 모두 삭제 처리)
+			Map<String, Object> deleteParamMap = new HashMap<String, Object>();
+			int pastExCount = exptPtrnAnlyInfo.getEx_count() - 2;
+			deleteParamMap.put("past_ex_count", pastExCount);
+			baseDao.delete("sysmngMapper.deletePastExptNumList", deleteParamMap);
+			
+			
+			long startTime = System.currentTimeMillis();
+			
+			/*
+			 * 2019.01.05 foreach 등록 테스트
+			 * 1. 110만건 java.lang.OutOfMemoryError: Java heap space 오류발생함.
+			 * 2. 10만건으로 줄임. java.lang.OutOfMemoryError: Java heap space
+			 */
+			List<ExDataDto> expectDataPartList = new ArrayList<ExDataDto>();
+			int INSERT_COUNT = 100;
+			for (int i = 0; i < expectDataList.size(); i++) {
+		
+				log.info("proc idx = " + i);
+				
+				expectDataPartList.add(expectDataList.get(i));
+				
+				if ( (i+1) % INSERT_COUNT == 0) {
+					log.info("부분 등록건수 = " + expectDataPartList.size());
+					
+					long partStartTime = System.currentTimeMillis();
+					
+					Map<String, Object> map = new HashMap<String, Object>();
+					map.put("list", expectDataPartList);
+					baseDao.insert("sysmngMapper.insertExptNumList", map);
+					
+					long partEndTime = System.currentTimeMillis();
+					long partResutTime = partStartTime - partEndTime;
+					
+					log.info("부분처리 " + INSERT_COUNT + "건 소요시간  : " + partResutTime/1000 + "(ms)");
+					
+					// 등록처리 후 list 초기화
+					expectDataPartList = new ArrayList<ExDataDto>();
+				}
+			}
+			
+			// 
+			if (expectDataPartList.size() > 0) {
+				log.info("잔여 예상번호 등록 처리");
+				log.info("부분 등록건수 = " + expectDataPartList.size());
+				Map<String, Object> map = new HashMap<String, Object>();
+				map.put("list", expectDataPartList);
+				baseDao.insert("sysmngMapper.insertExptNumList", map);
+			}
+			
+				
+			long endTime = System.currentTimeMillis();
+			long resutTime = endTime - startTime;
+			
+			log.info("전체 " + expectDataList.size() + "건 소요시간  : " + resutTime/1000 + "(ms)");
+		} // end if numberList check
+	}
+	
+	/**
+	 * 예상패턴이 적용된 예상번호 추출 및 등록
+	 * 
+	 * @param winDataList 전체데이터 (오름차순) 
+	 * @param exptPtrnAnlyInfo 예상패턴분석정보
+	 */
+	public void insertExptNumApplyPattern(List<WinDataAnlyDto> winDataList, ExptPtrnAnlyDto exptPtrnAnlyInfo) {
+		
+		// 검증여부
+		boolean verification = false;
+		
+		/*********************************************************
+		 * 예상 회차합 번호추출
+		 *********************************************************/
+		//예상 회차합이 낮을 경우, 7~10으로 임의 설정
+		int expectContainCnt = 0;
+		if (exptPtrnAnlyInfo != null) {
+			// 예상 회차합
+			expectContainCnt = exptPtrnAnlyInfo.getCount_sum();
+			if (expectContainCnt < 7) {
+				//			expectContainCnt = 10;
+				expectContainCnt = LottoUtil.getRandomContainCnt();
+				log.warn("예상 회차합 (7미만) : " + exptPtrnAnlyInfo.getCount_sum());
+			} else {
+				//2017.06.12
+				expectContainCnt = LottoUtil.getRandomContainCnt();
+			}
+		} else {
+			expectContainCnt = LottoUtil.getRandomContainCnt();
+		}
+		
+		//입력한 회차합 출현숫자
+		List<Integer> numberOfInputCountList = lottoDataService.getNumbersOfInputCount(winDataList, expectContainCnt);		
+		//입력한 회차합 미출현 숫자
+		List<Integer> numberOfNotInputCountList = lottoDataService.getNumbersOfInputCount(numberOfInputCountList);	
+		
+		
+		/*********************************************************
+		 * 제외수 적용 번호추출
+		 *********************************************************/
+		//제외수를 저장할 list
+		List<Integer> deleteTargetList = new ArrayList<Integer>();
+		//제외수를 저장할 map
+		Map<Integer, Integer> deleteTargetMap = new HashMap<Integer, Integer>();
+		// 제외수 규칙 조회
+		ExDataDto exDataDto = new ExDataDto();
+		exDataDto.setEx_count(exptPtrnAnlyInfo.getEx_count());
+		ExcludeDto excludeDto = this.getExcludeInfo(exDataDto);
+		String[] excludeNum = excludeDto.getExclude_num().replaceAll(" ", "").split(",");
+		for (int i = 0; i < excludeNum.length; i++) {
+			deleteTargetList.add(Integer.parseInt(excludeNum[i]));
+			deleteTargetMap.put(Integer.parseInt(excludeNum[i]), Integer.parseInt(excludeNum[i]));
 		}
 		
 		//제외수를 포함하지 않는 회차합 숫자들
@@ -854,7 +982,7 @@ public class SysmngService extends DefaultService {
 		int maxEqualCnt = 0;
 		
 		/** 추출된 조합숫자 목록 */
-		List<int[]> numberList = lottoDataService.getRandomCombinationList(exptPtrnAnlyInfo, numberOfContainList, numberOfNotContainList);
+		List<int[]> numberList = lottoDataService.getRandomCombinationList(exptPtrnAnlyInfo, numberOfContainList, numberOfNotContainList, deleteTargetMap);
 		/** 최대 일치개수 데이터 목록 */
 		List<ExDataDto> maxEqualDataList = new ArrayList<ExDataDto>();
 		/** 정렬된 데이터 목록 */
@@ -862,24 +990,268 @@ public class SysmngService extends DefaultService {
 		/** 정렬된 일치개수 목록 */
 		ArrayList<Integer> orderedEqualCntList = new ArrayList<Integer>();
 		
-		//추출된 번호 전체를 패턴과 비교하여 예측패턴과 가장 많이 일치하는 번호 목록을 구한다.
-		for (int i = 0; i < numberList.size(); i++) {
-			//일치여부,개수 초기화
-			isEqual = false;
-			equalCnt = 0;
-			
-			ExDataDto data = new ExDataDto();
-			
-			//회차 설정
-			data.setEx_count(exptPtrnAnlyInfo.getEx_count());
-			//data 번호 설정
-			int[] numbers = numberList.get(i);
-			data.setNumbers(numbers);
-			//data 번호간 차이값 설정
-			data.setDifNumbers(lottoDataService.getDifNumbers(numbers));
-			
-			
-		} // end for 추출 번호 중 일치하는 번호 목록 구하기
+		// 표준 끝수합 범위 설정
+		int[] lowHighEndNumData = lottoDataService.getEndNumberBaseDistribution(winDataList);
+		/** 최저끝수 */
+		int lowEndNumber = lowHighEndNumData[0];
+		/** 최고끝수 */
+		int highEndNumber = lowHighEndNumData[1];
+		
+		
+		if (numberList != null && numberList.size() > 0) {
+			log.info("추출된 조합숫자 목록 = " + numberList.size());
+			//추출된 번호 전체를 패턴과 비교하여 예측패턴과 가장 많이 일치하는 번호 목록을 구한다.
+			for (int i = 0; i < numberList.size(); i++) {
+				//일치여부,개수 초기화
+				isEqual = false;
+				equalCnt = 0;
+				
+				ExDataDto data = new ExDataDto();
+				
+				//회차 설정
+				data.setEx_count(exptPtrnAnlyInfo.getEx_count());
+				//data 번호 설정
+				int[] numbers = numberList.get(i);
+				data.setNumbers(numbers);
+				//data 번호간 차이값 설정
+				data.setDifNumbers(lottoDataService.getDifNumbers(numbers));
+				
+				//1. 전회차 추출번호 예측 비교
+				result = lottoDataService.existOfPrevCount(winDataList, data, exptPtrnAnlyInfo);
+				if (verification && isEqual) {
+					if(!result) {
+						equalCnt++;	//일치함.
+						System.out.println("1. 전회차 추출번호 예측 비교 : " + equalCnt);
+					}
+				} else {
+					if(!result) equalCnt++;	//일치함.
+				}
+				
+				//2. 저고 비율 비교
+				result = lottoDataService.existLowHighRatio(LottoUtil.getRatioTitle(), data, exptPtrnAnlyInfo);
+				if (verification && isEqual) {
+					if(!result) {
+						equalCnt++;	//일치함.
+						System.out.println("2. 저고 비율 비교 : " + equalCnt);
+					}
+				} else {
+					if(!result) equalCnt++;	//일치함.
+				}
+				
+				//3. 홀짝 비율 비교
+				result = lottoDataService.existOddEvenRatio(LottoUtil.getRatioTitle(), data, exptPtrnAnlyInfo);
+				if (verification && isEqual) {
+					if(!result) {
+						equalCnt++;	//일치함.
+						System.out.println("3. 홀짝 비율 비교 : " + equalCnt);
+					}
+				} else {
+					if(!result) equalCnt++;	//일치함.
+				}
+				
+				//4. 총합 비교
+				result = lottoDataService.existTotalRange(data, exptPtrnAnlyInfo);
+				if (verification && isEqual) {
+					if(!result) {
+						equalCnt++;	//일치함.
+						System.out.println("4. 총합 비교 : " + equalCnt);
+					}
+				} else {
+					if(!result) equalCnt++;	//일치함.
+				}
+				
+				//5. 연속되는 수 비교
+				result = lottoDataService.existConsecutivelyNumbers(data, exptPtrnAnlyInfo);
+				if (verification && isEqual) {
+					if(!result) {
+						equalCnt++;	//일치함.
+						System.out.println("5. 연속되는 수 비교 : " + equalCnt);
+					}
+				} else {
+					if(!result) equalCnt++;	//일치함.
+				}
+				
+				//6. 끝수합 비교
+				result = lottoDataService.existSumEndNumberRange(data, lowEndNumber, highEndNumber);
+				if (verification && isEqual) {
+					if(!result) {
+						equalCnt++;	//일치함.
+						System.out.println("6. 끝수합 비교 : " + equalCnt);
+					}
+				} else {
+					if(!result) equalCnt++;	//일치함.
+				}
+				
+				//7. 그룹 내 포함개수 비교
+				result = lottoDataService.existGroup(data, exptPtrnAnlyInfo);
+				if (verification && isEqual) {
+					if(!result) {
+						equalCnt++;	//일치함.
+						System.out.println("7. 그룹 내 포함개수 비교 : " + equalCnt);
+					}
+				} else {
+					if(!result) equalCnt++;	//일치함.
+				}
+				
+				//8. 끝자리가 같은 수 비교
+				result = lottoDataService.existEndNumberCount(data, exptPtrnAnlyInfo);
+				if (verification && isEqual) {
+					if(!result) {
+						equalCnt++;	//일치함.
+						System.out.println("8. 끝자리가 같은 수 비교 : " + equalCnt);
+					}
+				} else {
+					if(!result) equalCnt++;	//일치함.
+				}
+				
+				//9. 소수 1개이상 포함 비교
+				result = lottoDataService.existSotsu(data, exptPtrnAnlyInfo);
+				if (verification && isEqual) {
+					if(!result) {
+						equalCnt++;	//일치함.
+						System.out.println("9. 소수 1개이상 포함 비교 : " + equalCnt);
+					}
+				} else {
+					if(!result) equalCnt++;	//일치함.
+				}
+				
+				//10. 3의 배수 포함 비교
+				result = lottoDataService.existNumberOf3(data, exptPtrnAnlyInfo);
+				if (verification && isEqual) {
+					if(!result) {
+						equalCnt++;	//일치함.
+						System.out.println("10. 3의 배수 포함 비교 : " + equalCnt);
+					}
+				} else {
+					if(!result) equalCnt++;	//일치함.
+				}
+				
+				//11. 합성수 포함 비교 : 합성수란 소수와 3의 배수가 아닌 수
+				result = lottoDataService.existNumberOfNot3(data, exptPtrnAnlyInfo);
+				if (verification && isEqual) {
+					if(!result) {
+						equalCnt++;	//일치함.
+						System.out.println("11. 합성수 포함 비교 : " + equalCnt);
+					}
+				} else {
+					if(!result) equalCnt++;	//일치함.
+				}
+				
+				//12. AC 비교(7 ~ 10)
+				result = lottoDataService.isContainAc(data, exptPtrnAnlyInfo);
+				if (verification && isEqual) {
+					if(!result) {
+						equalCnt++;	//일치함.
+						System.out.println("12. AC 비교 : " + equalCnt);
+					}
+				} else {
+					if(!result) equalCnt++;	//일치함.
+				}
+				
+				//13. 궁합도 매치
+				//2016.02.19
+				result = lottoDataService.isMcMatched(data, mcNumberMap);
+				if (verification && isEqual) {
+					if(!result) {
+						equalCnt++;	//일치함.
+						System.out.println("13. 궁합도 매치 : " + equalCnt);
+					}
+				} else {
+					if(!result) equalCnt++;	//일치함.
+				}
+				
+				
+				/*********************************************************
+				 * 진행도 출력
+				 *********************************************************/
+				double d_cnt = i + 1;
+				double d_total = numberList.size();
+				DecimalFormat df = new DecimalFormat("#.##"); 
+				double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+				if (!verification) {
+					//검증이 아닐경우 진행도 출력
+					System.out.println("index : " + (i+1) + " / " + numberList.size() + " [ equalCnt : " + equalCnt + " ] --- 진행률 : " + (percent*100) + "%");
+				}
+				
+				//2016.08.05
+				//제외수가 포함되어 있어서 한번 더 비교하여 있으면  skip 함
+				boolean isExists = false; 
+				for (int j = 0; j < numbers.length; j++) {
+					if (deleteTargetMap.containsKey(numbers[j])) {
+						isExists = true;
+						break;
+					}
+				}
+				if (isExists) {
+					System.out.println("13-1. 제외수가 포함된 예상번호임. SKIP.(" + Arrays.toString(numbers)+ ")");
+					continue;
+				}
+				
+				/*
+				 * 14. 번호간 차이값 체크
+				 * 번호간 차이값이 평균범위 포함되어 있는지 체크한다.
+				 */
+				result = lottoDataService.isContainRange(data, numbersRangeList);
+				if (verification && isEqual) {
+					if(!result) {
+						equalCnt++;	//일치함.
+						System.out.println("14. 번호간 차이값 체크 : OK - " + equalCnt);
+					}
+				} else {
+					if(!result) continue;
+				}
+				
+				/*
+				 * 15. 숫자별 출현번호 체크
+				 * 숫자별 평균출현번호인지 체크한다.
+				 */
+				result = lottoDataService.isContainGroup(data, groupByNumbersList);
+				if (verification && isEqual) {
+					if(!result) {
+						equalCnt++;	//일치함.
+						System.out.println("15. 숫자별 출현번호 체크 : OK - " + equalCnt);
+					}
+				} else {
+					if(!result) continue;
+				}
+				
+				// 일치개수가 최대인 목록만 저장한다.
+				// 최대 일치개수가 변경되면 최대 일치개수 데이터 목록을 초기화한다.
+				if (maxEqualCnt < equalCnt) {
+					maxEqualCnt = equalCnt;
+					maxEqualDataList = new ArrayList<ExDataDto>();
+					maxEqualDataList.add(data);
+				} else {
+					// 일치개수가 최대 일치개수보다 작거나 같을 경우
+					
+					// 최대 일치개수 데이터 목록이 10,000개 이하일 경우,
+					// 최대 일치개수보다 1 작은 개수까지 저장한다.
+					if (maxEqualDataList.size() <= 10000) {
+						if (equalCnt < (maxEqualCnt - 1)) {
+							// 일치개수가 허용 일치개수보다 작으면 다음 데이터를 설정한다.
+							continue;
+						} else if (equalCnt == maxEqualCnt) {
+							maxEqualDataList.add(data);
+						}
+					} else {
+						if (equalCnt < maxEqualCnt) {
+							// 일치개수가 허용 일치개수보다 작으면 다음 데이터를 설정한다.
+							continue;
+						} else if (equalCnt == maxEqualCnt) {
+							maxEqualDataList.add(data);
+						}
+					}
+				}
+				
+				// 목록에 저장
+				if (orderedEqualCntList.size() == 0) {
+					orderedEqualCntList.add(equalCnt);
+					orderedDataList.add(data);
+				} else {
+					lottoDataService.insertData(orderedEqualCntList, equalCnt, orderedDataList, data);
+				}
+			} // end for 추출 번호 중 일치하는 번호 목록 구하기
+		} // end if numberList check
 	}
 	
 	/**

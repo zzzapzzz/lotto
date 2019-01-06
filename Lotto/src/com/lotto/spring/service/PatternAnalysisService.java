@@ -125,8 +125,8 @@ public class PatternAnalysisService extends DefaultService {
 	 */
 	public void setPatternInfo(ExptPtrnAnlyDto exptPtrnAnlyDto, List<WinDataAnlyDto> winDataList, int patternType, List<PtrnInfoDto> ptrnInfoList) {
 		
-//		boolean ppDebug = false;
-		boolean ppDebug = true;
+		boolean ppDebug = false;
+//		boolean ppDebug = true;
 		
 		//과거 패턴 회차 리스트
 		ArrayList<ArrayList<WinDataAnlyDto>> allPatternCountList = new ArrayList<ArrayList<WinDataAnlyDto>>();
@@ -198,11 +198,11 @@ public class PatternAnalysisService extends DefaultService {
 			ArrayList<WinDataAnlyDto> countList = new ArrayList<WinDataAnlyDto>();
 			if (allPatternCountList.size() == 0) {
 				// 과거 패턴 회차 리스트가 없으면 전체 리스트를 대상으로 비교하여 목록을 구한다.
-				log.info("과거 패턴 회차 리스트가 없으면 전체 리스트를 대상으로 비교하여 목록을 구한다.");
+//				log.info("과거 패턴 회차 리스트가 없으면 전체 리스트를 대상으로 비교하여 목록을 구한다.");
 				this.getPatternList(sourcePattern, winDataList, countList, i - 1, patternType);
 			} else {
 				// 과거 패턴 회차 리스트가 있으면 회차 리스트를 대상으로 비교하여 목록을 구한다.
-				log.info("과거 패턴 회차 리스트가 있으면 회차 리스트를 대상으로 비교하여 목록을 구한다.");
+//				log.info("과거 패턴 회차 리스트가 있으면 회차 리스트를 대상으로 비교하여 목록을 구한다.");
 				this.getPatternList(sourcePattern, winDataList, allPatternCountList.get(countListIndex), countList,
 						patternType);
 			}

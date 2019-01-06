@@ -17,13 +17,15 @@
 			});
 			
 			function initPlugin() {
+				/*
 				var param = {		
 					ex_count : ex_count
 				};
+				*/
 				
 				jQuery("#jqgrid").jqGrid({
 					url: '${APP_ROOT}/sysmng/getExDataList.do',
-					postData: param,
+					// postData: param,
 					datatype: 'json', //Data 형식   'json/xml/local'
 		        	jsonReader : {  // 이부분 추가 하셔야 json 쓰시기 편리 합니다.
 							page: "page", 
@@ -37,7 +39,7 @@
 						'회차','번호1','번호2','번호3','번호4','번호5','번호6'
 					],
 					colModel : [
-						  {name:'win_count',index:'win_count',width:100, align:'center'}
+						  {name:'ex_count',index:'win_count',width:100, align:'center'}
 						, {name:'num1',index:'num1',width:100, align:'center'}
 						, {name:'num2',index:'num2',width:100, align:'center'}
 						, {name:'num3',index:'num3',width:100, align:'center'}

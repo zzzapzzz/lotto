@@ -198,7 +198,7 @@ public class SysmngController extends DefaultSMController {
 		String authTask       = WebUtil.replaceParam(request.getParameter("authTask"), "");
 		     			
 		String page = WebUtil.replaceParam(request.getParameter("page"), "1");
-		String limit = WebUtil.replaceParam(request.getParameter("rows"), "100");
+		String rows = WebUtil.replaceParam(request.getParameter("rows"), "100");
 		String sidx = WebUtil.replaceParam(request.getParameter("sidx"), "usr_id");
 		String sord = WebUtil.replaceParam(request.getParameter("sord"), "ASC");	
 		
@@ -215,18 +215,17 @@ public class SysmngController extends DefaultSMController {
 		Map map = new HashMap();
 		map.put("search_key", searchKey);
 		map.put("auth_task", authTask);
-		map.put("page", Integer.toString(1+((Integer.parseInt(page)-1)*Integer.parseInt(limit))));
-		map.put("scale", Integer.toString(Integer.parseInt(page)*Integer.parseInt(limit)));
+		map.put("startNum", Integer.toString(1+((Integer.parseInt(page)-1)*Integer.parseInt(rows))));
+		map.put("endNum", Integer.toString(Integer.parseInt(page)*Integer.parseInt(rows)));
 		map.put("sidx", sidx);
 		map.put("sord", sord);
 		
-//		ArrayList<CaseInsensitiveMap> userList = sysmngService.getUserList(map);
-		ArrayList<UserInfoDto> userList = sysmngService.getUserList2(map);
+		ArrayList<UserInfoDto> userList = sysmngService.getUserList(map);
 		int userListCnt = sysmngService.getUserListCnt(map);
 
 		int total_pages = 0;
 		if( userListCnt > 0 ) {
-			total_pages = (int) Math.ceil((double)userListCnt/Double.parseDouble(limit));
+			total_pages = (int) Math.ceil((double)userListCnt/Double.parseDouble(rows));
 		} else { 
 			total_pages = 0; 
 		}  
@@ -256,7 +255,6 @@ public class SysmngController extends DefaultSMController {
 	 * @param response
 	 * @throws IOException
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping("/sysmng/createUserInfo")
 	public void createUserInfo(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute UserInfoDto dto) throws IOException {
 		
@@ -302,7 +300,6 @@ public class SysmngController extends DefaultSMController {
 	 * @param response
 	 * @throws IOException
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping("/sysmng/modifyUserInfo")
 	public void modifyUserInfo(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute UserInfoDto dto) throws IOException {
 		
@@ -348,7 +345,6 @@ public class SysmngController extends DefaultSMController {
 	 * @param response
 	 * @throws IOException
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping("/sysmng/deleteUserInfo")
 	public void deleteUserInfo(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute UserInfoDto dto) throws IOException {
 		
@@ -695,6 +691,7 @@ public class SysmngController extends DefaultSMController {
 	    				log.info("[" + loginUserNo + "]\t당첨번호 전체 목록 오름차순 조회");
 	    				WinDataDto winDataDto = new WinDataDto();
 	    				winDataDto.setSord("ASC");
+	    				winDataDto.setPage("1");	// 전체조회 설정
 	    				List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
 	    				List<WinDataDto> procWinDataList = new ArrayList<WinDataDto>(); 
 	    				
@@ -845,6 +842,7 @@ public class SysmngController extends DefaultSMController {
 			// 당첨번호 전체 목록 오름차순 조회
 			WinDataDto winDataDto = new WinDataDto();
 			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
 			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
 			
 			// 저고비율정보 등록
@@ -1104,6 +1102,7 @@ public class SysmngController extends DefaultSMController {
 			// 당첨번호 전체 목록 조회
 			WinDataDto winDataDto = new WinDataDto();
 			winDataDto.setSord("DESC");
+			winDataDto.setPage("1");	// 전체조회 설정
 			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
 
 			// 최근 당첨번호
@@ -1212,6 +1211,15 @@ public class SysmngController extends DefaultSMController {
 		dto.setReg_user_no(loginUserNo);
 		dto.setAccess_ip(accessip);
 		
+		// 당첨번호 전체 목록 조회
+		WinDataDto winDataDto = new WinDataDto();
+		winDataDto.setSord("DESC");
+		winDataDto.setPage("1");	// 전체조회 설정
+		List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+
+		// 예상 당첨번호
+		dto.setEx_count(winDataList.get(0).getWin_count()+1);
+					
 		List<ExDataDto> exDataList = sysmngService.getExDataList(dto);
 		int exDataListCnt = sysmngService.getExDataListCnt(dto);
 
@@ -1275,7 +1283,7 @@ public class SysmngController extends DefaultSMController {
 				ExptPtrnAnlyDto exptPtrnAnlyInfo = patternAnalysisService.getExpectPattern(winDataList);
 				
 				// 예상번호 추출 및 등록
-				sysmngService.insertExptNum(winDataList, exptPtrnAnlyInfo);
+				sysmngService.insertExptNumList(winDataList, exptPtrnAnlyInfo);
 
 				
 				jsonObj.put("status", "success");
@@ -1321,6 +1329,7 @@ public class SysmngController extends DefaultSMController {
 			// 당첨번호 전체 목록 조회
 			WinDataDto winDataDto = new WinDataDto();
 			winDataDto.setSord("DESC");
+			winDataDto.setPage("1");	// 전체조회 설정
 			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
 			
 			// 최근 당첨번호
@@ -1385,6 +1394,96 @@ public class SysmngController extends DefaultSMController {
 			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/exptdatamng"));
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/ExDataAnalysis_Plugin");
+			
+			return POPUP;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";
+			
+		}
+	}
+	
+	/**
+	 * 전회차 매칭결과 화면 호출(ajax)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/resultExDataajax")
+	public String resultExDataajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			long loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 전회차 매칭결과 화면 호출(ajax)");
+			
+			setModelMap(modelMap, request);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("DESC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			// 최근 당첨번호
+			WinDataDto lastData = winDataList.get(0);
+			modelMap.addAttribute("last_count", lastData.getWin_count());
+			
+			// 예상번호 목록 조회
+			ExDataDto dto = new ExDataDto();
+			dto.setEx_count(lastData.getWin_count());
+			dto.setSord("ASC");
+			dto.setPage("1");	// 전체조회 설정
+			List<ExDataDto> exDataList = sysmngService.getExDataList(dto);
+			
+			// 당첨결과 설정
+			lottoDataService.getExDataResult(modelMap, lastData, exDataList);
+			
+			//CurrMenuInfo overwrite
+			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/exptdatamng"));
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ExDataResult");
+			modelMap.addAttribute("isAjax", "Y");
+			
+		} else {
+			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
+		}
+		return POPUP;
+	}
+	
+	/**
+	 * 전회차 매칭결과 화면 호출(plugin)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/resultExDataplugin")
+	public String plugin(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			long loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 전회차 매칭결과 화면 호출(plugin)");
+			
+			setModelMap(modelMap, request);
+			
+			//CurrMenuInfo overwrite
+			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/exptdatamng"));
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/ExDataResult_Plugin");
 			
 			return POPUP;
 		} else {
@@ -1534,6 +1633,7 @@ public class SysmngController extends DefaultSMController {
 			// 당첨번호 전체 목록 조회
 			WinDataDto winDataDto = new WinDataDto();
 			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
 			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
 			
 			// 10회차 포함번호 목록 조회
@@ -2026,7 +2126,7 @@ public class SysmngController extends DefaultSMController {
 		String searchKey       = WebUtil.replaceParam(request.getParameter("searchKey"), "");
 		     			
 		String page = WebUtil.replaceParam(request.getParameter("page"), "1");
-		String limit = WebUtil.replaceParam(request.getParameter("rows"), "100");
+		String rows = WebUtil.replaceParam(request.getParameter("rows"), "100");
 		String sidx = WebUtil.replaceParam(request.getParameter("sidx"), "auth_cd");
 		String sord = WebUtil.replaceParam(request.getParameter("sord"), "ASC");	
 		
@@ -2042,8 +2142,8 @@ public class SysmngController extends DefaultSMController {
 		
 		Map map = new HashMap();
 		map.put("search_key", searchKey);
-		map.put("page", Integer.toString(1+((Integer.parseInt(page)-1)*Integer.parseInt(limit))));
-		map.put("scale", Integer.toString(Integer.parseInt(page)*Integer.parseInt(limit)));
+		map.put("page", Integer.toString(1+((Integer.parseInt(page)-1)*Integer.parseInt(rows))));
+		map.put("rows", Integer.toString(Integer.parseInt(page)*Integer.parseInt(rows)));
 		map.put("sidx", sidx);
 		map.put("sord", sord);
 		
@@ -2052,7 +2152,7 @@ public class SysmngController extends DefaultSMController {
 
 		int total_pages = 0;
 		if( authTaskListCnt > 0 ) {
-			total_pages = (int) Math.ceil((double)authTaskListCnt/Double.parseDouble(limit));
+			total_pages = (int) Math.ceil((double)authTaskListCnt/Double.parseDouble(rows));
 		} else { 
 			total_pages = 0; 
 		}  

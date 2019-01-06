@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.lotto.spring.domain.dto.ExDataDto;
 import com.lotto.spring.domain.dto.ExptPtrnAnlyDto;
 import com.lotto.spring.domain.dto.WinDataAnlyDto;
 import com.lotto.spring.domain.dto.WinDataDto;
@@ -59,6 +60,22 @@ public final class LottoUtil {
 	/** 총합범위유형 201 이상 */
 	public static final int TOTAL_RANGE_TYPE_4 = 4;
 	
+	public static int[] getNumbersFromObj(Object data) {
+		int[] numbers = { 0, 0, 0, 0, 0, 0 };
+				
+		if (data instanceof WinDataDto) {
+			numbers = LottoUtil.getNumbers((WinDataDto)data);
+		} else if (data instanceof ExDataDto) {
+			numbers = LottoUtil.getNumbers((ExDataDto)data);
+		} else if (data instanceof WinDataAnlyDto) {
+			numbers = LottoUtil.getNumbers((WinDataAnlyDto)data);
+		} else if (data instanceof int[]){
+			numbers = (int[])data;
+		}
+		
+		return numbers;
+		
+	}
 	
 	/**
 	 * 번호 배열 가져오기
@@ -93,6 +110,24 @@ public final class LottoUtil {
 		numbers[4] = data.getNum5();
 		numbers[5] = data.getNum6();
 		
+		return numbers;
+	}
+	
+	/**
+	 * 번호 배열 가져오기
+	 * 
+	 * @param data
+	 * @return
+	 */
+	public static int[] getNumbers(ExDataDto data) {
+		int[] numbers = { 0, 0, 0, 0, 0, 0 };
+		numbers[0] = data.getNum1();
+		numbers[1] = data.getNum2();
+		numbers[2] = data.getNum3();
+		numbers[3] = data.getNum4();
+		numbers[4] = data.getNum5();
+		numbers[5] = data.getNum6();
+
 		return numbers;
 	}
 
@@ -154,12 +189,12 @@ public final class LottoUtil {
      * @param data
 	 * @return
 	 */
-	public static int getTotal(WinDataDto data){
+	public static int getTotal(Object data){
 		int total = 0;		
-		int[] datas = LottoUtil.getNumbers(data);
+		int[] numbers = LottoUtil.getNumbersFromObj(data);
 		
-		for(int index = 0 ; index < datas.length ; index++){			
-			total += datas[index];
+		for(int index = 0 ; index < numbers.length ; index++){			
+			total += numbers[index];
 		}
 		
 		return total;
@@ -175,15 +210,9 @@ public final class LottoUtil {
 		int low = 0;
 		int high = 0;
 		
-		int[] datas = null;
+		int[] numbers = LottoUtil.getNumbersFromObj(data);
 		
-		if(data instanceof WinDataDto){
-			datas = LottoUtil.getNumbers((WinDataDto)data);
-		}else if(data instanceof int[]){
-			datas = (int[])data;
-		}
-		
-		for(int num : datas){
+		for(int num : numbers){
 			if(num < 23){
 				low++;
 			}else{
@@ -204,15 +233,9 @@ public final class LottoUtil {
 		int odd = 0;
 		int even = 0;
 		
-		int[] datas = null;
+		int[] numbers = LottoUtil.getNumbersFromObj(data);
 		
-		if(data instanceof WinDataDto){
-			datas = LottoUtil.getNumbers((WinDataDto)data);
-		}else if(data instanceof int[]){
-			datas = (int[])data;
-		}
-		
-		for(int num : datas){
+		for(int num : numbers){
 			if(num%2 == 0){
 				even++;		//짝수
 			}else{
@@ -229,9 +252,9 @@ public final class LottoUtil {
 	 * @param data
 	 * @return
 	 */
-	public static int getSumEndNumber(WinDataDto data){
+	public static int getSumEndNumber(Object data){
 		int total = 0;
-		int[] numbers = LottoUtil.getNumbers(data);
+		int[] numbers = LottoUtil.getNumbersFromObj(data);
 		
 		for(int index = 0 ; index < numbers.length ; index++){
 			total += numbers[index] % 10;
@@ -246,9 +269,9 @@ public final class LottoUtil {
 	 * @param data
 	 * @return
 	 */
-	public static int getAc(WinDataDto data){
+	public static int getAc(Object data){
 		int ac = 0;
-		int[] numbers = LottoUtil.getNumbers(data);
+		int[] numbers = LottoUtil.getNumbersFromObj(data);
 		
 		List<Integer> list = new ArrayList<Integer>();	//전체 개수를 세기 위한 리스트
 		Map<Integer, Integer> mapData = new HashMap<Integer, Integer>();	//숫자 판별을 위한 해쉬맵

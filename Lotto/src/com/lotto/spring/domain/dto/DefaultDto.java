@@ -20,8 +20,9 @@ public class DefaultDto {
 	private String rows;
 	private String sidx;
 	private String sord;
-	private int startNum;
-	private int endNum;
+	
+	private String startNum;
+	private String endNum;
 	
 	public String getRow_num() {
 		return row_num;
@@ -42,13 +43,19 @@ public class DefaultDto {
 		this.access_ip = access_ip;
 	}
 	public String getPage() {
+		if (this.page==null || "".equals(this.page)) {
+			return "1";
+		}
 		return page;
 	}
 	public void setPage(String page) {
 		this.page = page;
 	}
 	public String getRows() {
-		return rows==null?"99999999":rows;
+		if (this.rows==null || "".equals(this.rows)) {
+			return "99999999";
+		} 
+		return rows;
 	}
 	public void setRows(String rows) {
 		this.rows = rows;
@@ -65,17 +72,18 @@ public class DefaultDto {
 	public void setSord(String sord) {
 		this.sord = sord;
 	}
-	public int getStartNum() {
+	public String getStartNum() {
+		startNum = Integer.toString(1+((Integer.parseInt(this.getPage())-1) * Integer.parseInt(this.getRows()))); 
 		return startNum;
 	}
-	public void setStartNum(int startNum) {
-		this.startNum = 1 + ( (Integer.parseInt(this.page) - 1 ) * Integer.parseInt(this.rows) );
+	public void setStartNum(String startNum) {
+		this.startNum = startNum;
 	}
-	public int getEndNum() {
+	public String getEndNum() {
+		endNum = Integer.toString(Integer.parseInt(this.getPage())*Integer.parseInt(this.getRows()));
 		return endNum;
 	}
-	public void setEndNum(int endNum) {
-		this.endNum = Integer.parseInt(this.page)*Integer.parseInt(this.rows);
+	public void setEndNum(String endNum) {
+		this.endNum = endNum;
 	}
-	
 }

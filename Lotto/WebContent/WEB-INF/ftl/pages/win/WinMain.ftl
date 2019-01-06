@@ -16,9 +16,10 @@
 						<div class="col-lg-2">
 							<select class="form-control" id="win_count">
 							</select> 
-						</div>
+						</div>						
 						<span id="search" class="btn btn-default btn-primary"><i class="fa fa-search"></i> 조회</span>
 					</div>
+					
 					
 					<!-- row -->
 					<div class="row well">
