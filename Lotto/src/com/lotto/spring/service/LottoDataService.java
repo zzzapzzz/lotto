@@ -1134,8 +1134,7 @@ public class LottoDataService extends DefaultService {
 	public void setNumbers(List<WinDataAnlyDto> winDataList) {
 		for (int i = 0; i < winDataList.size(); i++) {
 			WinDataAnlyDto winData = winDataList.get(i);
-			int[] difNumbers = this.getDifNumbers(LottoUtil.getNumbers(winData));
-			winData.setDifNumbers(difNumbers);
+			winData.setNumbers(LottoUtil.getNumbers(winData));
 		}
 	}
 	

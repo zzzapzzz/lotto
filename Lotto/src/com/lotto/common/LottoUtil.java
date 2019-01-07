@@ -464,4 +464,31 @@ public final class LottoUtil {
 		
 		return containCnt;
 	}
+	
+	/**
+	 * @description <div id=description><b>번호간 차이값 계산하기</b></div>
+     *              <div id=detail>각 번호의 차이를 비교하여 설정한다.</div>
+	 * @param data
+	 * @return
+	 */
+	public static int[] getDifNumbers(Object data) {
+		int[] numbers = LottoUtil.getNumbersFromObj(data);
+		return LottoUtil.getDifNumbers(numbers);
+	}
+	
+	/**
+	 * @description <div id=description><b>번호간 차이값 계산하기</b></div>
+	 *              <div id=detail>각 번호의 차이를 비교하여 설정한다.</div>
+	 * @param numbers
+	 * @return
+	 */
+	public static int[] getDifNumbers(int[] numbers) {
+		int[] difNubmers = {0,0,0,0,0};
+		
+		for (int i = 0; i < numbers.length -1 ; i++) {
+			difNubmers[i] = Math.abs(numbers[i] - numbers[i+1]);
+		}
+		
+		return difNubmers;
+	}
 }

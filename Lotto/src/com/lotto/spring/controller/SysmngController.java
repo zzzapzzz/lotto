@@ -1522,9 +1522,32 @@ public class SysmngController extends DefaultSMController {
 		dto.setReg_user_no(loginUserNo);
 		dto.setAccess_ip(accessip);
 		
-		List<ExDataDto> exDataList = sysmngService.getExDataList(dto);
+		// 당첨번호 전체 목록 조회
+		WinDataDto winDataDto = new WinDataDto();
+		winDataDto.setSord("ASC");
+		List<WinDataAnlyDto> winDataList = sysmngService.getWinDataAnlyList(winDataDto);
 		
-		// TODO 30목록 추출
+		// TODO 예상번호 패턴정보 조회
+					
+		// 예상번호 30조합 추출
+		int exDataListCnt = sysmngService.getExDataListCnt(dto);
+		List<ExDataDto> exDataList = new ArrayList<ExDataDto>();
+		Map<Integer, Integer> excutedRandomMap = new HashMap<Integer, Integer>();
+		
+		// 30목록 추출
+//		do {
+//			int randomSeq = (int) (Math.random() * exDataListCnt) + 1;
+//			if (excutedRandomMap.containsKey(randomSeq)) {
+//				continue;
+//			} else {
+//				excutedRandomMap.put(randomSeq, randomSeq);
+//				dto.setSeq(randomSeq);
+//			}
+//			
+//			ExDataDto exData = sysmngService.getExDataInfo(dto);
+//			
+//			
+//		} while (exDataList.size() >= 30);
 		
 		if (exDataList != null && exDataList.size() > 0) {
 			json.put("ex_numbers_cnt", exDataList.size());

@@ -145,7 +145,19 @@ public class SysmngService extends DefaultService {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<WinDataAnlyDto> getWinDataAnlyList(WinDataDto dto) {
-		return (ArrayList<WinDataAnlyDto>) baseDao.getList("sysmngMapper.getWinDataAnlyList", dto);
+		
+		ArrayList<WinDataAnlyDto> winDataList = (ArrayList<WinDataAnlyDto>) baseDao.getList("sysmngMapper.getWinDataAnlyList", dto);
+		if (winDataList != null && winDataList.size() > 0) {
+			
+			for (int i = 0; i < winDataList.size(); i++) {
+				WinDataAnlyDto winData = winDataList.get(i);
+				winData.setNumbers(LottoUtil.getNumbers(winData));
+				winData.setDifNumbers(LottoUtil.getDifNumbers(winData.getNumbers()));
+				
+			}
+		}
+		
+		return winDataList;
 	}
 	
 	/**
@@ -678,6 +690,16 @@ public class SysmngService extends DefaultService {
 	 */
 	public ZeroRangeDto getZeroRangeInfo(WinDataDto dto) {
 		return (ZeroRangeDto) baseDao.getSingleRow("sysmngMapper.getZeroRangeInfo", dto);
+	}
+	
+	/**
+	 * 예상번호 정보 조회 (Dto)
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public ExDataDto getExDataInfo(ExDataDto dto) {
+		return (ExDataDto) baseDao.getSingleRow("sysmngMapper.getExDataInfo", dto);
 	}
 	
 	/**

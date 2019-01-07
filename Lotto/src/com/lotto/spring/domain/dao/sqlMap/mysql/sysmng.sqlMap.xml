@@ -551,6 +551,28 @@
 		WHERE WIN_COUNT = #{win_count}		
 	</select>
 	
+	<!-- 예상번호 정보 조회 -->
+	<select id="getExDataInfo" parameterType="exDataDto" resultType="exDataDto">
+		/* sysmng.getExDataInfo */
+		SELECT 
+			  EX_COUNT
+			, NUM1
+			, NUM2
+			, NUM3
+			, NUM4
+			, NUM5
+			, NUM6
+			, TOTAL
+			, SUM_END_NUM
+			, LOW_HIGH
+			, ODD_EVEN
+			, AC
+		FROM TB_EXPT_NUM		
+		WHERE 1=1
+		AND EX_COUNT = #{ex_count}
+		AND SEQ = #{seq}
+	</select>
+	
 	<!-- 예상번호 목록 조회 -->
 	<select id="getExDataList" parameterType="exDataDto" resultType="exDataDto">
 		/* sysmng.getExDataList */
