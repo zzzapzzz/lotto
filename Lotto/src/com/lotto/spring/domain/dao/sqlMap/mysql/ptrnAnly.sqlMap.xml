@@ -63,6 +63,34 @@
 		)
 	</insert>
 	
+	<!-- 예상패턴분석 정보 등록 -->
+	<select id="getExptPtrnAnlyInfo" parameterType="exptPtrnAnlyDto" resultType="exptPtrnAnlyDto">
+		/* ptrnAnlyMapper.getExptPtrnAnlyInfo */
+		SELECT
+			  EX_COUNT
+			, COUNT_SUM
+			, CONT_CNT
+			, NOT_CONT_CNT
+			, SAME_NUM_CNT
+			, UP_1_CNT
+			, DOWN_1_CNT
+			, LOW_HIGH
+			, ODD_EVEN
+			, TOTAL_RANGE_TYPE
+			, TOTAL_RANGE
+			, END_SUM_RANGE
+			, C_NUM_CNT
+			, NOT_CONT_GRP
+			, END_NUM_SAME_CNT
+			, P_NUM_CNT
+			, MULTI_3_CNT
+			, COMP_NUM_CNT
+			, AC
+			, MCNUM_CNT
+		FROM TB_EXPT_PTRN_ANLY
+		WHERE EX_COUNT = #{ex_count}
+	</select>
+	
 	<!-- 패턴정보 삭제 -->
 	<delete id="deletePtrnInfo">		
 		/* ptrnAnlyMapper.deletePtrnInfo */

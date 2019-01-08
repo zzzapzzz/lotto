@@ -977,5 +977,17 @@ public class PatternAnalysisService extends DefaultService {
 			}
 		}
 	}
+
+	/**
+	 * 예상번호 패턴정보 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public ExptPtrnAnlyDto getExptPtrnAnlyInfo(ExptPtrnAnlyDto dto) {
+		return (ExptPtrnAnlyDto) baseDao.getSingleRow("ptrnAnlyMapper.getExptPtrnAnlyInfo", dto);
+	}
+	
+	
 	
 }

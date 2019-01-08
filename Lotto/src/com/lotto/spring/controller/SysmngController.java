@@ -1527,7 +1527,10 @@ public class SysmngController extends DefaultSMController {
 		winDataDto.setSord("ASC");
 		List<WinDataAnlyDto> winDataList = sysmngService.getWinDataAnlyList(winDataDto);
 		
-		// TODO 예상번호 패턴정보 조회
+		// 예상번호 패턴정보 조회
+		ExptPtrnAnlyDto exptPtrnAnlyDto = new ExptPtrnAnlyDto();
+		exptPtrnAnlyDto.setEx_count(dto.getEx_count());
+		ExptPtrnAnlyDto exptPtrnAnly = patternAnalysisService.getExptPtrnAnlyInfo(exptPtrnAnlyDto); 
 					
 		// 예상번호 30조합 추출
 		int exDataListCnt = sysmngService.getExDataListCnt(dto);
