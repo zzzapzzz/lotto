@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -1530,27 +1531,45 @@ public class SysmngController extends DefaultSMController {
 		// 예상번호 패턴정보 조회
 		ExptPtrnAnlyDto exptPtrnAnlyDto = new ExptPtrnAnlyDto();
 		exptPtrnAnlyDto.setEx_count(dto.getEx_count());
-		ExptPtrnAnlyDto exptPtrnAnly = patternAnalysisService.getExptPtrnAnlyInfo(exptPtrnAnlyDto); 
+		ExptPtrnAnlyDto exptPtrnAnlyInfo = patternAnalysisService.getExptPtrnAnlyInfo(exptPtrnAnlyDto); 
 					
 		// 예상번호 30조합 추출
 		int exDataListCnt = sysmngService.getExDataListCnt(dto);
+		log.info("예상번호 총 건수 = " + exDataListCnt);
 		List<ExDataDto> exDataList = new ArrayList<ExDataDto>();
 		Map<Integer, Integer> excutedRandomMap = new HashMap<Integer, Integer>();
+		int excuteCnt = 0;	// 추출횟수
 		
 		// 30목록 추출
-//		do {
-//			int randomSeq = (int) (Math.random() * exDataListCnt) + 1;
-//			if (excutedRandomMap.containsKey(randomSeq)) {
-//				continue;
-//			} else {
-//				excutedRandomMap.put(randomSeq, randomSeq);
-//				dto.setSeq(randomSeq);
-//			}
-//			
-//			ExDataDto exData = sysmngService.getExDataInfo(dto);
-//			
-//			
-//		} while (exDataList.size() >= 30);
+		do {
+			int randomSeq = (int) (Math.random() * exDataListCnt) + 1;
+			if (excutedRandomMap.containsKey(randomSeq)) {
+				continue;
+			} else {
+				excutedRandomMap.put(randomSeq, randomSeq);
+				dto.setSeq(randomSeq);
+			}
+			
+			ExDataDto exData = sysmngService.getExDataInfo(dto);
+			boolean result = lottoDataService.compareExptPtrn(exData, winDataList, exptPtrnAnlyInfo);
+			if (result) {
+				exDataList.add(exData);
+			}
+			
+			excuteCnt++;
+			
+			// 진행도 출력
+			double d_cnt = excuteCnt;
+			double d_total = exDataListCnt;
+			DecimalFormat df = new DecimalFormat("#.##"); 
+			double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+			log.info("추출횟수 = " + exDataList.size() + " / 실행횟수 = " + excuteCnt + " (" + (percent*100) + "%)");
+			
+			if (exDataList.size() >= 30 || exDataListCnt == excuteCnt) {
+				break;
+			}
+			
+		} while (true);
 		
 		if (exDataList != null && exDataList.size() > 0) {
 			json.put("ex_numbers_cnt", exDataList.size());

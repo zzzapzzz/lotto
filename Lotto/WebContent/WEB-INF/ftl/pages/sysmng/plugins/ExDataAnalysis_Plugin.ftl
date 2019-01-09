@@ -92,12 +92,12 @@
 								$("#ex_numbers").html("");
 								
 								for (var i = 0 ; i < result.ex_numbers_cnt ; i++) {
-									$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + result.list[i].num1 +'.png" alt="' + result.list[i].num1 + '"/>');
-						        	$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + result.list[i].num2 +'.png" alt="' + result.list[i].num2 + '"/>');
-						        	$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + result.list[i].num3 +'.png" alt="' + result.list[i].num3 + '"/>');
-						        	$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + result.list[i].num4 +'.png" alt="' + result.list[i].num4 + '"/>');
-						        	$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + result.list[i].num5 +'.png" alt="' + result.list[i].num5 + '"/>');
-						        	$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + result.list[i].num6 +'.png" alt="' + result.list[i].num6 + '"/>');
+									$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + result.ex_numbers[i].num1 +'.png" alt="' + result.ex_numbers[i].num1 + '"/>');
+						        	$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + result.ex_numbers[i].num2 +'.png" alt="' + result.ex_numbers[i].num2 + '"/>');
+						        	$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + result.ex_numbers[i].num3 +'.png" alt="' + result.ex_numbers[i].num3 + '"/>');
+						        	$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + result.ex_numbers[i].num4 +'.png" alt="' + result.ex_numbers[i].num4 + '"/>');
+						        	$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + result.ex_numbers[i].num5 +'.png" alt="' + result.ex_numbers[i].num5 + '"/>');
+						        	$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + result.ex_numbers[i].num6 +'.png" alt="' + result.ex_numbers[i].num6 + '"/>');
 						        	$("#ex_numbers").append('<br>');
 						        	
 						        	if ((i+1) % 5 == 0) {

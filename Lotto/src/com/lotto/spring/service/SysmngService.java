@@ -699,7 +699,14 @@ public class SysmngService extends DefaultService {
 	 * @return
 	 */
 	public ExDataDto getExDataInfo(ExDataDto dto) {
-		return (ExDataDto) baseDao.getSingleRow("sysmngMapper.getExDataInfo", dto);
+		ExDataDto exData = (ExDataDto) baseDao.getSingleRow("sysmngMapper.getExDataInfo", dto);
+		
+		if (exData != null) {
+			exData.setNumbers(LottoUtil.getNumbers(exData));
+			exData.setDifNumbers(LottoUtil.getDifNumbers(exData.getNumbers()));
+		}
+		
+		return exData;
 	}
 	
 	/**
@@ -1043,7 +1050,7 @@ public class SysmngService extends DefaultService {
 				if (verification && isEqual) {
 					if(!result) {
 						equalCnt++;	//일치함.
-						System.out.println("1. 전회차 추출번호 예측 비교 : " + equalCnt);
+						log.info("1. 전회차 추출번호 예측 비교 : " + equalCnt);
 					}
 				} else {
 					if(!result) equalCnt++;	//일치함.
@@ -1054,7 +1061,7 @@ public class SysmngService extends DefaultService {
 				if (verification && isEqual) {
 					if(!result) {
 						equalCnt++;	//일치함.
-						System.out.println("2. 저고 비율 비교 : " + equalCnt);
+						log.info("2. 저고 비율 비교 : " + equalCnt);
 					}
 				} else {
 					if(!result) equalCnt++;	//일치함.
@@ -1065,7 +1072,7 @@ public class SysmngService extends DefaultService {
 				if (verification && isEqual) {
 					if(!result) {
 						equalCnt++;	//일치함.
-						System.out.println("3. 홀짝 비율 비교 : " + equalCnt);
+						log.info("3. 홀짝 비율 비교 : " + equalCnt);
 					}
 				} else {
 					if(!result) equalCnt++;	//일치함.
@@ -1076,7 +1083,7 @@ public class SysmngService extends DefaultService {
 				if (verification && isEqual) {
 					if(!result) {
 						equalCnt++;	//일치함.
-						System.out.println("4. 총합 비교 : " + equalCnt);
+						log.info("4. 총합 비교 : " + equalCnt);
 					}
 				} else {
 					if(!result) equalCnt++;	//일치함.
@@ -1087,7 +1094,7 @@ public class SysmngService extends DefaultService {
 				if (verification && isEqual) {
 					if(!result) {
 						equalCnt++;	//일치함.
-						System.out.println("5. 연속되는 수 비교 : " + equalCnt);
+						log.info("5. 연속되는 수 비교 : " + equalCnt);
 					}
 				} else {
 					if(!result) equalCnt++;	//일치함.
@@ -1098,7 +1105,7 @@ public class SysmngService extends DefaultService {
 				if (verification && isEqual) {
 					if(!result) {
 						equalCnt++;	//일치함.
-						System.out.println("6. 끝수합 비교 : " + equalCnt);
+						log.info("6. 끝수합 비교 : " + equalCnt);
 					}
 				} else {
 					if(!result) equalCnt++;	//일치함.
@@ -1109,7 +1116,7 @@ public class SysmngService extends DefaultService {
 				if (verification && isEqual) {
 					if(!result) {
 						equalCnt++;	//일치함.
-						System.out.println("7. 그룹 내 포함개수 비교 : " + equalCnt);
+						log.info("7. 그룹 내 포함개수 비교 : " + equalCnt);
 					}
 				} else {
 					if(!result) equalCnt++;	//일치함.
@@ -1120,7 +1127,7 @@ public class SysmngService extends DefaultService {
 				if (verification && isEqual) {
 					if(!result) {
 						equalCnt++;	//일치함.
-						System.out.println("8. 끝자리가 같은 수 비교 : " + equalCnt);
+						log.info("8. 끝자리가 같은 수 비교 : " + equalCnt);
 					}
 				} else {
 					if(!result) equalCnt++;	//일치함.
@@ -1131,7 +1138,7 @@ public class SysmngService extends DefaultService {
 				if (verification && isEqual) {
 					if(!result) {
 						equalCnt++;	//일치함.
-						System.out.println("9. 소수 1개이상 포함 비교 : " + equalCnt);
+						log.info("9. 소수 1개이상 포함 비교 : " + equalCnt);
 					}
 				} else {
 					if(!result) equalCnt++;	//일치함.
@@ -1142,7 +1149,7 @@ public class SysmngService extends DefaultService {
 				if (verification && isEqual) {
 					if(!result) {
 						equalCnt++;	//일치함.
-						System.out.println("10. 3의 배수 포함 비교 : " + equalCnt);
+						log.info("10. 3의 배수 포함 비교 : " + equalCnt);
 					}
 				} else {
 					if(!result) equalCnt++;	//일치함.
@@ -1153,7 +1160,7 @@ public class SysmngService extends DefaultService {
 				if (verification && isEqual) {
 					if(!result) {
 						equalCnt++;	//일치함.
-						System.out.println("11. 합성수 포함 비교 : " + equalCnt);
+						log.info("11. 합성수 포함 비교 : " + equalCnt);
 					}
 				} else {
 					if(!result) equalCnt++;	//일치함.
@@ -1164,7 +1171,7 @@ public class SysmngService extends DefaultService {
 				if (verification && isEqual) {
 					if(!result) {
 						equalCnt++;	//일치함.
-						System.out.println("12. AC 비교 : " + equalCnt);
+						log.info("12. AC 비교 : " + equalCnt);
 					}
 				} else {
 					if(!result) equalCnt++;	//일치함.
@@ -1176,7 +1183,7 @@ public class SysmngService extends DefaultService {
 				if (verification && isEqual) {
 					if(!result) {
 						equalCnt++;	//일치함.
-						System.out.println("13. 궁합도 매치 : " + equalCnt);
+						log.info("13. 궁합도 매치 : " + equalCnt);
 					}
 				} else {
 					if(!result) equalCnt++;	//일치함.
@@ -1192,7 +1199,7 @@ public class SysmngService extends DefaultService {
 				double percent = Double.parseDouble(df.format( d_cnt/d_total ));
 				if (!verification) {
 					//검증이 아닐경우 진행도 출력
-					System.out.println("index : " + (i+1) + " / " + numberList.size() + " [ equalCnt : " + equalCnt + " ] --- 진행률 : " + (percent*100) + "%");
+					log.info("index : " + (i+1) + " / " + numberList.size() + " [ equalCnt : " + equalCnt + " ] --- 진행률 : " + (percent*100) + "%");
 				}
 				
 				//2016.08.05
@@ -1205,7 +1212,7 @@ public class SysmngService extends DefaultService {
 					}
 				}
 				if (isExists) {
-					System.out.println("13-1. 제외수가 포함된 예상번호임. SKIP.(" + Arrays.toString(numbers)+ ")");
+					log.info("13-1. 제외수가 포함된 예상번호임. SKIP.(" + Arrays.toString(numbers)+ ")");
 					continue;
 				}
 				
@@ -1217,7 +1224,7 @@ public class SysmngService extends DefaultService {
 				if (verification && isEqual) {
 					if(!result) {
 						equalCnt++;	//일치함.
-						System.out.println("14. 번호간 차이값 체크 : OK - " + equalCnt);
+						log.info("14. 번호간 차이값 체크 : OK - " + equalCnt);
 					}
 				} else {
 					if(!result) continue;
@@ -1231,7 +1238,7 @@ public class SysmngService extends DefaultService {
 				if (verification && isEqual) {
 					if(!result) {
 						equalCnt++;	//일치함.
-						System.out.println("15. 숫자별 출현번호 체크 : OK - " + equalCnt);
+						log.info("15. 숫자별 출현번호 체크 : OK - " + equalCnt);
 					}
 				} else {
 					if(!result) continue;
@@ -1441,7 +1448,7 @@ public class SysmngService extends DefaultService {
 			String checked = (String) one.getChecked();
 			int cnt = one.getCnt();
 			
-//			System.out.println("[" + depth + "] " + task_1_cd + " / " + task_2_cd + " / " + task_1_nm + " / " + task_2_nm);
+//			log.info("[" + depth + "] " + task_1_cd + " / " + task_2_cd + " / " + task_1_nm + " / " + task_2_nm);
 			
 			//depth JSON 메뉴 생성
 			JSONObject depthJson = new JSONObject();
@@ -1476,7 +1483,7 @@ public class SysmngService extends DefaultService {
 			
 			jsonRtnArr.add(depthJson);
 			
-//			System.out.println("i="+i);
+//			log.info("i="+i);
 		}
 		
 		return jsonRtnArr;
@@ -1535,7 +1542,7 @@ public class SysmngService extends DefaultService {
 //			CaseInsensitiveMap one = (CaseInsensitiveMap) list.get(i);
 			MenuInfoDto one = (MenuInfoDto) list.get(i);
 			
-			System.out.println(i + " data = " + one.toString());
+			log.info(i + " data = " + one.toString());
 			
 			//java.lang.ClassCastException: java.lang.Short cannot be cast to java.lang.Integer			
 //			int menu_id = Integer.parseInt(String.valueOf(one.get("menu_id")));
@@ -1550,7 +1557,7 @@ public class SysmngService extends DefaultService {
 			String checked = one.getChecked();
 			int cnt = one.getCnt();
 			
-//			System.out.println("[" + depth + "] " + task_1_cd + " / " + task_2_cd + " / " + task_1_nm + " / " + task_2_nm);
+//			log.info("[" + depth + "] " + task_1_cd + " / " + task_2_cd + " / " + task_1_nm + " / " + task_2_nm);
 			
 			//depth JSON 메뉴 생성
 			JSONObject depthJson = new JSONObject();
@@ -1585,7 +1592,7 @@ public class SysmngService extends DefaultService {
 			
 			jsonRtnArr.add(depthJson);
 			
-//			System.out.println("i="+i);
+//			log.info("i="+i);
 		}
 		
 		return jsonRtnArr;
