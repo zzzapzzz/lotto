@@ -3024,6 +3024,9 @@ public class LottoDataService extends DefaultService {
 		/** 번호별 궁합/불협수 */
 		Map<Integer, Map<String, ArrayList<Integer>>> mcNumberMap = this.getMcNumberByAnly(winDataList);		
 		
+		/** 최대 출현횟수별 설정 */
+		List<Map> appearNumbersList = this.getAppearNumbersList(winDataList);
+		
 		//1. 전회차 추출번호 예측 일치여부 비교
 		result = this.existOfPrevCount(winDataList, exData, exptPtrnAnlyInfo);
 		if (verification && isEqual) {
@@ -3211,11 +3214,88 @@ public class LottoDataService extends DefaultService {
 		
 		
 		log.info("예상패턴 일치 개수 : " + equalCnt);
-		if (equalCnt == EXPT_MATCH_CNT) {
-			isPossible = true;
+//		if (equalCnt == EXPT_MATCH_CNT) {
+//			isPossible = true;
+//		}
+		
+		// TODO 일치개수는 좀 더 분석 후 적용해야함.
+		if (result) {
+			
+			// 출현번호 매치여부로 예상번호 설정
+			isPossible = this.matchAppearNumbers(exData, appearNumbersList);
+			
 		}
 		
 		return isPossible;
+	}
+
+	/**
+	 * 출현번호 매치여부
+	 * 
+	 * @param exData 예상데이터
+	 * @param appearNumbersList 출현번호 제한 목록
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public boolean matchAppearNumbers(ExDataDto exData, List<Map> appearNumbersList) {
+		
+		boolean result = false;
+		int MATCH_CNT = 5;	//매치 개수
+		int containCnt = 0;
+		
+		if (appearNumbersList.get(0).containsKey(exData.getNum1())) {
+			containCnt++;
+		}
+		if (appearNumbersList.get(1).containsKey(exData.getNum2())) {
+			containCnt++;
+		}
+		if (appearNumbersList.get(2).containsKey(exData.getNum3())) {
+			containCnt++;
+		}
+		if (appearNumbersList.get(3).containsKey(exData.getNum4())) {
+			containCnt++;
+		}
+		if (appearNumbersList.get(4).containsKey(exData.getNum5())) {
+			containCnt++;
+		}
+		if (appearNumbersList.get(5).containsKey(exData.getNum6())) {
+			containCnt++;
+		}
+		
+		if (containCnt >= MATCH_CNT) {
+			result = true;
+		}
+		
+		return result;
+	}
+
+	/**
+	 * 숫자별 최대 출현횟수 설정
+	 * 
+	 * @param winDataList 당첨번호 정보 전체
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public List<Map> getAppearNumbersList(List<WinDataAnlyDto> winDataList) {
+		List<Map> appearNumbersList = new ArrayList<Map>();
+		/** 출현제한 백분율(%) */
+		int FOA_PER = 83;
+		
+		Map<Integer, Integer> num1AppearMap = this.getNumberMap(winDataList, 1, FOA_PER);
+		Map<Integer, Integer> num2AppearMap = this.getNumberMap(winDataList, 2, FOA_PER);
+		Map<Integer, Integer> num3AppearMap = this.getNumberMap(winDataList, 3, FOA_PER);
+		Map<Integer, Integer> num4AppearMap = this.getNumberMap(winDataList, 4, FOA_PER);
+		Map<Integer, Integer> num5AppearMap = this.getNumberMap(winDataList, 5, FOA_PER);
+		Map<Integer, Integer> num6AppearMap = this.getNumberMap(winDataList, 6, FOA_PER);
+		
+		appearNumbersList.add(num1AppearMap);
+		appearNumbersList.add(num2AppearMap);
+		appearNumbersList.add(num3AppearMap);
+		appearNumbersList.add(num4AppearMap);
+		appearNumbersList.add(num5AppearMap);
+		appearNumbersList.add(num6AppearMap);
+		
+		return appearNumbersList;
 	}
 
 	/**
@@ -3226,8 +3306,8 @@ public class LottoDataService extends DefaultService {
 	 * @param FOA_PER 제한 백분율(%)
 	 * @return
 	 */
-	private Map<Integer, Integer> getNumberMap(List<WinDataAnlyDto> winDataList, int seq, int FOA_PER) {
-Map<Integer, Integer> returnMap = new HashMap<Integer, Integer>();
+	public Map<Integer, Integer> getNumberMap(List<WinDataAnlyDto> winDataList, int seq, int FOA_PER) {
+		Map<Integer, Integer> returnMap = new HashMap<Integer, Integer>();
 		
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
 		int numCnt = 0;
