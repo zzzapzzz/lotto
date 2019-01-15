@@ -1619,6 +1619,9 @@ public class LottoDataService extends DefaultService {
 		exData.setOdd_even(LottoUtil.getOddEven(exData));
 		exData.setAc(LottoUtil.getAc(exData));
 		
+		exData.setNumbers(LottoUtil.getNumbers(exData));
+		exData.setDifNumbers(LottoUtil.getDifNumbers(exData));
+		
 		return exData;
 	}
 
@@ -2911,9 +2914,9 @@ public class LottoDataService extends DefaultService {
 		//2016.01.26 총 결과
 		int[] resultCnt = new int[]{0,0,0,0,0};
 		
-		for(ExDataDto data : exDataList){
+		for(ExDataDto exData : exDataList){
 			
-			String result = this.getWinResult(data, lastData);
+			String result = this.getWinResult(exData, lastData);
 			if(!result.equals("낙첨!")){
 				if ("1등".equals(result)) {
 					resultCnt[0]++;
@@ -3227,6 +3230,253 @@ public class LottoDataService extends DefaultService {
 		}
 		
 		return isPossible;
+	}
+	
+	/**
+	 * 예상패턴 일치건수
+	 * 
+	 * @param exData 예상 데이터
+	 * @param winDataList 전체 당첨번호 정보 목록
+	 * @param exptPtrnAnlyInfo 예상패턴분석정보
+	 * @return 대상가능여부 (true: 일치하지 않음, false: 일치함)
+	 */
+	public int getExptPtrnMatchCnt(ExDataDto exData, 
+								   List<WinDataAnlyDto> winDataList,
+								   ExptPtrnAnlyDto exptPtrnAnlyInfo,
+								   int[] lowHighEndNumData,
+								   ArrayList<HashMap<String, Integer>> numbersRangeList,
+								   ArrayList<ArrayList<Integer>> groupByNumbersList,
+								   Map<Integer, Map<String, ArrayList<Integer>>> mcNumberMap
+								   ) {
+//		boolean isPossible = false;
+		
+		boolean result = false;
+		boolean verification = false;
+		boolean isEqual = false;
+		int equalCnt = 0;
+		/** 매칭예상 개수 */
+//		int EXPT_MATCH_CNT = 10;
+		/** 첫 번째 번호 출현빈도 (Frequency of appearance) */
+//		int FOA_PER = 83;
+//		Map<Integer, Integer> num1AppearMapOver50 = this.getNumberMap(winDataList, 1, FOA_PER);
+		
+		// 표준 끝수합 범위 설정
+//		int[] lowHighEndNumData = this.getEndNumberBaseDistribution(winDataList);
+		/** 최저끝수 */
+		int lowEndNumber = lowHighEndNumData[0];
+		/** 최고끝수 */
+		int highEndNumber = lowHighEndNumData[1];
+		
+		/** 번호간 범위 결과 목록 */
+//		ArrayList<HashMap<String, Integer>> numbersRangeList = this.getNumbersRangeList(winDataList);
+		/** 숫자별 출현번호 결과 목록 */
+//		ArrayList<ArrayList<Integer>> groupByNumbersList = this.getGroupByNumbersList(winDataList);
+		/** 번호별 궁합/불협수 */
+//		Map<Integer, Map<String, ArrayList<Integer>>> mcNumberMap = this.getMcNumberByAnly(winDataList);		
+		
+		/** 최대 출현횟수별 설정 */
+//		List<Map> appearNumbersList = this.getAppearNumbersList(winDataList);
+		
+		//1. 전회차 추출번호 예측 일치여부 비교
+		result = this.existOfPrevCount(winDataList, exData, exptPtrnAnlyInfo);
+		if (verification && isEqual) {
+			if(!result) {
+				equalCnt++;	//일치함.
+				System.out.println("1. 전회차 추출번호 예측 비교 : " + equalCnt);
+			}
+		} else {
+			if(!result) equalCnt++;	//일치함.
+		}
+		
+		//2. 저고 비율 비교
+		result = this.existLowHighRatio(LottoUtil.getRatioTitle(), exData, exptPtrnAnlyInfo);
+		if (verification && isEqual) {
+			if(!result) {
+				equalCnt++;	//일치함.
+				log.info("2. 저고 비율 비교 : " + equalCnt);
+			}
+		} else {
+			if(!result) equalCnt++;	//일치함.
+		}
+		
+		//3. 홀짝 비율 비교
+		result = this.existOddEvenRatio(LottoUtil.getRatioTitle(), exData, exptPtrnAnlyInfo);
+		if (verification && isEqual) {
+			if(!result) {
+				equalCnt++;	//일치함.
+				log.info("3. 홀짝 비율 비교 : " + equalCnt);
+			}
+		} else {
+			if(!result) equalCnt++;	//일치함.
+		}
+		
+		//4. 총합 비교
+		result = this.existTotalRange(exData, exptPtrnAnlyInfo);
+		if (verification && isEqual) {
+			if(!result) {
+				equalCnt++;	//일치함.
+				log.info("4. 총합 비교 : " + equalCnt);
+			}
+		} else {
+			if(!result) equalCnt++;	//일치함.
+		}
+		
+		//5. 연속되는 수 비교
+		result = this.existConsecutivelyNumbers(exData, exptPtrnAnlyInfo);
+		if (verification && isEqual) {
+			if(!result) {
+				equalCnt++;	//일치함.
+				log.info("5. 연속되는 수 비교 : " + equalCnt);
+			}
+		} else {
+			if(!result) equalCnt++;	//일치함.
+		}
+		
+		//6. 끝수합 비교
+		result = this.existSumEndNumberRange(exData, lowEndNumber, highEndNumber);
+		if (verification && isEqual) {
+			if(!result) {
+				equalCnt++;	//일치함.
+				log.info("6. 끝수합 비교 : " + equalCnt);
+			}
+		} else {
+			if(!result) equalCnt++;	//일치함.
+		}
+		
+		//7. 그룹 내 포함개수 비교
+		result = this.existGroup(exData, exptPtrnAnlyInfo);
+		if (verification && isEqual) {
+			if(!result) {
+				equalCnt++;	//일치함.
+				log.info("7. 그룹 내 포함개수 비교 : " + equalCnt);
+			}
+		} else {
+			if(!result) equalCnt++;	//일치함.
+		}
+		
+		//8. 끝자리가 같은 수 비교
+		result = this.existEndNumberCount(exData, exptPtrnAnlyInfo);
+		if (verification && isEqual) {
+			if(!result) {
+				equalCnt++;	//일치함.
+				log.info("8. 끝자리가 같은 수 비교 : " + equalCnt);
+			}
+		} else {
+			if(!result) equalCnt++;	//일치함.
+		}
+		
+		//9. 소수 1개이상 포함 비교
+		result = this.existSotsu(exData, exptPtrnAnlyInfo);
+		if (verification && isEqual) {
+			if(!result) {
+				equalCnt++;	//일치함.
+				log.info("9. 소수 1개이상 포함 비교 : " + equalCnt);
+			}
+		} else {
+			if(!result) equalCnt++;	//일치함.
+		}
+		
+		//10. 3의 배수 포함 비교
+		result = this.existNumberOf3(exData, exptPtrnAnlyInfo);
+		if (verification && isEqual) {
+			if(!result) {
+				equalCnt++;	//일치함.
+				log.info("10. 3의 배수 포함 비교 : " + equalCnt);
+			}
+		} else {
+			if(!result) equalCnt++;	//일치함.
+		}
+		
+		//11. 합성수 포함 비교 : 합성수란 소수와 3의 배수가 아닌 수
+		result = this.existNumberOfNot3(exData, exptPtrnAnlyInfo);
+		if (verification && isEqual) {
+			if(!result) {
+				equalCnt++;	//일치함.
+				log.info("11. 합성수 포함 비교 : " + equalCnt);
+			}
+		} else {
+			if(!result) equalCnt++;	//일치함.
+		}
+		
+		//12. AC 비교(7 ~ 10)
+		result = this.isContainAc(exData, exptPtrnAnlyInfo);
+		if (verification && isEqual) {
+			if(!result) {
+				equalCnt++;	//일치함.
+				log.info("12. AC 비교 : " + equalCnt);
+			}
+		} else {
+			if(!result) equalCnt++;	//일치함.
+		}
+		
+		//13. 궁합도 매치
+		//2016.02.19
+		result = this.isMcMatched(exData, mcNumberMap);
+		if (verification && isEqual) {
+			if(!result) {
+				equalCnt++;	//일치함.
+				log.info("13. 궁합도 매치 : " + equalCnt);
+			}
+		} else {
+			if(!result) equalCnt++;	//일치함.
+		}
+		
+		/*
+		 * 14. 번호간 차이값 체크
+		 * 번호간 차이값이 평균범위 포함되어 있는지 체크한다.
+		 */
+		result = this.isContainRange(exData, numbersRangeList);
+		if (verification && isEqual) {
+			if(result) {
+				equalCnt++;	//일치함.
+				log.info("14. 번호간 차이값 체크 : OK - " + equalCnt);
+			}
+		} else {
+			if(result) equalCnt++;	//일치함.
+		}
+		
+		/*
+		 * 15. 숫자별 출현번호 체크
+		 * 숫자별 평균출현번호인지 체크한다.
+		 */
+		result = this.isContainGroup(exData, groupByNumbersList);
+		if (verification && isEqual) {
+			if(result) {
+				equalCnt++;	//일치함.
+				log.info("15. 숫자별 출현번호 체크 : OK - " + equalCnt);
+			}
+		} else {
+			if(result) equalCnt++;	//일치함.
+		}
+		
+		/*
+		 * 16. 첫번째 숫자 출현번호의 출현빈도 체크
+		 */
+//		result = num1AppearMapOver50.containsKey(exData.getNum1());
+//		if (verification && isEqual) {
+//			if(result) {
+//				equalCnt++;	//일치함.
+//				log.info("16. 첫번째 숫자 출현번호의 출현빈도 체크 : OK - " + equalCnt);
+//			}
+//		} else {
+//			if(result) equalCnt++;	//일치함.
+//		}
+		
+		
+		log.info("예상패턴 일치 개수 : " + equalCnt);
+//		if (equalCnt == EXPT_MATCH_CNT) {
+//			isPossible = true;
+//		}
+		
+		// TODO 일치개수는 좀 더 분석 후 적용해야함.
+		if (result) {
+			
+			// 출현번호 매치여부로 예상번호 설정
+//			isPossible = this.matchAppearNumbers(exData, appearNumbersList);
+			
+		}
+		
+		return equalCnt;
 	}
 
 	/**

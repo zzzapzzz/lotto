@@ -866,6 +866,15 @@ public class SysmngService extends DefaultService {
 		List<ExDataDto> expectDataList = lottoDataService.getExDataList(exptPtrnAnlyInfo, numberOfContainList, numberOfNotContainList, deleteTargetMap);
 		
 		
+		// 표준 끝수합 범위 설정
+		int[] lowHighEndNumData = lottoDataService.getEndNumberBaseDistribution(winDataList);
+		/** 번호간 범위 결과 목록 */
+		ArrayList<HashMap<String, Integer>> numbersRangeList = lottoDataService.getNumbersRangeList(winDataList);
+		/** 숫자별 출현번호 결과 목록 */
+		ArrayList<ArrayList<Integer>> groupByNumbersList = lottoDataService.getGroupByNumbersList(winDataList);
+		/** 번호별 궁합/불협수 */
+		Map<Integer, Map<String, ArrayList<Integer>>> mcNumberMap = lottoDataService.getMcNumberByAnly(winDataList);
+		
 		if (expectDataList != null && expectDataList.size() > 0) {
 			log.info("추출된 목록 건수 = " + expectDataList.size());
 			//추출된 번호 전체를 패턴과 비교하여 예측패턴과 가장 많이 일치하는 번호 목록을 구한다.
@@ -889,8 +898,13 @@ public class SysmngService extends DefaultService {
 			for (int i = 0; i < expectDataList.size(); i++) {
 		
 				log.info("proc idx = " + i);
+				ExDataDto exData = expectDataList.get(i);
 				
-				expectDataPartList.add(expectDataList.get(i));
+				//예상패턴 일치개수 설정
+				int ptrnMatchCnt = lottoDataService.getExptPtrnMatchCnt(exData, winDataList, exptPtrnAnlyInfo, lowHighEndNumData, numbersRangeList, groupByNumbersList, mcNumberMap);
+				exData.setPtrn_match_cnt(ptrnMatchCnt);
+				
+				expectDataPartList.add(exData);
 				
 				if ( (i+1) % INSERT_COUNT == 0) {
 					log.info("부분 등록건수 = " + expectDataPartList.size());
@@ -1284,6 +1298,31 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
+	 * 총합 출현건수 조회
+	 * 
+	 * @param map
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public int getTotalGroupSumCnt(Map map) {
+		return (int) baseDao.getSingleRow("sysmngMapper.getTotalGroupSumCnt", map);
+	}
+	
+	/**
+	 * 총합 출현건수 목록 조회
+	 * 
+	 * @param map
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public List<CaseInsensitiveMap> getTotalGroupCntList(Map map) {
+		return (ArrayList<CaseInsensitiveMap>) baseDao.getList("sysmngMapper.getTotalGroupCntList", map);
+	}
+	
+	
+	
+	
+	/**
 	 * 권한코드 목록 조회
 	 * 
 	 * @param map
@@ -1655,5 +1694,7 @@ public class SysmngService extends DefaultService {
 //		}
 		return flag;
 	}
+
+	
 
 }

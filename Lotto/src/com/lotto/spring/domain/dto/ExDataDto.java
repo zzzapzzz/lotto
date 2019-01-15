@@ -33,6 +33,8 @@ public class ExDataDto extends DefaultDto{
 	private String odd_even;
 	/** 산술적복잡도(AC) */
 	private int ac;
+	/** 예상패턴일치개수 */
+	private int ptrn_match_cnt;
 	
 	/** 다음발표일 */
 	private String nextAnnounceDate;
@@ -119,6 +121,12 @@ public class ExDataDto extends DefaultDto{
 	}
 	public void setAc(int ac) {
 		this.ac = ac;
+	}
+	public int getPtrn_match_cnt() {
+		return ptrn_match_cnt;
+	}
+	public void setPtrn_match_cnt(int ptrn_match_cnt) {
+		this.ptrn_match_cnt = ptrn_match_cnt;
 	}
 	public String getNextAnnounceDate() {
 		return nextAnnounceDate;

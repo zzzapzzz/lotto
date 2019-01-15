@@ -567,6 +567,7 @@
 			, LOW_HIGH
 			, ODD_EVEN
 			, AC
+			, PTRN_MATCH_CNT
 		FROM TB_EXPT_NUM		
 		WHERE 1=1
 		AND EX_COUNT = #{ex_count}
@@ -592,6 +593,7 @@
 				, LOW_HIGH
 				, ODD_EVEN
 				, AC
+				, PTRN_MATCH_CNT
 				, @rownum := @rownum+1 AS row_num
 			FROM TB_EXPT_NUM, (SELECT @rownum :=0) AS R		
 			WHERE 1=1
@@ -645,6 +647,7 @@
 			, LOW_HIGH
 			, ODD_EVEN
 			, AC
+			, PTRN_MATCH_CNT
 		)
 		VALUES
 		<foreach item="exData" index="index" collection="list" open="" separator="," close="">
@@ -662,6 +665,7 @@
 			, #{exData.low_high}
 			, #{exData.odd_even}
 			, #{exData.ac}
+			, #{exData.ptrn_match_cnt}
 		)
 	</foreach>
 	</insert>
@@ -674,6 +678,34 @@
 		WHERE EX_COUNT <= #{past_ex_count}
 		]]>
 	</delete>
+	
+	<!-- 총합 출현건수 조회 -->
+	<select id="getTotalGroupSumCnt" parameterType="java.util.Map" resultType="Integer">
+		/* sysmng.getTotalGroupSumCnt */
+		<![CDATA[
+		SELECT SUM(CNT) CNT
+		FROM
+		(
+			SELECT TOTAL, COUNT(TOTAL) CNT
+			FROM TB_LOTTO_INFO
+			GROUP BY TOTAL
+			HAVING COUNT(TOTAL) < #{cnt}
+			ORDER BY TOTAL
+		) A
+		]]>
+	</select>
+	
+	<!-- 총합 출현건수 목록 조회 -->
+	<select id="getTotalGroupCntList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		/* sysmng.getTotalGroupCntList */
+		<![CDATA[
+		SELECT TOTAL, COUNT(TOTAL) CNT
+		FROM TB_LOTTO_INFO
+		GROUP BY TOTAL
+		HAVING COUNT(TOTAL) < #{cnt}
+		ORDER BY TOTAL
+		]]>
+	</select>
 	
 	<!-- 권한코드 목록 조회 -->
 	<select id="getAuthCodeList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">		

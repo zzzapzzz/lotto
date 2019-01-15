@@ -329,7 +329,7 @@ public final class LottoUtil {
 					
 		// 오늘이 토요일인가?
 		if (7 == todayCal.get(Calendar.DAY_OF_WEEK)
-				&& 20 > todayCal.get(Calendar.HOUR)
+				&& 20 > todayCal.get(Calendar.HOUR_OF_DAY)
 				) {
 			// 조회시간이 토요일, 마감시간 이전이면 당일날 마감일시로 설정
 			
