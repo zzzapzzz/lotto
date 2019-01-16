@@ -39,7 +39,7 @@
 			        	}
 			        	
 			        	for (var i = 0 ; i < result.rows.length ; i++) {
-			        		var msg = result.rows[i].msg;
+			        		var msg = result.rows[i];
 			        		
 			        		$("#totalTestResult").append(msg +'&nbsp;&nbsp;');
 			        		

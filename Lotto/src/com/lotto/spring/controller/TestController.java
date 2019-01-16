@@ -3,6 +3,8 @@ package com.lotto.spring.controller;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -159,6 +161,7 @@ public class TestController extends DefaultSMController {
 	 * @param dto
 	 * @throws SQLException
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping("/test/totalTest")
 	public void totalTest(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
 		HttpSession session = request.getSession();
@@ -196,24 +199,46 @@ public class TestController extends DefaultSMController {
 		Map map = new HashMap();
 		map.put("cnt", cnt);
 		List<CaseInsensitiveMap> totalGroupCntList = null;
-//		do {
-//			totalGroupCntList = sysmngService.getTotalGroupCntList(map);
-//			
-//		} while (true);
+		Map<Integer, Integer> totalGroupCntMap = new HashMap<Integer, Integer>();
+		// 메세지 처리
+		List<String> msgList = new ArrayList<String>();
+				
+		do {
+			map.put("cnt", cnt);
+			int totalGroupSumCnt = sysmngService.getTotalGroupSumCnt(map);
+			double d_cnt = totalGroupSumCnt;
+			double d_total = lastWinCount;
+			DecimalFormat df = new DecimalFormat("#.##"); 
+			double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+			
+			if (percent * 100 >= AIM_PER) {
+				totalGroupCntList = sysmngService.getTotalGroupCntList(map);
+				break;
+			}
+			// 목표율에 도달하지 못할 경우, 다음 개수 증가
+			cnt++;
+		} while (true);
 		
+		if (totalGroupCntList != null && totalGroupCntList.size() > 0) {
+			for (int i = 0; i < totalGroupCntList.size(); i++) {
+				CaseInsensitiveMap totalGroupCnt = totalGroupCntList.get(i);
+				String total = String.valueOf(totalGroupCnt.get("total"));
+				String totalCnt = String.valueOf(totalGroupCnt.get("cnt"));
+				totalGroupCntMap.put(Integer.parseInt(total), Integer.parseInt(totalCnt));
+			}
+			
+			for (int i = winDataList.size() - 1; i >= 0 ; i--) {
+				WinDataDto winData = winDataList.get(i);
+				String msg = winData.getWin_count() + ":<font color='red'><b>X</b></font>";
+				if (totalGroupCntMap.containsKey(winData.getTotal())) {
+					msg = winData.getWin_count() + ":일치";
+				}
+				msgList.add(msg);
+			}
+		}
 		
-		
-        //토탈 값 구하기 끝
-        // Content Page - File which will included in tiles definition
- 
 		JSONObject json = new JSONObject();
-  
-//		JSONArray jsonArr = JSONArray.fromObject(userList);
-		
-
-		json.put("cnt", winDataList.size());
-		json.put("page", dto.getPage());
-		json.put("rows", winDataList);		
+		json.put("rows", msgList);		
 		json.put("status", "success");		
 		writeJSON(response, json); 
 	}
