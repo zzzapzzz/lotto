@@ -707,6 +707,34 @@
 		]]>
 	</select>
 	
+	<!-- 끝수합 출현건수 조회 -->
+	<select id="getEndnumGroupSumCnt" parameterType="java.util.Map" resultType="Integer">
+		/* sysmng.getEndnumGroupSumCnt */
+		<![CDATA[
+		SELECT SUM(CNT) CNT
+		FROM
+		(
+			SELECT SUM_END_NUM, COUNT(SUM_END_NUM) CNT
+			FROM TB_LOTTO_INFO
+			GROUP BY SUM_END_NUM
+			HAVING COUNT(SUM_END_NUM) < #{cnt}
+			ORDER BY SUM_END_NUM
+		) A
+		]]>
+	</select>
+	
+	<!-- 끝수합 출현건수 목록 조회 -->
+	<select id="getEndnumGroupCntList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		/* sysmng.getEndnumGroupCntList */
+		<![CDATA[
+		SELECT SUM_END_NUM, COUNT(SUM_END_NUM) CNT
+		FROM TB_LOTTO_INFO
+		GROUP BY SUM_END_NUM
+		HAVING COUNT(SUM_END_NUM) >= #{cnt}
+		ORDER BY SUM_END_NUM
+		]]>
+	</select>
+	
 	<!-- 권한코드 목록 조회 -->
 	<select id="getAuthCodeList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">		
 		/* sysmng.getAuthCodeList */

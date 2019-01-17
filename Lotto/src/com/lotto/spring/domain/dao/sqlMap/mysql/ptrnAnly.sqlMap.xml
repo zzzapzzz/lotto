@@ -67,28 +67,30 @@
 	<select id="getExptPtrnAnlyInfo" parameterType="exptPtrnAnlyDto" resultType="exptPtrnAnlyDto">
 		/* ptrnAnlyMapper.getExptPtrnAnlyInfo */
 		SELECT
-			  EX_COUNT
-			, COUNT_SUM
-			, CONT_CNT
-			, NOT_CONT_CNT
-			, SAME_NUM_CNT
-			, UP_1_CNT
-			, DOWN_1_CNT
-			, LOW_HIGH
-			, ODD_EVEN
-			, TOTAL_RANGE_TYPE
-			, TOTAL_RANGE
-			, END_SUM_RANGE
-			, C_NUM_CNT
-			, NOT_CONT_GRP
-			, END_NUM_SAME_CNT
-			, P_NUM_CNT
-			, MULTI_3_CNT
-			, COMP_NUM_CNT
-			, AC
-			, MCNUM_CNT
-		FROM TB_EXPT_PTRN_ANLY
-		WHERE EX_COUNT = #{ex_count}
+			  EPA.EX_COUNT
+			, EPA.COUNT_SUM
+			, EPA.CONT_CNT
+			, EPA.NOT_CONT_CNT
+			, EPA.SAME_NUM_CNT
+			, EPA.UP_1_CNT
+			, EPA.DOWN_1_CNT
+			, EPA.LOW_HIGH
+			, EPA.ODD_EVEN
+			, EPA.TOTAL_RANGE_TYPE
+			, TI.TOTAL_RANGE AS TOTAL_RANGE
+			, EI.ENDNUM_RANGE AS END_SUM_RANGE
+			, EPA.C_NUM_CNT
+			, EPA.NOT_CONT_GRP
+			, EPA.END_NUM_SAME_CNT
+			, EPA.P_NUM_CNT
+			, EPA.MULTI_3_CNT
+			, EPA.COMP_NUM_CNT
+			, EPA.AC
+			, EPA.MCNUM_CNT
+		FROM TB_EXPT_PTRN_ANLY EPA
+		LEFT OUTER JOIN TB_TOTAL_INFO TI ON EPA.EX_COUNT = TI.WIN_COUNT+1
+		LEFT OUTER JOIN TB_ENDNUM_INFO EI ON EPA.EX_COUNT = EI.WIN_COUNT+1
+		WHERE EPA.EX_COUNT = #{ex_count}
 	</select>
 	
 	<!-- 패턴정보 삭제 -->

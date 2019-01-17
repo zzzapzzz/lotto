@@ -365,7 +365,16 @@ public class SysmngService extends DefaultService {
 		WinDataDto lastData = winDataList.get(winDataList.size()-1);
 		
 		// 총합 범위 구하기
-		int[] arrTotalRange = lottoDataService.getLowTotalHighTotal(winDataList);
+//		int[] arrTotalRange = lottoDataService.getLowTotalHighTotal(winDataList);
+		int[] arrTotalRange = {0,0};
+		// 총합 출현번호를 통해 설정하도록 추가 2019.01.18
+		List<CaseInsensitiveMap> totalGroupCntList = this.getLowTotalHighTotal(winDataList);
+		if (totalGroupCntList != null && totalGroupCntList.size() > 0) {
+			arrTotalRange[0] = Integer.parseInt(String.valueOf(totalGroupCntList.get(0).get("total")));
+			arrTotalRange[1] = Integer.parseInt(String.valueOf(totalGroupCntList.get(totalGroupCntList.size()-1).get("total")));
+		} else {
+			arrTotalRange = lottoDataService.getLowTotalHighTotal(winDataList);
+		}
 		String totalRange = arrTotalRange[0] + "~" + arrTotalRange[1];
 		
 		TotalDto dto = new TotalDto();
@@ -384,7 +393,44 @@ public class SysmngService extends DefaultService {
 	}
 	
 	
-	
+	/**
+	 * @description <div id=description><b>총합 범위 구하기</b></div>
+	 *              <div id=detail>전체 총합분포 중 90%출현된 총합의 범위를 구한다.</div>
+	 * @param winDataList
+	 * @return
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public List<CaseInsensitiveMap> getLowTotalHighTotal(List<WinDataDto> winDataList) {
+		// 최근 당첨번호
+		WinDataDto lastData = winDataList.get(0);
+		int lastWinCount = lastData.getWin_count();
+		
+		// 총합 일치
+		int cnt = 2;
+		double AIM_PER = 10.0;	// 목표율
+		Map map = new HashMap();
+		map.put("cnt", cnt);
+		List<CaseInsensitiveMap> totalGroupCntList = null;
+				
+		do {
+			map.put("cnt", cnt);
+			int totalGroupSumCnt = this.getTotalGroupSumCnt(map);
+			double d_cnt = totalGroupSumCnt;
+			double d_total = lastWinCount;
+			DecimalFormat df = new DecimalFormat("#.##"); 
+			double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+			
+			if (percent * 100 >= AIM_PER) {
+				totalGroupCntList = this.getTotalGroupCntList(map);
+				break;
+			}
+			// 목표율에 도달하지 못할 경우, 다음 개수 증가
+			cnt++;
+		} while (true);
+		
+		return totalGroupCntList;
+	}
+
 	/**
 	 * 총합정보 삭제
 	 * 
@@ -1317,6 +1363,28 @@ public class SysmngService extends DefaultService {
 	@SuppressWarnings("rawtypes")
 	public List<CaseInsensitiveMap> getTotalGroupCntList(Map map) {
 		return (ArrayList<CaseInsensitiveMap>) baseDao.getList("sysmngMapper.getTotalGroupCntList", map);
+	}
+	
+	/**
+	 * 끝수합 출현건수 조회
+	 * 
+	 * @param map
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public int getEndnumGroupSumCnt(Map map) {
+		return (int) baseDao.getSingleRow("sysmngMapper.getEndnumGroupSumCnt", map);
+	}
+	
+	/**
+	 * 끝수합 출현건수 목록 조회
+	 * 
+	 * @param map
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public List<CaseInsensitiveMap> getEndnumGroupCntList(Map map) {
+		return (ArrayList<CaseInsensitiveMap>) baseDao.getList("sysmngMapper.getEndnumGroupCntList", map);
 	}
 	
 	

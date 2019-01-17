@@ -37,6 +37,10 @@
 						if (result.status == "usernotfound") {
 			           		location.href = "/index.do"; 
 			        	}
+			        	$("#totalRange").html("");
+			        	$("#totalTestResult").html("");
+			        	
+			        	$("#totalRange").html(result.totalRange);
 			        	
 			        	for (var i = 0 ; i < result.rows.length ; i++) {
 			        		var msg = result.rows[i];

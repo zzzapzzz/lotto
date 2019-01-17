@@ -16,6 +16,8 @@
 						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 							<span id="test" class="btn btn-info"><i class="fa fa-bug"></i> 총합</span>
 						</div>
+						<div id="totalRange" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
+						</div>
 						<div id="totalTestResult" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
 						</div>
 						

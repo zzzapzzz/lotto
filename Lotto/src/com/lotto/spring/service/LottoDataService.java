@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
@@ -2997,10 +2998,12 @@ public class LottoDataService extends DefaultService {
 	 * @param exData 예상 데이터
 	 * @param winDataList 전체 당첨번호 정보 목록
 	 * @param exptPtrnAnlyInfo 예상패턴분석정보
+	 * @param endnumGroupCntMap 
+	 * @param totalGroupCntMap 
 	 * @return 대상가능여부 (true: 일치하지 않음, false: 일치함)
 	 */
 	public boolean compareExptPtrn(ExDataDto exData, List<WinDataAnlyDto> winDataList,
-			ExptPtrnAnlyDto exptPtrnAnlyInfo) {
+			ExptPtrnAnlyDto exptPtrnAnlyInfo, Map<Integer, Integer> totalGroupCntMap, Map<Integer, Integer> endnumGroupCntMap) {
 		boolean isPossible = false;
 		
 		boolean result = false;
@@ -3221,6 +3224,17 @@ public class LottoDataService extends DefaultService {
 //			isPossible = true;
 //		}
 		
+		
+		//4. 총합 범위 포함 비교
+		if (!totalGroupCntMap.containsKey(exData.getTotal())) {
+			return isPossible;
+		} 
+		
+		//5. 끝수합 범위 포함 비교
+		if (!endnumGroupCntMap.containsKey(exData.getSum_end_num())) {
+			return isPossible;
+		}
+				
 		// TODO 일치개수는 좀 더 분석 후 적용해야함.
 		if (result) {
 			

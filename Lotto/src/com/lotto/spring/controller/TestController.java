@@ -202,7 +202,8 @@ public class TestController extends DefaultSMController {
 		Map<Integer, Integer> totalGroupCntMap = new HashMap<Integer, Integer>();
 		// 메세지 처리
 		List<String> msgList = new ArrayList<String>();
-				
+		int[] arrTotalRange = {0,0};
+		
 		do {
 			map.put("cnt", cnt);
 			int totalGroupSumCnt = sysmngService.getTotalGroupSumCnt(map);
@@ -220,6 +221,9 @@ public class TestController extends DefaultSMController {
 		} while (true);
 		
 		if (totalGroupCntList != null && totalGroupCntList.size() > 0) {
+			arrTotalRange[0] = Integer.parseInt(String.valueOf(totalGroupCntList.get(0).get("total")));
+			arrTotalRange[1] = Integer.parseInt(String.valueOf(totalGroupCntList.get(totalGroupCntList.size()-1).get("total")));
+			
 			for (int i = 0; i < totalGroupCntList.size(); i++) {
 				CaseInsensitiveMap totalGroupCnt = totalGroupCntList.get(i);
 				String total = String.valueOf(totalGroupCnt.get("total"));
@@ -237,8 +241,11 @@ public class TestController extends DefaultSMController {
 			}
 		}
 		
+		String totalRange = arrTotalRange[0] + "~" + arrTotalRange[1];
+		
 		JSONObject json = new JSONObject();
 		json.put("rows", msgList);		
+		json.put("totalRange", totalRange);		
 		json.put("status", "success");		
 		writeJSON(response, json); 
 	}

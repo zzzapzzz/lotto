@@ -1532,7 +1532,74 @@ public class SysmngController extends DefaultSMController {
 		ExptPtrnAnlyDto exptPtrnAnlyDto = new ExptPtrnAnlyDto();
 		exptPtrnAnlyDto.setEx_count(dto.getEx_count());
 		ExptPtrnAnlyDto exptPtrnAnlyInfo = patternAnalysisService.getExptPtrnAnlyInfo(exptPtrnAnlyDto); 
-					
+
+		// 총합 일치
+		int cnt = 2;
+		double AIM_PER = 10.0;	// 목표율
+		Map map = new HashMap();
+		map.put("cnt", cnt);
+		List<CaseInsensitiveMap> totalGroupCntList = null;
+		Map<Integer, Integer> totalGroupCntMap = new HashMap<Integer, Integer>();
+		
+		do {
+			map.put("cnt", cnt);
+			int totalGroupSumCnt = sysmngService.getTotalGroupSumCnt(map);
+			double d_cnt = totalGroupSumCnt;
+			double d_total = winDataList.get(winDataList.size()-1).getWin_count();
+			DecimalFormat df = new DecimalFormat("#.##"); 
+			double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+			
+			if (percent * 100 >= AIM_PER) {
+				totalGroupCntList = sysmngService.getTotalGroupCntList(map);
+				break;
+			}
+			// 목표율에 도달하지 못할 경우, 다음 개수 증가
+			cnt++;
+		} while (true);
+		
+		if (totalGroupCntList != null && totalGroupCntList.size() > 0) {
+			
+			for (int i = 0; i < totalGroupCntList.size(); i++) {
+				CaseInsensitiveMap totalGroupCnt = totalGroupCntList.get(i);
+				String total = String.valueOf(totalGroupCnt.get("total"));
+				String totalCnt = String.valueOf(totalGroupCnt.get("cnt"));
+				totalGroupCntMap.put(Integer.parseInt(total), Integer.parseInt(totalCnt));
+			}
+		}
+		
+		// 끝수합 일치
+		cnt = 2;
+		map = new HashMap();
+		map.put("cnt", cnt);
+		List<CaseInsensitiveMap> endnumGroupCntList = null;
+		Map<Integer, Integer> endnumGroupCntMap = new HashMap<Integer, Integer>();
+		
+		do {
+			map.put("cnt", cnt);
+			int endnumGroupSumCnt = sysmngService.getEndnumGroupSumCnt(map);
+			double d_cnt = endnumGroupSumCnt;
+			double d_total = winDataList.get(winDataList.size()-1).getWin_count();
+			DecimalFormat df = new DecimalFormat("#.##"); 
+			double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+			
+			if (percent * 100 >= AIM_PER) {
+				endnumGroupCntList = sysmngService.getEndnumGroupCntList(map);
+				break;
+			}
+			// 목표율에 도달하지 못할 경우, 다음 개수 증가
+			cnt++;
+		} while (true);
+		
+		if (endnumGroupCntList != null && endnumGroupCntList.size() > 0) {
+			for (int i = 0; i < endnumGroupCntList.size(); i++) {
+				CaseInsensitiveMap endnumGroupCnt = endnumGroupCntList.get(i);
+				String total = String.valueOf(endnumGroupCnt.get("sum_end_num"));
+				String endnumCnt = String.valueOf(endnumGroupCnt.get("cnt"));
+				endnumGroupCntMap.put(Integer.parseInt(total), Integer.parseInt(endnumCnt));
+			}
+		}
+				
+				
 		// 예상번호 30조합 추출
 		int exDataListCnt = sysmngService.getExDataListCnt(dto);
 		log.info("예상번호 총 건수 = " + exDataListCnt);
@@ -1551,7 +1618,7 @@ public class SysmngController extends DefaultSMController {
 			}
 			
 			ExDataDto exData = sysmngService.getExDataInfo(dto);
-			boolean result = lottoDataService.compareExptPtrn(exData, winDataList, exptPtrnAnlyInfo);
+			boolean result = lottoDataService.compareExptPtrn(exData, winDataList, exptPtrnAnlyInfo, totalGroupCntMap, endnumGroupCntMap);
 			if (result) {
 				exDataList.add(exData);
 			}
