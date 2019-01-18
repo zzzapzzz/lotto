@@ -1,5 +1,6 @@
 			<#assign JS_ROOT = SystemInfo.js_root>
-
+			<#assign IMG_ROOT = SystemInfo.img_root>
+			
 			<!-- chart.js -->
 			<script src="${JS_ROOT}/plugin/chartjs/Chart.min.js"></script>
 			<script src="${JS_ROOT}/plugin/chartjs/Chart.bundle.js"></script>
@@ -196,6 +197,80 @@
 							<br>
 							위의 로또 ${ex_count?if_exists}회차 예상번호는<br>
 							제외수를 포함하지 않았습니다.<br>
+							<br>
+							
+						</div>
+						<br>
+					</div>
+				</div>
+					
+				<div class="row">
+					<div class="content">
+						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
+							<h4><strong>궁합수</strong></h4>
+							<br>
+							궁합수는<br>
+							1~${last_count?if_exists}회 당첨번호들의 관계를 분석하여<br>
+							가장 많은 조합으로<br>
+							당첨번호로 출현한 번호들을<br>
+							궁합이 좋은 수로 정의했습니다.<br>
+							<br>
+							궁합이 잘 맞는 수를 참고하시어<br>
+							이번 주 로또 ${ex_count?if_exists}회차 예상번호를<br>
+							신중히 선택하시면<br>
+							좋은 결과가 있을 것 같습니다.<br>
+							<br>
+							금주의 궁합 수 참고 자료입니다.<br>
+							<br>
+							<table class="table table-bordered" style="font-size:15px; text-align: center; margin-left: auto; margin-right: auto;">
+								<thead>
+									<tr>
+										<th style="width:20%;">번호</th>
+										<th style="width:80%;">궁합수</th>
+									</tr>
+								</thead>
+								<tbody id="mcNumberList">
+									
+								</tbody>
+							</table>
+							<br>
+							위의 로또 ${ex_count?if_exists}회차 예상번호는<br>
+							제외수를 포함하지 않았습니다.<br>
+							<br>
+							
+						</div>
+						<br>
+					</div>
+				</div>
+				
+				<div class="row">
+					<div class="content">
+						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
+							<br>
+							로또는 운이라고 하는 분도 있고,<br>
+							확률이라 하는 분도 있습니다.<br>
+							<br>
+							한 장의 행복을 구입하여<br>
+							일주일 동안 희망에 가득한 마음으로<br>
+							행복하시기를 바라며,<br>
+							로또 ${ex_count?if_exists}회 예상번호<br>
+							분석을 마칩니다.<br>
+							<br>
+							※후원안내<br>
+							<br>
+							심서방로또는<br>
+							여러분의 따뜻한 격려의 말씀과<br>
+							아낌없는 후원으로 운영됩니다.<br>
+							<br>
+							후원안내 보기 클릭!<br>
+							<br>
+							이 글을 읽는 모든 분들께<br>
+							로또 1등 당첨이 되시길<br>
+							진심으로 기원합니다.<br>
+							<br>
+							제가 분석하는 내용 이외에<br>
+							더 좋은 의견이 있으시면<br>
+							댓글이나 쪽지를 남겨주세요.<br>
 							<br>
 							
 						</div>

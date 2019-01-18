@@ -64,6 +64,9 @@
 				
 				//제외수 조회
 				setExcludeNumberList();
+				
+				//궁합수 조회
+				setMcNumberList();
 			}
 			
 			function setExpectData30List() {
@@ -371,6 +374,75 @@
 			    			
 		            	} else {
 		            		alert(result.msg);
+		            	}
+					}
+				});
+			}
+			
+			function setMcNumberList() {
+				var param = {
+					win_count : last_count
+				};
+				
+				$.ajax({
+					type: "POST",
+					url: "${APP_ROOT}/sysmng/getMcNumberList.do",
+					data: param,
+					dataType: "json",
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+		               		location.href = "/index.do";
+		               		return;
+		            	}
+
+						$("#mcNumberList").html("");
+						if (result.status == "success") {
+							if (result.mcNumList.length > 0) {
+								
+								for (var i = 0 ; i < result.mcNumList.length ; i++) {
+									var mcNumberList = "";
+									mcNumberList += '<tr><td>';
+									mcNumberList += '<img src="${IMG_ROOT}/ballnumber/ball_' + result.mcNumList[i].num +'.png" alt="' + result.mcNumList[i].num + '"/>';
+									mcNumberList += '</td><td style="text-align: left;">';
+									
+									if (result.mcNumList[i].mc_num.length > 0) {
+										if (result.mcNumList[i].mc_num.indexOf(",") > -1) {
+											var mcNum = result.mcNumList[i].mc_num.split(",");
+											for (var j = 0 ; j < mcNum.length ; j++) {
+												mcNumberList += '<img src="${IMG_ROOT}/ballnumber/ball_' + mcNum[j] +'.png" alt="' + mcNum[j] + '"/>&nbsp;&nbsp;';	
+											}			
+										} else {
+											mcNumberList += '<img src="${IMG_ROOT}/ballnumber/ball_' + result.mcNumList[i].mc_num +'.png" alt="' + result.mcNumList[i].mc_num + '"/>';											
+										} 
+									} else {
+										mcNumberList += '궁합수가 없습니다.';
+									}
+									mcNumberList += '</td></tr>';
+									$("#mcNumberList").append(mcNumberList);
+								}
+							} else {
+								var mcNumberList = "";
+			            		mcNumberList += '<tr><td>';
+								mcNumberList += 'X';
+								mcNumberList += '</td><td style="text-align: left;">';
+								mcNumberList += '궁합수 목록이 없습니다.';
+								mcNumberList += '</td></tr>';
+								$("#mcNumberList").html(mcNumberList);
+							}
+			    			
+		            	} else {
+		            		var mcNumberList = "";
+		            		mcNumberList += '<tr><td>';
+							mcNumberList += 'X';
+							mcNumberList += '</td><td style="text-align: left;">';
+							mcNumberList += '궁합수 목록이 없습니다.';
+							mcNumberList += '</td></tr>';
+							$("#mcNumberList").html(mcNumberList);
 		            	}
 					}
 				});

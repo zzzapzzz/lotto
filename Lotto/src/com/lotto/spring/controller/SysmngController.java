@@ -1815,6 +1815,46 @@ public class SysmngController extends DefaultSMController {
         
 	}
 	
+	/**
+	 * 궁합수 목록 조회
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws IOException
+	 */
+	@RequestMapping("/sysmng/getMcNumberList")
+	public void getMcNumberList(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 궁합수 목록 조회");
+			
+			List<MCNumDto> mcNumList = sysmngService.getMcNumList(dto);
+			if (mcNumList != null && mcNumList.size() > 0) {
+				jsonObj.put("mcNumList", mcNumList);
+				jsonObj.put("status", "success");
+			} else {
+				jsonObj.put("status", "fail");
+				jsonObj.put("msg", "궁합수 목록이 없습니다.");
+			}
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+		
+	}
+	
 	
 	/**
 	 * 서비스관리 화면 호출
