@@ -858,6 +858,9 @@ public class SysmngController extends DefaultSMController {
 			// 끝수합정보 등록
 			sysmngService.insertEndNumInfo(winDataList);
 			
+			// AC정보 등록
+			sysmngService.insertAcInfo(winDataList.get(winDataList.size()-1).getWin_count());
+			
 			// 회차합정보 등록
 			sysmngService.insertCountSumInfo(winDataList);
 			

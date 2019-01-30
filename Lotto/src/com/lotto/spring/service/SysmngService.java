@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.chello.base.spring.core.DefaultService;
 import com.lotto.common.LottoUtil;
+import com.lotto.spring.domain.dto.AcDto;
 import com.lotto.spring.domain.dto.CountSumDto;
 import com.lotto.spring.domain.dto.EndNumDto;
 import com.lotto.spring.domain.dto.ExDataDto;
@@ -448,6 +449,98 @@ public class SysmngService extends DefaultService {
 		return flag;
 	}
 	
+	
+	/**
+	 * AC정보 등록
+	 * 
+	 * @param winCount
+	 * @return
+	 */
+	public boolean insertAcInfo(int winCount) {
+		
+		// AC 범위 구하기
+		int[] arrAcRange = {0,0};
+		List<CaseInsensitiveMap> acGroupCntList = this.getAcGroupCntList(winCount);
+		if (acGroupCntList != null && acGroupCntList.size() > 0) {
+			arrAcRange[0] = Integer.parseInt(String.valueOf(acGroupCntList.get(0).get("ac")));
+			arrAcRange[1] = Integer.parseInt(String.valueOf(acGroupCntList.get(acGroupCntList.size()-1).get("ac")));
+		}
+		String acRange = arrAcRange[0] + "~" + arrAcRange[1];
+		
+		AcDto dto = new AcDto();
+		dto.setWin_count(winCount);
+		dto.setLow_ac(arrAcRange[0]);
+		dto.setHigh_ac(arrAcRange[1]);
+		dto.setAc_range(acRange);
+		
+		boolean flag = false;
+		int i = (Integer) baseDao.insert("sysmngMapper.insertAcInfo", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * @description <div id=description><b>AC 범위 구하기</b></div>
+	 *              <div id=detail>전체 AC분포 중 90%출현된 AC의 범위를 구한다.</div>
+	 * @param winCount
+	 * @return
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public List<CaseInsensitiveMap> getAcGroupCntList(int winCount) {
+		// AC 일치
+		int cnt = 2;
+		double AIM_PER = 10.0;	// 목표율
+		Map map = new HashMap();
+		map.put("win_count", winCount);
+		List<CaseInsensitiveMap> acGroupCntList = null;
+				
+		do {
+			map.put("cnt", cnt);
+			int acGroupSumCnt = this.getAcGroupSumCnt(map);
+			if (acGroupSumCnt > 0) {
+				double d_cnt = acGroupSumCnt;
+				double d_total = winCount;
+				DecimalFormat df = new DecimalFormat("#.##"); 
+				double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+				
+				if (percent * 100 >= AIM_PER) {
+					acGroupCntList = this.getAcGroupCntList(map);
+					break;
+				}
+			}
+			// 목표율에 도달하지 못할 경우, 다음 개수 증가
+			cnt++;
+		} while (true);
+		
+		// 초기 회차에는 그룹핑 개수가 0이 발생하여 개수제한을 줄여서 다시 목록을 조회하도록 처리함. 2019.01.19
+		if (acGroupCntList == null || acGroupCntList.size() == 0) {
+			map.put("cnt", --cnt);
+			acGroupCntList = this.getAcGroupCntList(map);
+		}
+		
+		return acGroupCntList;
+	}
+	
+	/**
+	 * AC정보 삭제
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean deleteAcInfo(AcDto dto) {
+		
+		boolean flag = false;
+		int i = (Integer) baseDao.delete("sysmngMapper.deleteAcInfo", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
 	/**
 	 * 끝수합정보 등록
 	 * 
@@ -826,6 +919,16 @@ public class SysmngService extends DefaultService {
 	 */
 	public EndNumDto getEndNumInfo(WinDataDto lastData) {
 		return (EndNumDto) baseDao.getSingleRow("sysmngMapper.getEndNumInfo", lastData);
+	}
+	
+	/**
+	 * AC정보 조회
+	 * 
+	 * @param lastData
+	 * @return
+	 */
+	public AcDto getAcInfo(WinDataDto lastData) {
+		return (AcDto) baseDao.getSingleRow("sysmngMapper.getAcInfo", lastData);
 	}
 	
 	/**
@@ -1360,7 +1463,7 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public List<CaseInsensitiveMap> getTotalGroupCntList(Map map) {
 		return (ArrayList<CaseInsensitiveMap>) baseDao.getList("sysmngMapper.getTotalGroupCntList", map);
 	}
@@ -1382,12 +1485,37 @@ public class SysmngService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public List<CaseInsensitiveMap> getEndnumGroupCntList(Map map) {
 		return (ArrayList<CaseInsensitiveMap>) baseDao.getList("sysmngMapper.getEndnumGroupCntList", map);
 	}
 	
+	/**
+	 * AC 출현건수 조회
+	 * 
+	 * @param map
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public int getAcGroupSumCnt(Map map) {
+		return (int) baseDao.getSingleRow("sysmngMapper.getAcGroupSumCnt", map);
+	}
 	
+	/**
+	 * AC 출현건수 목록 조회
+	 * 
+	 * @param map
+	 * @return
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public List<CaseInsensitiveMap> getAcGroupCntList(Map map) {
+		return (ArrayList<CaseInsensitiveMap>) baseDao.getList("sysmngMapper.getAcGroupCntList", map);
+	}
+		
+		
+		
+		
+		
 	
 	
 	/**

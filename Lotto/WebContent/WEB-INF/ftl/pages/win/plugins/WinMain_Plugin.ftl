@@ -101,7 +101,16 @@
 			        	$("#mcMatchedData").html(result.mcMatchedData);
 			        	
 			        	$("#zeroRange").html(result.zeroRange);
-			        				        	
+			        	
+			        	$("#lowHighMsg").html(result.lowhigh_msg);
+			        	
+			        	$("#oddEvenMsg").html(result.oddeven_msg);
+			        	
+			        	$("#totalMsg").html(result.total_msg);
+			        	
+			        	$("#endnumMsg").html(result.endnum_msg);
+			        	
+			        	$("#acMsg").html(result.ac_msg);
 					}
 				});
 			}

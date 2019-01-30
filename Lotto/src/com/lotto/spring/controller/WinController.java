@@ -20,8 +20,13 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 
 import com.lotto.spring.core.DefaultSMController;
 import com.lotto.spring.domain.dao.UserSession;
+import com.lotto.spring.domain.dto.AcDto;
 import com.lotto.spring.domain.dto.CountSumDto;
+import com.lotto.spring.domain.dto.EndNumDto;
+import com.lotto.spring.domain.dto.LowHighDto;
 import com.lotto.spring.domain.dto.MCNumDto;
+import com.lotto.spring.domain.dto.OddEvenDto;
+import com.lotto.spring.domain.dto.TotalDto;
 import com.lotto.spring.domain.dto.WinDataDto;
 import com.lotto.spring.domain.dto.ZeroRangeDto;
 import com.lotto.spring.service.LottoDataService;
@@ -178,6 +183,29 @@ public class WinController extends DefaultSMController {
 			
 			// 미출현번호대 조회
 			ZeroRangeDto zeroRangeInfo = sysmngService.getZeroRangeInfo(dto);
+			
+			// 저고비율 정보 설정
+			List<LowHighDto> lowHighDataList = sysmngService.getLowHighDataList(dto);
+			jsonObj.put("lowhigh_msg", lottoDataService.getLowHighMsg(winData, lowHighDataList));
+			
+			// 홀짝비율 정보 설정
+			List<OddEvenDto> oddEvenDataList = sysmngService.getOddEvenDataList(dto);
+			jsonObj.put("oddeven_msg", lottoDataService.getOddEvenMsg(winData, oddEvenDataList));
+			
+			// 총합 정보 설정
+			TotalDto totalInfo = sysmngService.getTotalInfo(winData);
+			jsonObj.put("total_range", totalInfo.getTotal_range());
+			jsonObj.put("total_msg", lottoDataService.getTotalMsg(winData, totalInfo));
+			
+			// 끝수합 정보 설정
+			EndNumDto endNumInfo = sysmngService.getEndNumInfo(winData);
+			jsonObj.put("endnum_range", endNumInfo.getEndnum_range());
+			jsonObj.put("endnum_msg", lottoDataService.getEndnumMsg(winData, endNumInfo));
+			
+			// AC 정보 설정
+			AcDto acInfo = sysmngService.getAcInfo(winData);
+			jsonObj.put("ac_range", acInfo.getAc_range());
+			jsonObj.put("ac_msg", lottoDataService.getAcMsg(winData, acInfo));
 			
 			jsonObj.put("data", winData);
 			jsonObj.put("countSumInfo", countSumInfo);

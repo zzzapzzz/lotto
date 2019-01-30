@@ -7,17 +7,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
 
 import com.chello.base.spring.core.DefaultService;
 import com.lotto.common.LottoUtil;
+import com.lotto.spring.domain.dto.AcDto;
 import com.lotto.spring.domain.dto.CountSumDto;
+import com.lotto.spring.domain.dto.EndNumDto;
 import com.lotto.spring.domain.dto.ExDataDto;
 import com.lotto.spring.domain.dto.ExptPtrnAnlyDto;
+import com.lotto.spring.domain.dto.LowHighDto;
 import com.lotto.spring.domain.dto.MCNumDto;
+import com.lotto.spring.domain.dto.OddEvenDto;
+import com.lotto.spring.domain.dto.TotalDto;
 import com.lotto.spring.domain.dto.WinDataAnlyDto;
 import com.lotto.spring.domain.dto.WinDataDto;
 
@@ -1997,7 +2001,9 @@ public class LottoDataService extends DefaultService {
 				
 			}
 			
-			numbersRangeList.add(this.getMaxMinByRangeDif(rangeCount, difList, winDataList));
+			// 번호값 차이값 목록을 최대최소에서 표준범위로 변경 2019.01.31
+//			numbersRangeList.add(this.getMaxMinByRangeDif(rangeCount, difList, winDataList));
+			numbersRangeList.add(this.getDifNumberMap(rangeCount, difList, winDataList));
 			
 		}
 		
@@ -2058,7 +2064,7 @@ public class LottoDataService extends DefaultService {
 			}
 			
 			double percent = Double.parseDouble(df.format( (double)countData[i][1] /total ));
-//			log.info( countData[i][0] + " : " + countData[i][1] + " --- 출현률 : " + (percent*100) + "%");
+			log.info( countData[i][0] + " : " + countData[i][1] + " --- 출현률 : " + (percent*100) + "%");
 			
 			sumPercent += percent*100;			
 			
@@ -2072,6 +2078,79 @@ public class LottoDataService extends DefaultService {
 //		log.info("================================");
 		map.put("min", min);
 		map.put("max", max);
+		
+		return map;
+	}
+	
+	/**
+	 * 번호간 차이값의 (일정기준) 표준 출현범위를 구한다.
+	 * 
+	 * 2019.01.31 테스트
+	 * 80% -> 28% 일치
+	 * 90% -> 59% 일치
+	 * 95% -> 77% 일치
+	 * 96% -> 82% 일치
+	 * 97% -> 86% 일치 <--- 출현률 1.0% 이내 제외
+	 * 97.5% -> 92% 일치
+	 * 98% -> 92% 일치
+	 * 100% -> 100% 일치
+	 * 
+	 * @param rangeCount
+	 * @param difList
+	 * @param winDataList
+	 * @return
+	 */
+	public HashMap<String, Integer> getDifNumberMap(int[] rangeCount, ArrayList<Integer> difList, List<WinDataAnlyDto> winDataList) {
+		HashMap<String, Integer> map = new HashMap<String, Integer>();
+		
+		double MATCH_PER = 97;
+		
+		int[][] countData = new int[difList.size()][2];
+		//초기값 설정
+		for (int i = 0; i < difList.size(); i++) {
+			countData[i][0] = difList.get(i);
+			countData[i][1] = rangeCount[difList.get(i)-1];
+		}
+		
+		//내침차순 으로 정렬
+		for (int i = 0; i < countData.length - 1; i++) {
+			for(int j = i+1; j < countData.length; j++){
+				if(countData[i][1] < countData[j][1]){
+					//앞자리 숫자 변경
+					int temp = countData[i][0];
+					countData[i][0] = countData[j][0];
+					countData[j][0] = temp;
+					
+					//카운트 변경
+					int temp2 = countData[i][1];
+					countData[i][1] = countData[j][1];
+					countData[j][1] = temp2;
+				}
+			}
+		}
+		
+		
+		//진행도 출력
+		double total = winDataList.size();
+		DecimalFormat df = new DecimalFormat("#.##"); 
+		double sumPercent = 0.0;
+		
+		for (int i = 0; i < countData.length ; i++) {
+			
+			map.put(String.valueOf(countData[i][0]), countData[i][1]);
+			
+			double percent = Double.parseDouble(df.format( (double)countData[i][1] /total ));
+			log.info( countData[i][0] + " : " + countData[i][1] + " --- 출현률 : " + (percent*100) + "%");
+			
+			sumPercent += percent*100;			
+			
+			if(sumPercent >= MATCH_PER){
+//				log.info("총 출현률 : " + sumPercent + "%");
+				break;
+			}
+		}
+		
+//		log.info("================================");
 		
 		return map;
 	}
@@ -2793,20 +2872,27 @@ public class LottoDataService extends DefaultService {
 	/**
 	 * @description <div id=description><b>번호간 차이값 체크</b></div >
 	 *              <div id=detail>번호간 차이값이 평균범위 포함되어 있는지 체크한다.</div >
-	 *              
+	 * 
+	 * 표준범위에 포함되는 개수로 체크하도록 변경 2019.01.31
+	 * 
 	 * @param data
 	 * @param numbersRangeList
 	 * @return
 	 */
 	public boolean isContainRange(ExDataDto data, ArrayList<HashMap<String, Integer>> numbersRangeList) {
 		int[] numbers = data.getDifNumbers();
+		int containCnt = 0;
+		int MATCH_CNT = 5;	//매치 개수
 		
 		for (int i = 0; i < numbers.length; i++) {
 			HashMap<String, Integer> map = numbersRangeList.get(i);
-			//번호간 차이값이 평균범위의 최소값보다 작거나, 최대값보다 크면 data를 예상번호로 선택하지 않는다.
-			if(numbers[i] < map.get("min") || numbers[i] > map.get("max")){
-				return false; 
+			if (map.containsKey(String.valueOf(numbers[i]))) {
+				containCnt++;
 			}
+		}
+		
+		if (containCnt < MATCH_CNT) {
+			return false;
 		}
 		
 		return true;
@@ -3034,216 +3120,223 @@ public class LottoDataService extends DefaultService {
 		List<Map> appearNumbersList = this.getAppearNumbersList(winDataList);
 		
 		//1. 전회차 추출번호 예측 일치여부 비교
-		result = this.existOfPrevCount(winDataList, exData, exptPtrnAnlyInfo);
-		if (verification && isEqual) {
-			if(!result) {
-				equalCnt++;	//일치함.
-				System.out.println("1. 전회차 추출번호 예측 비교 : " + equalCnt);
-			}
-		} else {
-			if(!result) equalCnt++;	//일치함.
-		}
-		
-		//2. 저고 비율 비교
-		result = this.existLowHighRatio(LottoUtil.getRatioTitle(), exData, exptPtrnAnlyInfo);
-		if (verification && isEqual) {
-			if(!result) {
-				equalCnt++;	//일치함.
-				log.info("2. 저고 비율 비교 : " + equalCnt);
-			}
-		} else {
-			if(!result) equalCnt++;	//일치함.
-		}
-		
-		//3. 홀짝 비율 비교
-		result = this.existOddEvenRatio(LottoUtil.getRatioTitle(), exData, exptPtrnAnlyInfo);
-		if (verification && isEqual) {
-			if(!result) {
-				equalCnt++;	//일치함.
-				log.info("3. 홀짝 비율 비교 : " + equalCnt);
-			}
-		} else {
-			if(!result) equalCnt++;	//일치함.
-		}
-		
-		//4. 총합 비교
-		result = this.existTotalRange(exData, exptPtrnAnlyInfo);
-		if (verification && isEqual) {
-			if(!result) {
-				equalCnt++;	//일치함.
-				log.info("4. 총합 비교 : " + equalCnt);
-			}
-		} else {
-			if(!result) equalCnt++;	//일치함.
-		}
-		
-		//5. 연속되는 수 비교
-		result = this.existConsecutivelyNumbers(exData, exptPtrnAnlyInfo);
-		if (verification && isEqual) {
-			if(!result) {
-				equalCnt++;	//일치함.
-				log.info("5. 연속되는 수 비교 : " + equalCnt);
-			}
-		} else {
-			if(!result) equalCnt++;	//일치함.
-		}
-		
-		//6. 끝수합 비교
-		result = this.existSumEndNumberRange(exData, lowEndNumber, highEndNumber);
-		if (verification && isEqual) {
-			if(!result) {
-				equalCnt++;	//일치함.
-				log.info("6. 끝수합 비교 : " + equalCnt);
-			}
-		} else {
-			if(!result) equalCnt++;	//일치함.
-		}
-		
-		//7. 그룹 내 포함개수 비교
-		result = this.existGroup(exData, exptPtrnAnlyInfo);
-		if (verification && isEqual) {
-			if(!result) {
-				equalCnt++;	//일치함.
-				log.info("7. 그룹 내 포함개수 비교 : " + equalCnt);
-			}
-		} else {
-			if(!result) equalCnt++;	//일치함.
-		}
-		
-		//8. 끝자리가 같은 수 비교
-		result = this.existEndNumberCount(exData, exptPtrnAnlyInfo);
-		if (verification && isEqual) {
-			if(!result) {
-				equalCnt++;	//일치함.
-				log.info("8. 끝자리가 같은 수 비교 : " + equalCnt);
-			}
-		} else {
-			if(!result) equalCnt++;	//일치함.
-		}
-		
-		//9. 소수 1개이상 포함 비교
-		result = this.existSotsu(exData, exptPtrnAnlyInfo);
-		if (verification && isEqual) {
-			if(!result) {
-				equalCnt++;	//일치함.
-				log.info("9. 소수 1개이상 포함 비교 : " + equalCnt);
-			}
-		} else {
-			if(!result) equalCnt++;	//일치함.
-		}
-		
-		//10. 3의 배수 포함 비교
-		result = this.existNumberOf3(exData, exptPtrnAnlyInfo);
-		if (verification && isEqual) {
-			if(!result) {
-				equalCnt++;	//일치함.
-				log.info("10. 3의 배수 포함 비교 : " + equalCnt);
-			}
-		} else {
-			if(!result) equalCnt++;	//일치함.
-		}
-		
-		//11. 합성수 포함 비교 : 합성수란 소수와 3의 배수가 아닌 수
-		result = this.existNumberOfNot3(exData, exptPtrnAnlyInfo);
-		if (verification && isEqual) {
-			if(!result) {
-				equalCnt++;	//일치함.
-				log.info("11. 합성수 포함 비교 : " + equalCnt);
-			}
-		} else {
-			if(!result) equalCnt++;	//일치함.
-		}
-		
-		//12. AC 비교(7 ~ 10)
-		result = this.isContainAc(exData, exptPtrnAnlyInfo);
-		if (verification && isEqual) {
-			if(!result) {
-				equalCnt++;	//일치함.
-				log.info("12. AC 비교 : " + equalCnt);
-			}
-		} else {
-			if(!result) equalCnt++;	//일치함.
-		}
-		
-		//13. 궁합도 매치
-		//2016.02.19
-		result = this.isMcMatched(exData, mcNumberMap);
-		if (verification && isEqual) {
-			if(!result) {
-				equalCnt++;	//일치함.
-				log.info("13. 궁합도 매치 : " + equalCnt);
-			}
-		} else {
-			if(!result) equalCnt++;	//일치함.
-		}
-		
-		/*
-		 * 14. 번호간 차이값 체크
-		 * 번호간 차이값이 평균범위 포함되어 있는지 체크한다.
-		 */
-		result = this.isContainRange(exData, numbersRangeList);
-		if (verification && isEqual) {
-			if(result) {
-				equalCnt++;	//일치함.
-				log.info("14. 번호간 차이값 체크 : OK - " + equalCnt);
-			}
-		} else {
-			if(result) equalCnt++;	//일치함.
-		}
-		
-		/*
-		 * 15. 숫자별 출현번호 체크
-		 * 숫자별 평균출현번호인지 체크한다.
-		 */
-		result = this.isContainGroup(exData, groupByNumbersList);
-		if (verification && isEqual) {
-			if(result) {
-				equalCnt++;	//일치함.
-				log.info("15. 숫자별 출현번호 체크 : OK - " + equalCnt);
-			}
-		} else {
-			if(result) equalCnt++;	//일치함.
-		}
-		
-		/*
-		 * 16. 첫번째 숫자 출현번호의 출현빈도 체크
-		 */
-		result = num1AppearMapOver50.containsKey(exData.getNum1());
-		if (verification && isEqual) {
-			if(result) {
-				equalCnt++;	//일치함.
-				log.info("16. 첫번째 숫자 출현번호의 출현빈도 체크 : OK - " + equalCnt);
-			}
-		} else {
-			if(result) equalCnt++;	//일치함.
-		}
-		
-		
-		log.info("예상패턴 일치 개수 : " + equalCnt);
+//		result = this.existOfPrevCount(winDataList, exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				System.out.println("1. 전회차 추출번호 예측 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//2. 저고 비율 비교
+//		result = this.existLowHighRatio(LottoUtil.getRatioTitle(), exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("2. 저고 비율 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//3. 홀짝 비율 비교
+//		result = this.existOddEvenRatio(LottoUtil.getRatioTitle(), exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("3. 홀짝 비율 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//4. 총합 비교
+//		result = this.existTotalRange(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("4. 총합 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//5. 연속되는 수 비교
+//		result = this.existConsecutivelyNumbers(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("5. 연속되는 수 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//6. 끝수합 비교
+//		result = this.existSumEndNumberRange(exData, lowEndNumber, highEndNumber);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("6. 끝수합 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//7. 그룹 내 포함개수 비교
+//		result = this.existGroup(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("7. 그룹 내 포함개수 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//8. 끝자리가 같은 수 비교
+//		result = this.existEndNumberCount(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("8. 끝자리가 같은 수 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//9. 소수 1개이상 포함 비교
+//		result = this.existSotsu(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("9. 소수 1개이상 포함 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//10. 3의 배수 포함 비교
+//		result = this.existNumberOf3(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("10. 3의 배수 포함 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//11. 합성수 포함 비교 : 합성수란 소수와 3의 배수가 아닌 수
+//		result = this.existNumberOfNot3(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("11. 합성수 포함 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//12. AC 비교(7 ~ 10)
+//		result = this.isContainAc(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("12. AC 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//13. 궁합도 매치
+//		//2016.02.19
+//		result = this.isMcMatched(exData, mcNumberMap);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("13. 궁합도 매치 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		/*
+//		 * 14. 번호간 차이값 체크
+//		 * 번호간 차이값이 평균범위 포함되어 있는지 체크한다.
+//		 */
+//		result = this.isContainRange(exData, numbersRangeList);
+//		if (verification && isEqual) {
+//			if(result) {
+//				equalCnt++;	//일치함.
+//				log.info("14. 번호간 차이값 체크 : OK - " + equalCnt);
+//			}
+//		} else {
+//			if(result) equalCnt++;	//일치함.
+//		}
+//		
+//		/*
+//		 * 15. 숫자별 출현번호 체크
+//		 * 숫자별 평균출현번호인지 체크한다.
+//		 */
+//		result = this.isContainGroup(exData, groupByNumbersList);
+//		if (verification && isEqual) {
+//			if(result) {
+//				equalCnt++;	//일치함.
+//				log.info("15. 숫자별 출현번호 체크 : OK - " + equalCnt);
+//			}
+//		} else {
+//			if(result) equalCnt++;	//일치함.
+//		}
+//		
+//		/*
+//		 * 16. 첫번째 숫자 출현번호의 출현빈도 체크
+//		 */
+//		result = num1AppearMapOver50.containsKey(exData.getNum1());
+//		if (verification && isEqual) {
+//			if(result) {
+//				equalCnt++;	//일치함.
+//				log.info("16. 첫번째 숫자 출현번호의 출현빈도 체크 : OK - " + equalCnt);
+//			}
+//		} else {
+//			if(result) equalCnt++;	//일치함.
+//		}
+//		
+//		
+//		log.info("예상패턴 일치 개수 : " + equalCnt);
 //		if (equalCnt == EXPT_MATCH_CNT) {
 //			isPossible = true;
 //		}
 		
 		
-		//4. 총합 범위 포함 비교
+		//1. 총합 범위 포함 비교
 		if (!totalGroupCntMap.containsKey(exData.getTotal())) {
-			return isPossible;
-		} 
+			return false;
+		}
 		
-		//5. 끝수합 범위 포함 비교
+		//2. 끝수합 범위 포함 비교
 		if (!endnumGroupCntMap.containsKey(exData.getSum_end_num())) {
-			return isPossible;
+			return false;
 		}
 				
-		// TODO 일치개수는 좀 더 분석 후 적용해야함.
-		if (result) {
-			
-			// 출현번호 매치여부로 예상번호 설정
-			isPossible = this.matchAppearNumbers(exData, appearNumbersList);
-			
+		//3. 출현번호 매치여부로 예상번호 설정
+		result = this.matchAppearNumbers(exData, appearNumbersList);
+		if (!result) {
+			return false;
 		}
 		
-		return isPossible;
+		/*
+		 * 4. 번호간 차이값 체크
+		 * 번호간 차이값이 평균범위 포함되어 있는지 체크한다.
+		 */
+		result = this.isContainRange(exData, numbersRangeList);
+		if (!result) {
+			return false;
+		}
+					
+		return true;
 	}
 	
 	/**
@@ -3642,4 +3735,160 @@ public class LottoDataService extends DefaultService {
 		
 		return returnMap;
 	}
+
+	/**
+	 * 포스팅 조사 처리
+	 * 2018.03.25
+	 * 
+	 * @param data
+	 * @return
+	 */
+	private String getPostPosition(Object data) {
+		String sData = "";
+		String lastData = "";
+		String postPosition = "로";
+		
+		if (data instanceof String) {
+			sData = (String) data;
+			
+		} else if (data instanceof Integer) {
+			sData = String.valueOf(data);
+		}
+		
+		lastData = sData.substring(sData.length()-1, sData.length());
+		if ("0".equals(lastData)
+				|| "3".equals(lastData)
+				|| "6".equals(lastData)
+				) {
+			postPosition = "으로";
+		}
+		
+		return postPosition;
+	}
+	
+	/**
+	 * 포스팅 저고 비율 메세지 설정
+	 * 
+	 * @param winData
+	 * @param lowHighDataList
+	 * @return
+	 */
+	public String getLowHighMsg(WinDataDto winData, List<LowHighDto> lowHighDataList) {
+		String lowHighMsg = "";
+		lowHighMsg += "<br>";
+		lowHighMsg += "<strong>저고 비율</strong>은<br>";
+		for (int i = 0; i < lowHighDataList.size(); i++) {
+			if (winData.getLow_high() == lowHighDataList.get(i).getLowhigh_type()) {
+				lowHighMsg += "평균 " + lowHighDataList.get(i).getRatio()+ "%인<br>";
+				break;
+			}
+		}
+		lowHighMsg += winData.getLow_high() + this.getPostPosition(winData.getLow_high()) + " 분석되었습니다.";
+		
+		return lowHighMsg;
+	}
+	
+	/**
+	 * 포스팅 홀짝 비율 메세지 설정
+	 * 
+	 * @param winData
+	 * @param oddEvenDataList
+	 * @return
+	 */
+	public String getOddEvenMsg(WinDataDto winData, List<OddEvenDto> oddEvenDataList) {
+		String oddEvenMsg = "";
+		oddEvenMsg += "<br>";
+		oddEvenMsg += "<strong>홀짝 비율</strong>은<br>";
+		for (int i = 0; i < oddEvenDataList.size(); i++) {
+			if (winData.getOdd_even() == oddEvenDataList.get(i).getOddeven_type()) {
+				oddEvenMsg += "평균 " + oddEvenDataList.get(i).getRatio()+ "%인<br>";
+				break;
+			}
+		}
+		oddEvenMsg += winData.getOdd_even() + this.getPostPosition(winData.getOdd_even()) + " 분석되었습니다.";
+		
+		return oddEvenMsg;
+	}
+	
+	/**
+	 * 포스팅 총합 메세지 설정
+	 * 
+	 * @param winData
+	 * @param totalInfo
+	 * @return
+	 */
+	public String getTotalMsg(WinDataDto winData, TotalDto totalInfo) {
+		String totalMsg = "";
+		if (totalInfo.getLow_total() <= winData.getTotal()
+				&& totalInfo.getHigh_total() >= winData.getTotal()) {
+			totalMsg += "<br>";
+			totalMsg += "<strong>총합</strong>은<br>";
+			totalMsg += "표준 범위 " + totalInfo.getTotal_range() + "내인<br>";
+			totalMsg += winData.getTotal() + this.getPostPosition(winData.getTotal()) + " 분석되었습니다.";
+			totalMsg += "<br>";	
+		} else {
+			totalMsg += "<br>";
+			totalMsg += "<strong>총합</strong>은<br>";
+			totalMsg += "표준 범위 " + totalInfo.getTotal_range() + "를 벗어난<br>";
+			totalMsg += winData.getTotal() + this.getPostPosition(winData.getTotal()) + " 예측하지 못한 결과로<br>";
+			totalMsg += "분석되었습니다.";
+			totalMsg += "<br>";
+		}
+		return totalMsg;
+	}
+
+	/**
+	 * 포스팅 끝수합 메세지 설정
+	 * 
+	 * @param winData
+	 * @param endNumInfo
+	 * @return
+	 */
+	public String getEndnumMsg(WinDataDto winData, EndNumDto endNumInfo) {
+		String endnumMsg = "";
+		if (endNumInfo.getLow_endnum() <= winData.getSum_end_num()
+				&& endNumInfo.getHigh_endnum() >= winData.getSum_end_num()) {
+			endnumMsg += "<br>";
+			endnumMsg += "<strong>끝수합</strong>은<br>";
+			endnumMsg += "표준 범위 " + endNumInfo.getEndnum_range() + "내인<br>";
+			endnumMsg += winData.getSum_end_num() + this.getPostPosition(winData.getSum_end_num()) + " 분석되었습니다.";
+			endnumMsg += "<br>";	
+		} else {
+			endnumMsg += "<br>";
+			endnumMsg += "<strong>끝수합</strong>은<br>";
+			endnumMsg += "표준 범위 " + endNumInfo.getEndnum_range() + "를 벗어난<br>";
+			endnumMsg += winData.getSum_end_num() + this.getPostPosition(winData.getSum_end_num()) + " 예측하지 못한 결과로<br>";
+			endnumMsg += "분석되었습니다.";
+			endnumMsg += "<br>";
+		}
+		return endnumMsg;
+	}
+	
+	/**
+	 * 포스팅 AC 메세지 설정
+	 * 
+	 * @param winData
+	 * @param endNumInfo
+	 * @return
+	 */
+	public String getAcMsg(WinDataDto winData, AcDto acInfo) {
+		String acMsg = "";
+		if (acInfo.getLow_ac() <= winData.getAc()
+				&& acInfo.getHigh_ac() >= winData.getAc()) {
+			acMsg += "<br>";
+			acMsg += "<strong>AC</strong> 역시<br>";
+			acMsg += "표준 범위 " + acInfo.getAc_range() + "내인<br>";
+			acMsg += winData.getAc() + this.getPostPosition(winData.getAc()) + " 분석되었습니다.";
+			acMsg += "<br>";	
+		} else {
+			acMsg += "<br>";
+			acMsg += "이번 <strong>AC</strong>는 특이하게<br>";
+			acMsg += "표준 범위 " + acInfo.getAc_range() + "를 벗어난<br>";
+			acMsg += winData.getAc() + this.getPostPosition(winData.getAc()) + " 예측하지 못한 결과로<br>";
+			acMsg += "분석되었습니다.";
+			acMsg += "<br>";
+		}
+		return acMsg;
+	}
+
 }

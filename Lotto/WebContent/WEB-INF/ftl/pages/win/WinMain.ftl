@@ -97,7 +97,35 @@
 						</table>
 					</div>
 					
-
+					<div class="row">
+						<div class="content">
+							<!-- 저고 비율 정보 -->
+							<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
+								<div id="lowHighMsg"></div>
+							</div>
+							
+							<!-- 홀짝 비율 정보 -->
+							<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
+								<div id="oddEvenMsg"></div>
+							</div>
+							
+							<!-- 총합 정보 -->
+							<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
+								<div id="totalMsg"></div>
+							</div>
+							
+							<!-- 끝수합 정보 -->
+							<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
+								<div id="endnumMsg"></div>
+							</div>
+							
+							<!-- AC 정보 -->
+							<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
+								<div id="acMsg"></div>
+							</div>
+							<br>
+						</div>
+					</div>
 				</section>
 				<!-- end widget grid -->
 				

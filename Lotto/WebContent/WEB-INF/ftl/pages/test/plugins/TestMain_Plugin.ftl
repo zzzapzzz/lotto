@@ -16,13 +16,18 @@
 			});
 			
 			function initPlugin() {
-				$("#totalTest").click(totalTestGo);
+				$("#totalTest").click(totalTest);
+				$("#testAppearNumbers").click(appearNumbersTest);
+				$("#testNumbersRange").click(numbersRangeTest);
+				$("#insertAllAcInfo").click(insertAllAcInfoGo);
 				
 				// 총합 테스트
-				totalTestGo();
+				totalTest();
+				
+				$("#totalTestResult").hide();
 			}
 			
-			function totalTestGo() {
+			function totalTest() {
 				$.ajax({
 					type: "POST",
 					url: "/test/totalTest.do",
@@ -52,6 +57,97 @@
 				        	}
 			        	}
 			        	
+					}
+				});
+			}
+			
+			function appearNumbersTest() {
+				$.ajax({
+					type: "POST",
+					url: "/test/appearNumbersTest.do",
+					dataType: "json",
+					async: false,
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+			           		location.href = "/index.do"; 
+			        	}
+			        	$("#totalRange").html("");
+			        	$("#totalTestResult").html("");
+			        	
+			        	$("#totalRange").html(result.totalRange);
+			        	
+			        	for (var i = 0 ; i < result.rows.length ; i++) {
+			        		var msg = result.rows[i];
+			        		
+			        		$("#totalTestResult").append(msg +'&nbsp;&nbsp;');
+			        		
+			        		if ((i+1) % 10 == 0) {
+					        	$("#totalTestResult").append('<br>');
+				        	}
+			        	}
+			        	
+					}
+				});
+			}
+			
+			function numbersRangeTest() {
+				$.ajax({
+					type: "POST",
+					url: "/test/numbersRangeTest.do",
+					dataType: "json",
+					async: false,
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+			           		location.href = "/index.do"; 
+			        	}
+			        	$("#totalRange").html("");
+			        	$("#totalTestResult").html("");
+			        	
+			        	$("#totalRange").html(result.totalRange);
+			        	
+			        	for (var i = 0 ; i < result.rows.length ; i++) {
+			        		var msg = result.rows[i];
+			        		
+			        		$("#totalTestResult").append(msg +'&nbsp;&nbsp;');
+			        		
+			        		if ((i+1) % 10 == 0) {
+					        	$("#totalTestResult").append('<br>');
+				        	}
+			        	}
+			        	
+					}
+				});
+			}
+			
+			function insertAllAcInfoGo() {
+				$.ajax({
+					type: "POST",
+					url: "/test/insertAllAcInfo.do",
+					dataType: "json",
+					async: false,
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+			           		location.href = "/index.do"; 
+			        	}
+			        	
+			        	if (result.status == "success") {
+			        		showSmallBox(result.msg);
+			        	}
 					}
 				});
 			}
