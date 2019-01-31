@@ -251,6 +251,7 @@ public class TestController extends DefaultSMController {
 		json.put("status", "success");		
 		writeJSON(response, json); 
 	}
+	
 	/**
 	 * 최대 출현횟수별 테스트
 	 * 

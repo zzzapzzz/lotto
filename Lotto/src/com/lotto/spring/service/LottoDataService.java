@@ -2773,7 +2773,12 @@ public class LottoDataService extends DefaultService {
 		int ac = data.getAc();
 		
 		//AC가 예측패턴과 같지 않으면 무효처리
-		if(ac != exptPtrnAnlyInfo.getAc()){
+//		if(ac != exptPtrnAnlyInfo.getAc()){
+//			result = true;
+//		}
+		
+		// 표준범위로 체크
+		if (ac >= 7 && ac <= 10) {
 			result = true;
 		}
 		
@@ -3335,7 +3340,18 @@ public class LottoDataService extends DefaultService {
 		if (!result) {
 			return false;
 		}
-					
+		
+		//5. AC 비교(7 ~ 10)
+		result = this.isContainAc(exData, exptPtrnAnlyInfo);
+		if (verification && isEqual) {
+			if(!result) {
+				equalCnt++;	//일치함.
+				log.info("12. AC 비교 : " + equalCnt);
+			}
+		} else {
+			if(!result) equalCnt++;	//일치함.
+		}
+		
 		return true;
 	}
 	
