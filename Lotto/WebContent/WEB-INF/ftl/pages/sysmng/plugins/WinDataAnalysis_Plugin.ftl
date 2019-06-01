@@ -10,49 +10,9 @@
 			
 			$(document).ready(function() {
 				var isAjax = "${isAjax?if_exists}";
-				if ("N" == isAjax) {
-					initPlugin();
-				}
 
-				setWinCountList();
+				searchGo();
 			});
-			
-			function initPlugin() {
-				$("#search").click(searchGo);
-				
-				$("#win_count").change(searchGo);
-			}
-			
-			function setWinCountList() {
-				var param = {
-					page: '1'
-				};
-				$.ajax({
-					type: "POST",
-					url: "/sysmng/getWinDataList.do",
-					data: param,
-					dataType: "json",
-					async: false,
-					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-					error:function(xhr, textStatus, errorThrown){
-						alert(xhr.responseText);				
-					},
-					success: function(result){
-						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
-						if (result.status == "usernotfound") {
-			           		location.href = "/index.do"; 
-			        	}
-			        	
-			        	for (var i = 0 ; i < result.rows.length ; i++) {
-			        		var win_count = result.rows[i].win_count;
-			        		
-			        		$("#win_count").append('<option value="'+ win_count +'">'+ win_count +'</option>');
-			        	}
-			        	
-			        	searchGo();
-					}
-				});
-			}
 			
 			function searchGo() {
 				var param = {		
@@ -113,8 +73,21 @@
 			        	$("#acMsg").html(result.ac_msg);
 			        	
 			        	$("#excludeMsg").html(result.exclude_msg);
+			        	
+			        	$("#containMsg").html(result.contain_msg);
+			        	
+			        	$("#notContainMsg").html(result.not_contain_msg);
+			        	
+			        	$("#mcMatchedMsg").html(result.mc_matched_msg);
+			        	
+			        	$("#zeroRangeMsg").html(result.zero_range_msg);
 					}
 				});
+			}
+			
+			function cancel() {
+				var cid = $("#currCid").val(); 
+				openContent(cid);
 			}
 			
 		</script>

@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
+import com.lotto.common.LottoUtil;
 import com.lotto.common.WebUtil;
 import com.lotto.spring.core.DefaultSMController;
 import com.lotto.spring.domain.dao.SystemSession;
@@ -337,6 +338,8 @@ public class TestController extends DefaultSMController {
 		
 		JSONObject json = new JSONObject();
 		json.put("status", "success");		
+		json.put("isMatchCnt", isMatchCnt);		
+		json.put("isMatchPer", (percent * 100) + "%");		
 		writeJSON(response, json); 
 	}
 	
@@ -419,7 +422,208 @@ public class TestController extends DefaultSMController {
 		
 		
 		JSONObject json = new JSONObject();
-		json.put("status", "success");		
+		json.put("status", "success");
+		json.put("isMatchCnt", isMatchCnt);		
+		json.put("isMatchPer", (percent * 100) + "%");
+		writeJSON(response, json); 
+	}
+	
+	/**
+	 * 미출현구간 테스트
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/zeroCntRangeTest")
+	public void zeroCntRangeTest(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		//2016.05.23 cremazer
+		//ORACLE 인 경우 대문자 설정
+		if ("ORACLE".equals(systemInfo.getDatabase())) {
+			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+		}
+		
+		// 로그인 아이디
+		int loginUserNo = userInfo.getUser_no();
+		log.info("[" + loginUserNo + "][C] 미출현구간 테스트");
+		String accessip = request.getRemoteHost();
+		
+		dto.setReg_user_no(loginUserNo);
+		dto.setAccess_ip(accessip);
+		
+		// 당첨번호 전체 목록 조회
+		WinDataDto winDataDto = new WinDataDto();
+		winDataDto.setSord("ASC");
+		List<WinDataAnlyDto> winDataList = sysmngService.getWinDataAnlyList(winDataDto);
+		
+		int MATCH_CNT = 5;	//매치 개수
+		int isMatchCnt = 0;
+		
+		Map<Integer, Integer[]> appearRangeByCount = new HashMap<Integer, Integer[]>(); 
+		
+		// 번호별 출현건수
+		Integer[] arrAppearNumberCnt = new Integer[45];
+		for (int i = 0; i < arrAppearNumberCnt.length; i++) {
+			arrAppearNumberCnt[i] = 0;
+		}
+		
+		// 당첨번호 일치율 확인
+		for (int idx = 0; idx < winDataList.size(); idx++) {
+			
+			if (idx == 0) {
+				WinDataAnlyDto data = winDataList.get(idx);
+				int[] numbers = LottoUtil.getNumbers(data);
+				for (int i = 0; i < numbers.length; i++) {
+					int number = numbers[i];
+					arrAppearNumberCnt[number-1] += 1;
+				}
+				continue;
+			}
+			
+			WinDataAnlyDto bfData = winDataList.get(idx - 1);
+			WinDataAnlyDto data = winDataList.get(idx);
+			/** 번호간 범위 결과 목록 */
+			int[] containGroupCnt = lottoDataService.getZeroCntRangeData(data);	
+			
+			int[] bfNumbers = LottoUtil.getNumbers(bfData);
+			
+			for (int i = 0; i < bfNumbers.length; i++) {
+				int key = bfNumbers[i];
+				
+				//출현번호 카운트 누적
+				arrAppearNumberCnt[key-1] += 1;
+				
+				/*
+				 * TC1. 
+				 * 번호별 다음 출현구간 확인
+				 * 번호/출현구간 누적건수
+				 */
+//				if (appearRangeByCount.containsKey(key)) {
+//					Integer[] containCntByCount = appearRangeByCount.get(key);
+//					
+//					if (key == 10) {
+//						System.out.println("===============================================");
+//						System.out.print((idx+1) + "회 ");
+//						for (int j = 0; j < containCntByCount.length; j++) {
+//							System.out.print(containCntByCount[j] + (j<containCntByCount.length-1?",":"")  );
+//						}
+//						System.out.println();
+//						System.out.println("---");
+//					}
+//					
+//					for (int j = 0; j < containGroupCnt.length; j++) {
+//						if (key == 10) {
+//							System.out.print(containGroupCnt[j] + (j<containGroupCnt.length-1?",":"")  );
+//						}
+//						containCntByCount[j] += containGroupCnt[j];
+//					}
+//					
+//					if (key == 10) {
+//						System.out.println();
+//						System.out.println("---");
+//					}
+//					
+//					if (key == 10) {
+//						System.out.print((idx+1) + "회 ");
+//						for (int j = 0; j < containCntByCount.length; j++) {
+//							System.out.print(containCntByCount[j] + (j<containCntByCount.length-1?",":"")  );
+//						}
+//						System.out.println();
+//						System.out.println("===============================================");
+//					}
+//					
+//					appearRangeByCount.put(key, containCntByCount);
+//					
+//				} else {
+//					
+//					// 값 초기화
+//					Integer[] arrCnt = new Integer[5];
+//					for (int j = 0; j < arrCnt.length; j++) {
+//						arrCnt[j] = 0;
+//					}
+//					
+//					for (int j = 0; j < containGroupCnt.length; j++) {
+//						if (key == 10) {
+//							System.out.print(containGroupCnt[j] + (j<containGroupCnt.length-1?",":"")  );
+//						}
+//						arrCnt[j] += containGroupCnt[j];
+//					}
+//					
+//					if (key == 10) {
+//						System.out.println("===============================================");
+//						System.out.print((idx+1) + "회 ");
+//						for (int j = 0; j < arrCnt.length; j++) {
+//							System.out.print(arrCnt[j] + (j<arrCnt.length-1?",":"")  );
+//						}
+//						System.out.println();
+//						System.out.println("===============================================");
+//					}
+//					
+//					appearRangeByCount.put(key, arrCnt);
+//				}
+				
+				/*
+				 * TC2. 2019.03.05 
+				 * 번호별 다음 미출현구간 확인
+				 * 번호/미출현구간 누적건수
+				 */
+				if (appearRangeByCount.containsKey(key)) {
+					Integer[] arrNotAppearCntByNumber = appearRangeByCount.get(key);
+					// 미출현 구간 카운트 누적
+					for (int j = 0; j < containGroupCnt.length; j++) {
+						if (0 == containGroupCnt[j]) {
+							arrNotAppearCntByNumber[j] += 1;
+						}
+					}
+					appearRangeByCount.put(key, arrNotAppearCntByNumber);
+				} else {
+					// 값 초기화
+					Integer[] arrCnt = new Integer[5];
+					for (int j = 0; j < arrCnt.length; j++) {
+						arrCnt[j] = 0;
+					}
+					
+					// 미출현 구간 카운트 누적
+					for (int j = 0; j < containGroupCnt.length; j++) {
+						if (0 == containGroupCnt[j]) {
+							arrCnt[j] += 1;
+						}
+					}
+					appearRangeByCount.put(key, arrCnt);
+				}
+				
+			}
+		}
+		
+		// TC1.확인
+//		for (int i = 1; i <= 45; i++) {
+//			Integer[] containCntByCount = appearRangeByCount.get(i);
+//			log.info(i + " : " + containCntByCount[0] + ", " + containCntByCount[1] + ", " + containCntByCount[2] + ", " + containCntByCount[3] + ", " + containCntByCount[4]);
+//		}
+		
+		// TC2.확인
+		for (int i = 1; i <= 45; i++) {
+			Integer[] arrNotAppearCntByNumber = appearRangeByCount.get(i);
+			String cntByNumber = "";
+			String perByNumber = "";
+			for (int j = 0; j < arrNotAppearCntByNumber.length; j++) {
+				cntByNumber += arrNotAppearCntByNumber[j] + ", ";
+				perByNumber += LottoUtil.getPercent(arrNotAppearCntByNumber[j],arrAppearNumberCnt[i-1]) + (j < arrNotAppearCntByNumber.length-1 ?", ":"");
+			}
+			cntByNumber += " (출현횟수=" + arrAppearNumberCnt[i-1] + ")";
+			log.info(i + " : " + cntByNumber);
+			log.info(i + " : " + perByNumber);
+		}
+		
+		
+		JSONObject json = new JSONObject();
+		json.put("status", "success");
 		writeJSON(response, json); 
 	}
 	

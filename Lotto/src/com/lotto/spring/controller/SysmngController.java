@@ -1044,6 +1044,100 @@ public class SysmngController extends DefaultSMController {
 	}
 	
 	/**
+	 * 당첨번호 분석 화면 호출(ajax)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/analysisWinDataajax")
+	public String analysisWinDataajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses, @ModelAttribute ExDataDto dto) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			long loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 당첨번호 분석 화면 호출(ajax)");
+			
+			setModelMap(modelMap, request);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("DESC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			// 최근 당첨번호
+			WinDataDto lastData = winDataList.get(0);
+			
+			// 분석정보 설정
+			modelMap.addAttribute("last_count", lastData.getWin_count());
+			modelMap.addAttribute("ex_count", lastData.getWin_count()+1);
+			
+			String winNumbers = "";
+			int[] lastWinNumbers = LottoUtil.getNumbers(lastData);
+			for (int i = 0; i < lastWinNumbers.length; i++) {
+				if (i > 0) {
+					winNumbers += ", ";
+				}
+				winNumbers += lastWinNumbers[i];
+			}
+			modelMap.addAttribute("winNumbers", winNumbers);
+			modelMap.addAttribute("bonusNumber", lastData.getBonus_num());
+			
+			//CurrMenuInfo overwrite
+			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/windatamng"));
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/WinDataAnalysis");
+			modelMap.addAttribute("isAjax", "Y");
+			
+		} else {
+			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
+		}
+		return POPUP;
+	}
+	
+	/**
+	 * 당첨번호 분석 화면 호출(plugin)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/analysisWinDataplugin")
+	public String analysisWinDataplugin(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			long loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 당첨번호 분석 화면 호출(plugin)");
+			
+			setModelMap(modelMap, request);
+			
+			//CurrMenuInfo overwrite
+			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/windatamng"));
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/WinDataAnalysis_Plugin");
+			
+			return POPUP;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";
+			
+		}
+	}
+	
+	/**
 	 * 예상번호관리 화면 호출
 	 * 
 	 * @param modelMap
@@ -1119,7 +1213,7 @@ public class SysmngController extends DefaultSMController {
 			// 다음 발표일자 Calendar (조회시간 기준)
 			Calendar nextAnnounceCal = LottoUtil.getNextAccounceCalendar();
 			Date date = nextAnnounceCal.getTime();             
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy년 MM월 dd일");
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy년 M월 d일");
 			String nextAnnounceDate = sdf.format(date);  
 			modelMap.addAttribute("nextAnnounceDate", nextAnnounceDate);
 			

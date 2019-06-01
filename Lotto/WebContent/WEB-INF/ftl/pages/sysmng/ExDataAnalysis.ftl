@@ -29,7 +29,7 @@
 							이번 주 ${nextAnnounceDate?if_exists}에 발표되는<br>
 							로또 ${ex_count?if_exists}회차 예상번호를 예측해 봤습니다.<br>
 							<br>
-							1~${ex_count?if_exists}회 로또 당첨번호를 분석하여<br>
+							1~${last_count?if_exists}회 로또 당첨번호를 분석하여<br>
 							일정한 패턴을 찾아<br>
 							가장 당첨 확률이 높은 규칙을 적용하여,<br>
 							100만 번의 랜덤 번호 중 가장 높은 확률로 출현한<br>
@@ -60,8 +60,7 @@
 					<div class="content">
 						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
 							<h3><strong>로또 ${ex_count?if_exists}회 예상번호 분석</strong></h3>
-							
-							<h4><strong>저고비율</strong></h4>
+
 							<br>
 							로또 ${ex_count?if_exists}회차 예상번호는<br>
 							1~${last_count?if_exists}회 당첨번호들을 분석하여 얻은<br>
@@ -91,7 +90,7 @@
 				<div class="row">
 					<div class="content">
 						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
-							<h4><strong>홀짝비율</strong></h4>
+
 							<br>
 							홀짝 비율은<br>
 							당첨번호 숫자 중<br>
@@ -115,19 +114,19 @@
 				<div class="row">
 					<div class="content">
 						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
-							<h4><strong>회차합</strong></h4>
+
 							<br>
 							회차합은<br>
 							최근 당첨번호로부터 이전 10회 동안<br>
 							당첨번호로 출현한<br>
 							숫자의 모임을 의미합니다.<br>
 							<br>
-							최근 10회차 합에서 출현한 번호들은 다음과 같습니다.<br>
+							최근 10회차 합에서 출현한 번호들은<br>다음과 같습니다.<br>
 							<br>
 							<div id="contain10List">
 							</div>
 							<br>
-							그리고 10회차 합에서 미출현한 번호들은 다음과 같습니다.<br>
+							그리고 10회차 합에서 미출현한 번호들은<br>다음과 같습니다.<br>
 							<br>
 							<div id="notContain10List">
 							</div>
@@ -142,7 +141,7 @@
 				<div class="row">
 					<div class="content">
 						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
-							<h4><strong>총합</strong></h4>
+
 							<br>
 							총합은<br>
 							보너스 번호를 제외한<br>
@@ -163,7 +162,7 @@
 				<div class="row">
 					<div class="content">
 						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
-							<h4><strong>끝수합</strong></h4>
+
 							<br>
 							끝수합은<br>
 							당첨번호 숫자의<br>
@@ -184,7 +183,7 @@
 				<div class="row">
 					<div class="content">
 						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
-							<h4><strong>제외수</strong></h4>
+
 							<br>
 							제외수는<br>
 							1~${last_count?if_exists}회에 걸쳐 항상 출현하지 않았던<br>
@@ -195,8 +194,10 @@
 							<div id="excludeNumberList">
 							</div>
 							<br>
+							<!--							
 							위의 로또 ${ex_count?if_exists}회차 예상번호는<br>
 							제외수를 포함하지 않았습니다.<br>
+							-->
 							<br>
 							
 						</div>
@@ -207,7 +208,7 @@
 				<div class="row">
 					<div class="content">
 						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
-							<h4><strong>궁합수</strong></h4>
+
 							<br>
 							궁합수는<br>
 							1~${last_count?if_exists}회 당첨번호들의 관계를 분석하여<br>
@@ -233,9 +234,6 @@
 									
 								</tbody>
 							</table>
-							<br>
-							위의 로또 ${ex_count?if_exists}회차 예상번호는<br>
-							제외수를 포함하지 않았습니다.<br>
 							<br>
 							
 						</div>
@@ -263,6 +261,7 @@
 							아낌없는 후원으로 운영됩니다.<br>
 							<br>
 							후원안내 보기 클릭!<br>
+							https://blog.naver.com/smlotto/221410541239<br>
 							<br>
 							이 글을 읽는 모든 분들께<br>
 							로또 1등 당첨이 되시길<br>

@@ -25,6 +25,7 @@
 					<span id="modify" class="btn btn-warning"><i class="fa fa-edit"></i> 수정</span>
 					<span id="del" class="btn btn-danger"><i class="fa fa-trash-o"></i> 삭제</span>
 					<span id="uploadFile" class="btn btn-success"><i class="fa fa-upload"></i> Excel 업로드</span>
+					<span id="winDataAnalysis" class="btn btn-info"><i class="fa fa-pencil"></i> 당첨번호 분석</span>
 					
 					<!-- row -->
 					<div class="row">

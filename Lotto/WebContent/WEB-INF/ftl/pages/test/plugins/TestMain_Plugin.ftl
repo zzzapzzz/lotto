@@ -19,6 +19,7 @@
 				$("#totalTest").click(totalTest);
 				$("#testAppearNumbers").click(appearNumbersTest);
 				$("#testNumbersRange").click(numbersRangeTest);
+				$("#testZeroCntRange").click(zeroCntRangeTest);
 				$("#insertAllAcInfo").click(insertAllAcInfoGo);
 				
 				// 총합 테스트
@@ -27,6 +28,7 @@
 				$("#totalTestResult").hide();
 			}
 			
+			//총합
 			function totalTest() {
 				$.ajax({
 					type: "POST",
@@ -61,6 +63,7 @@
 				});
 			}
 			
+			//최대 출현횟수
 			function appearNumbersTest() {
 				$.ajax({
 					type: "POST",
@@ -76,25 +79,18 @@
 						if (result.status == "usernotfound") {
 			           		location.href = "/index.do"; 
 			        	}
-			        	$("#totalRange").html("");
-			        	$("#totalTestResult").html("");
 			        	
-			        	$("#totalRange").html(result.totalRange);
+			        	$("#matchCnt").html("");
+			        	$("#matchPer").html("");
 			        	
-			        	for (var i = 0 ; i < result.rows.length ; i++) {
-			        		var msg = result.rows[i];
-			        		
-			        		$("#totalTestResult").append(msg +'&nbsp;&nbsp;');
-			        		
-			        		if ((i+1) % 10 == 0) {
-					        	$("#totalTestResult").append('<br>');
-				        	}
-			        	}
+			        	$("#matchCnt").html("매칭개수 : " + result.isMatchCnt);
+			        	$("#matchPer").html("일치율 : " + result.isMatchPer);
 			        	
 					}
 				});
 			}
 			
+			//번호간 범위
 			function numbersRangeTest() {
 				$.ajax({
 					type: "POST",
@@ -110,20 +106,39 @@
 						if (result.status == "usernotfound") {
 			           		location.href = "/index.do"; 
 			        	}
-			        	$("#totalRange").html("");
-			        	$("#totalTestResult").html("");
 			        	
-			        	$("#totalRange").html(result.totalRange);
+			        	$("#matchCnt").html("");
+			        	$("#matchPer").html("");
 			        	
-			        	for (var i = 0 ; i < result.rows.length ; i++) {
-			        		var msg = result.rows[i];
-			        		
-			        		$("#totalTestResult").append(msg +'&nbsp;&nbsp;');
-			        		
-			        		if ((i+1) % 10 == 0) {
-					        	$("#totalTestResult").append('<br>');
-				        	}
+			        	$("#matchCnt").html("매칭개수 : " + result.isMatchCnt);
+			        	$("#matchPer").html("일치율 : " + result.isMatchPer);
+			        	
+					}
+				});
+			}
+			
+			//미출현구간
+			function zeroCntRangeTest() {
+				$.ajax({
+					type: "POST",
+					url: "/test/zeroCntRangeTest.do",
+					dataType: "json",
+					async: false,
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+			           		location.href = "/index.do"; 
 			        	}
+			        	
+						$("#matchCnt").html("");
+			        	$("#matchPer").html("");
+			        	
+			        	$("#matchCnt").html("매칭개수 : " + result.isMatchCnt);
+			        	$("#matchPer").html("일치율 : " + result.isMatchPer);
 			        	
 					}
 				});

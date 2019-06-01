@@ -118,6 +118,7 @@
 				$("#modify").click(changeModifyGo);
 				$('#del').click(deleteGo);
 				$("#uploadFile").click(uploadFileGo);
+				$("#winDataAnalysis").click(changeAnalysisGo);
 				
 				$("#search_win_count").change(searchGo);
 				
@@ -132,6 +133,15 @@
 			$(window).on('resize.jqGrid', function() {
 				$("#jqgrid").jqGrid('setGridWidth', $("#content").width());
 			});
+			
+			function changeAnalysisGo() {
+				var param = {
+					win_count : $("#win_count").val()
+				}
+				
+				var url = "${APP_ROOT}/sysmng/analysisWinDataajax.do";
+				changeContent(url, param);
+			}
 			
 			function uploadFileGo() {
 				$("#excel").val("");

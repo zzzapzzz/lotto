@@ -1,5 +1,6 @@
 package com.lotto.common;
 
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -490,5 +491,24 @@ public final class LottoUtil {
 		}
 		
 		return difNubmers;
+	}
+
+	/**
+	 * 퍼센트(%) 구하기
+	 * 소수점 2째자리(0.00%)
+	 * 
+	 * @param dividend 피제수
+	 * @param divisor 제수
+	 * @return 0.00
+	 */
+	public static double getPercent(int dividend, int divisor) {
+		double d_cnt = dividend;
+		double d_total = divisor;
+		DecimalFormat df = new DecimalFormat("#.##");
+		if (0 != divisor) {
+			return Double.parseDouble(df.format( d_cnt/d_total*100 ));
+		} else {
+			return 0.0;
+		}
 	}
 }

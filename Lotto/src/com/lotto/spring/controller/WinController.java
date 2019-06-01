@@ -3,7 +3,10 @@ package com.lotto.spring.controller;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +26,8 @@ import com.lotto.spring.domain.dao.UserSession;
 import com.lotto.spring.domain.dto.AcDto;
 import com.lotto.spring.domain.dto.CountSumDto;
 import com.lotto.spring.domain.dto.EndNumDto;
+import com.lotto.spring.domain.dto.ExDataDto;
+import com.lotto.spring.domain.dto.ExcludeDto;
 import com.lotto.spring.domain.dto.LowHighDto;
 import com.lotto.spring.domain.dto.MCNumDto;
 import com.lotto.spring.domain.dto.OddEvenDto;
@@ -171,46 +176,77 @@ public class WinController extends DefaultSMController {
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 당첨번호 조회");
 			
-			// 당첨번호정보 조회
-			WinDataDto winData = sysmngService.getWinData(dto);
-			
-			// 회차합 조회
-			CountSumDto countSumInfo = sysmngService.getCountSumInfo(dto);
-			
-			// 궁합수 조회
-			List<MCNumDto> mcNumList = sysmngService.getMcNumList(dto);
-			String mcMatchedData = lottoDataService.getMcMatchedData(winData, mcNumList);
-			
-			// 미출현번호대 조회
-			ZeroRangeDto zeroRangeInfo = sysmngService.getZeroRangeInfo(dto);
-			
-			// 저고비율 정보 설정
-			List<LowHighDto> lowHighDataList = sysmngService.getLowHighDataList(dto);
-			jsonObj.put("lowhigh_msg", lottoDataService.getLowHighMsg(winData, lowHighDataList));
-			
-			// 홀짝비율 정보 설정
-			List<OddEvenDto> oddEvenDataList = sysmngService.getOddEvenDataList(dto);
-			jsonObj.put("oddeven_msg", lottoDataService.getOddEvenMsg(winData, oddEvenDataList));
-			
-			// 총합 정보 설정
-			TotalDto totalInfo = sysmngService.getTotalInfo(winData);
-			jsonObj.put("total_range", totalInfo.getTotal_range());
-			jsonObj.put("total_msg", lottoDataService.getTotalMsg(winData, totalInfo));
-			
-			// 끝수합 정보 설정
-			EndNumDto endNumInfo = sysmngService.getEndNumInfo(winData);
-			jsonObj.put("endnum_range", endNumInfo.getEndnum_range());
-			jsonObj.put("endnum_msg", lottoDataService.getEndnumMsg(winData, endNumInfo));
-			
-			// AC 정보 설정
-			AcDto acInfo = sysmngService.getAcInfo(winData);
-			jsonObj.put("ac_range", acInfo.getAc_range());
-			jsonObj.put("ac_msg", lottoDataService.getAcMsg(winData, acInfo));
-			
-			jsonObj.put("data", winData);
-			jsonObj.put("countSumInfo", countSumInfo);
-			jsonObj.put("mcMatchedData", mcMatchedData);
-			jsonObj.put("zeroRange", zeroRangeInfo.getZero_range());
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("DESC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+						
+			if (winDataList != null && winDataList.size() > 0) {
+				// 최근 당첨번호정보 조회
+				WinDataDto winData = winDataList.get(0);
+				jsonObj.put("data", winData);
+				
+				// 회차합 조회
+				CountSumDto countSumInfo = sysmngService.getCountSumInfo(dto);
+				jsonObj.put("countSumInfo", countSumInfo);
+				
+				// 궁합수 조회
+				List<MCNumDto> mcNumList = sysmngService.getMcNumList(dto);
+				String mcMatchedData = lottoDataService.getMcMatchedData(winData, mcNumList);
+				jsonObj.put("mcMatchedData", mcMatchedData);
+				
+				// 미출현번호대 조회
+				ZeroRangeDto zeroRangeInfo = sysmngService.getZeroRangeInfo(dto);
+				jsonObj.put("zeroRange", zeroRangeInfo.getZero_range());
+				
+				// 저고비율 정보 설정
+				List<LowHighDto> lowHighDataList = sysmngService.getLowHighDataList(dto);
+				jsonObj.put("lowhigh_msg", lottoDataService.getLowHighMsg(winData, lowHighDataList));
+				
+				// 홀짝비율 정보 설정
+				List<OddEvenDto> oddEvenDataList = sysmngService.getOddEvenDataList(dto);
+				jsonObj.put("oddeven_msg", lottoDataService.getOddEvenMsg(winData, oddEvenDataList));
+				
+				// 총합 정보 설정
+				TotalDto totalInfo = sysmngService.getTotalInfo(winData);
+				jsonObj.put("total_range", totalInfo.getTotal_range());
+				jsonObj.put("total_msg", lottoDataService.getTotalMsg(winData, totalInfo));
+				
+				// 끝수합 정보 설정
+				EndNumDto endNumInfo = sysmngService.getEndNumInfo(winData);
+				jsonObj.put("endnum_range", endNumInfo.getEndnum_range());
+				jsonObj.put("endnum_msg", lottoDataService.getEndnumMsg(winData, endNumInfo));
+				
+				// AC 정보 설정
+				AcDto acInfo = sysmngService.getAcInfo(winData);
+				jsonObj.put("ac_range", acInfo.getAc_range());
+				jsonObj.put("ac_msg", lottoDataService.getAcMsg(winData, acInfo));
+				
+				// 제외수 설정
+				ExDataDto lastWinData = new ExDataDto();
+				lastWinData.setEx_count(winData.getWin_count());	
+				// 지난 회차의 제외수 정보 조회
+				ExcludeDto excludeInfo = sysmngService.getExcludeInfo(lastWinData);
+				jsonObj.put("exclude_msg", lottoDataService.getExcludeMsg(winData, excludeInfo));
+				
+				// 출현번호/미출현번호 설정
+				Map<String, String> containInfo = lottoDataService.getContainInfo(winDataList);
+				jsonObj.put("contain_msg", containInfo.get("containMsg"));
+				jsonObj.put("not_contain_msg", containInfo.get("notContainMsg"));
+				
+				// 궁합수 설정
+				jsonObj.put("mc_matched_msg", lottoDataService.getMcMatchedMsg(winData, mcNumList));
+				
+				// 미출현 번호대 구간 설정
+				jsonObj.put("zero_range_msg", lottoDataService.getZeroRangeMsg(zeroRangeInfo));
+				
+				
+				
+			} else {
+				jsonObj.put("status", "datanotfound");
+				jsonObj.put("msg", "당첨번호가 없습니다.");
+			}
 			
 		} else {
 			jsonObj.put("status", "usernotfound");

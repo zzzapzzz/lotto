@@ -17,11 +17,16 @@
 							<span id="totalTest" class="btn btn-info"><i class="fa fa-bug"></i> 총합</span>
 							<span id="testAppearNumbers" class="btn btn-info"><i class="fa fa-edit"></i> 최대 출현횟수</span>
 							<span id="testNumbersRange" class="btn btn-info"><i class="fa fa-edit"></i> 번호간 범위 </span>
+							<span id="testZeroCntRange" class="btn btn-info"><i class="fa fa-edit"></i> 미출현구간 </span>
 							<span id="insertAllAcInfo" class="btn btn-success"><i class="fa fa-edit"></i> AC정보 등록</span>
 						</div>
 						<div id="totalRange" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
 						</div>
 						<div id="totalTestResult" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
+						</div>
+						<div id="matchCnt" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
+						</div>
+						<div id="matchPer" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
 						</div>
 						
 					</div>

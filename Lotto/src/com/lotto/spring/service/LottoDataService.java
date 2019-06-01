@@ -17,6 +17,7 @@ import com.lotto.spring.domain.dto.AcDto;
 import com.lotto.spring.domain.dto.CountSumDto;
 import com.lotto.spring.domain.dto.EndNumDto;
 import com.lotto.spring.domain.dto.ExDataDto;
+import com.lotto.spring.domain.dto.ExcludeDto;
 import com.lotto.spring.domain.dto.ExptPtrnAnlyDto;
 import com.lotto.spring.domain.dto.LowHighDto;
 import com.lotto.spring.domain.dto.MCNumDto;
@@ -24,6 +25,7 @@ import com.lotto.spring.domain.dto.OddEvenDto;
 import com.lotto.spring.domain.dto.TotalDto;
 import com.lotto.spring.domain.dto.WinDataAnlyDto;
 import com.lotto.spring.domain.dto.WinDataDto;
+import com.lotto.spring.domain.dto.ZeroRangeDto;
 
 @Service("lottoDataService")
 public class LottoDataService extends DefaultService {
@@ -823,8 +825,9 @@ public class LottoDataService extends DefaultService {
 	 * @param lastData
 	 * @return
 	 */
-	public int[] getZeroCntRangeData(WinDataDto lastData) {
-		int[] numbers = LottoUtil.getNumbers(lastData);
+//	public int[] getZeroCntRangeData(WinDataDto lastData) {
+	public int[] getZeroCntRangeData(Object lastData) {
+		int[] numbers = LottoUtil.getNumbersFromObj(lastData);
 		
 		/** 각 자리의 포함개수 */
 		int[] containGroupCnt = {0,0,0,0,0};
@@ -1055,7 +1058,7 @@ public class LottoDataService extends DefaultService {
 	 * 
 	 * @param winData 당첨번호 
 	 * @param mcNumList 궁합수 목록
-	 * @return 궁합수 매칭정보
+	 * @return 궁합수 매칭정보 String
 	 */
 	public String getMcMatchedData(WinDataDto winData, List<MCNumDto> mcNumList) {
 		String result = "";
@@ -1087,10 +1090,54 @@ public class LottoDataService extends DefaultService {
 			}
 		}
 		
-		if (matchedCount > 0) {
-			result = matchedCount+"개 : " + result; 
-		}
+//		if (matchedCount > 0) {
+//			result = matchedCount+"개 : " + result; 
+//		}
 		return result;
+	}
+	
+	/**
+	 * 궁합수 매칭정보 확인
+	 * 
+	 * @param winData 당첨번호 
+	 * @param mcNumList 궁합수 목록
+	 * @return 궁합수 매칭정보 Map
+	 */
+	public Map<String, Object> getMcMatchedDataMap(WinDataDto winData, List<MCNumDto> mcNumList) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		String result = "";
+		
+		//당첨번호 설정
+		int[] numbers = LottoUtil.getNumbers(winData);
+		int matchedCount = 0;	//맞은 궁합수 개수
+		
+		Map<Integer, ArrayList<Integer>> mcMap = this.getMcNumberMap(mcNumList);
+		
+		for (int i = 0; i < numbers.length; i++) {
+			ArrayList<Integer> mcList = mcMap.get(numbers[i]);
+			
+			//궁합수 출력
+			for (int j = 0; j < numbers.length; j++) {
+				if (i == j) {
+					continue;
+				} else {
+					//궁합수에 당첨번호가 포함되어 있을 경우
+					if (mcList.contains(numbers[j])) {
+						matchedCount++;	//맞은 궁함수 개수 증가
+						//출력결과 설정
+						if (!"".equals(result)) {
+							result += ", ";
+						}
+						result += numbers[i] + "-" + numbers[j];
+					}
+				}
+			}
+		}
+		
+		resultMap.put("matchedCount", matchedCount);
+		resultMap.put("result", result);
+		
+		return resultMap;
 	}
 	
 	/**
@@ -2140,7 +2187,7 @@ public class LottoDataService extends DefaultService {
 			map.put(String.valueOf(countData[i][0]), countData[i][1]);
 			
 			double percent = Double.parseDouble(df.format( (double)countData[i][1] /total ));
-			log.info( countData[i][0] + " : " + countData[i][1] + " --- 출현률 : " + (percent*100) + "%");
+//			log.info( countData[i][0] + " : " + countData[i][1] + " --- 출현률 : " + (percent*100) + "%");
 			
 			sumPercent += percent*100;			
 			
@@ -3352,9 +3399,129 @@ public class LottoDataService extends DefaultService {
 			if(!result) equalCnt++;	//일치함.
 		}
 		
+		/*
+		 * 6. 미출현구간대 설정
+		 * 
+		 * 844회 기준 일치율
+		 * 0	92	  10.9%
+		 * 1	444	  52.6%
+		 * 2	279	  33.0%
+		 * 3	29	  3.4%
+		 * 
+		 * 3구간 미출현은 제외처리함.
+		 */
+		result = this.checkZeroCntRange(exData);
+		if (!result) {
+			return false;
+		}
+		
+		/*
+		 * 98. 임시 예외처리
+		 * 
+		 * 2019.03.08
+		 * 40번대 구간 미출현
+		 * 10번대 출현
+		 * 이전 출현번호는 1개는 나옴.
+		 * 2:4 ~ 4:2면 OK
+		 * 
+		 * 2019.03.15
+		 * 미출구간 체크 제외 
+		 */
+		result = this.checkCustomException(exData, winDataList);
+		if (!result) {
+			return false;
+		}
+		
+		/*
+		 * 99. Cherokee 사이트 참고 예외처리 추가
+		 * https://blog.naver.com/cameto13
+		 * 2019.02.24 결과 망!
+		 */
+		
 		return true;
 	}
 	
+	/**
+	 * 임시 예외처리
+	 * 2019.03.08
+	 * 
+	 * @param exData
+	 * @param winDataList 
+	 * @return
+	 */
+	private boolean checkCustomException(ExDataDto exData, List<WinDataAnlyDto> winDataList) {
+		// 미출구간 체크
+		// 850회 체크하지 않음. 2019.03.15
+		int[] containGroupCnt = this.getZeroCntRangeData(exData);
+//		if (containGroupCnt[4] != 0) {
+//			return false;	
+//		}
+//		if (containGroupCnt[1] == 0) {
+//			return false;	
+//		}
+		
+		
+		// 이전번호 출현 체크
+		WinDataAnlyDto lastWinData = winDataList.get(winDataList.size()-1);
+		int[] exDataNumbers = LottoUtil.getNumbers(exData);
+		int[] lastNumbers = LottoUtil.getNumbers(lastWinData);
+		int equalCnt = 0;
+		for (int i = 0; i < exDataNumbers.length; i++) {
+			for (int j = 0; j < lastNumbers.length; j++) {
+				if (exDataNumbers[i] == lastNumbers[j]) {
+					equalCnt++;
+				}
+			}	
+		}		
+		if (equalCnt != 1) {
+			// 이전 번호가 1개 없으면 제외
+			logger.debug("이전 번호가 1개 없으면 제외");
+			return false;
+		}
+		
+		// 저고비율 체크
+		String lowHigh = exData.getLow_high();
+		if (!"2:4".equals(lowHigh)
+				&& !"3:3".equals(lowHigh)
+				&& !"4:2".equals(lowHigh)
+				) {
+			return false;
+		}
+		
+		// 홀짝비율 체크
+		String oddEven = exData.getOdd_even();
+		if (!"2:4".equals(oddEven)
+				&& !"3:3".equals(oddEven)
+				&& !"4:2".equals(oddEven)
+				) {
+			return false;
+		}
+		
+		return true;
+	}
+
+	/**
+	 * 미출현구간 수 체크
+	 * 2019.03.08
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean checkZeroCntRange(ExDataDto exData) {
+		int[] containGroupCnt = this.getZeroCntRangeData(exData);
+		int zeroCnt = 0;
+		for (int i = 0; i < containGroupCnt.length; i++) {
+			if (containGroupCnt[i] == 0) {
+				zeroCnt++;
+			}
+		}
+		if (zeroCnt >= 3) {
+			return false;
+		}
+		
+		return true;
+	}
+
 	/**
 	 * 예상패턴 일치건수
 	 * 
@@ -3783,6 +3950,67 @@ public class LottoDataService extends DefaultService {
 	}
 	
 	/**
+	 * 포스팅 조사 처리<br>
+	 * 로(으로)<br>
+	 * 은(는)<br>
+	 * 와(과)<br>
+	 * 2018.05.31<br>
+	 * 
+	 * @param data
+	 * @param str "로","은"
+	 * @return
+	 */
+	private String getPostPosition(Object data, String str) {
+		String sData = "";
+		String lastData = "";
+		// 로(으로), 은(는)
+		String postPosition = "";
+		
+		if (data instanceof String) {
+			sData = (String) data;
+			
+		} else if (data instanceof Integer) {
+			sData = String.valueOf(data);
+		}
+		
+		lastData = sData.substring(sData.length()-1, sData.length());
+		if ("로".equals(str)) {
+			if ("0".equals(lastData)
+					|| "3".equals(lastData)
+					|| "6".equals(lastData)
+					) {
+				postPosition = "으로";
+			} else {
+				postPosition = "로";
+			}
+		} else if ("은".equals(str)) {
+			if ("0".equals(lastData)
+					|| "1".equals(lastData)
+					|| "3".equals(lastData)
+					|| "6".equals(lastData)
+					|| "7".equals(lastData)
+					|| "8".equals(lastData)
+					) {
+				postPosition = "은";
+			} else {
+				postPosition = "는";
+			}
+		} else if ("와".equals(str)) {
+			if ("2".equals(lastData)
+					|| "4".equals(lastData)
+					|| "5".equals(lastData)
+					|| "9".equals(lastData)
+					) {
+				postPosition = "와";
+			} else {
+				postPosition = "과";
+			}
+		}
+		
+		return postPosition;
+	}
+	
+	/**
 	 * 포스팅 저고 비율 메세지 설정
 	 * 
 	 * @param winData
@@ -3794,7 +4022,7 @@ public class LottoDataService extends DefaultService {
 		lowHighMsg += "<br>";
 		lowHighMsg += "<strong>저고 비율</strong>은<br>";
 		for (int i = 0; i < lowHighDataList.size(); i++) {
-			if (winData.getLow_high() == lowHighDataList.get(i).getLowhigh_type()) {
+			if (winData.getLow_high().equals(lowHighDataList.get(i).getLowhigh_type())) {
 				lowHighMsg += "평균 " + lowHighDataList.get(i).getRatio()+ "%인<br>";
 				break;
 			}
@@ -3816,7 +4044,7 @@ public class LottoDataService extends DefaultService {
 		oddEvenMsg += "<br>";
 		oddEvenMsg += "<strong>홀짝 비율</strong>은<br>";
 		for (int i = 0; i < oddEvenDataList.size(); i++) {
-			if (winData.getOdd_even() == oddEvenDataList.get(i).getOddeven_type()) {
+			if (winData.getOdd_even().equals(oddEvenDataList.get(i).getOddeven_type())) {
 				oddEvenMsg += "평균 " + oddEvenDataList.get(i).getRatio()+ "%인<br>";
 				break;
 			}
@@ -3905,6 +4133,205 @@ public class LottoDataService extends DefaultService {
 			acMsg += "<br>";
 		}
 		return acMsg;
+	}
+
+	/**
+	 * 포스팅 제외수 메세지 설정
+	 * 
+	 * @param winData
+	 * @param excludeInfo
+	 * @return
+	 */
+	public String getExcludeMsg(WinDataDto winData, ExcludeDto excludeInfo) {
+		String excludeMsg = "";
+		String strExcludeList = "";
+		// 조사처리를 위한 변수
+		String lastData = ""; 
+		
+		// 확인할 당첨번호 목록 설정
+		int[] numbers = LottoUtil.getNumbers(winData);
+		Map<String, Integer> deleteTargetMap = new HashMap<String, Integer>();
+		for (int i = 0; i < numbers.length; i++) {
+			deleteTargetMap.put(String.valueOf(numbers[i]), numbers[i]);
+		}
+		
+		// 전회차 제외수 목록 설정
+		String excludeNum = excludeInfo.getExclude_num();
+		String[] datas = excludeNum.split(", ");
+		for (int i = 0; i < datas.length; i++) {
+			if (!"".equals(strExcludeList)) {
+				strExcludeList += ", ";
+			}
+			
+			if (!deleteTargetMap.containsKey(datas[i])) {
+				strExcludeList += datas[i];
+				lastData = datas[i];	// 마지막 숫자로 설정
+			}
+		}
+		
+		excludeMsg += "<br>";
+		excludeMsg += "<strong>제외수</strong>는<br>";
+		excludeMsg += "그동안 출현한 규칙에 의해 예측한<br>";
+		excludeMsg += strExcludeList + this.getPostPosition(lastData, "은") + "<br>";
+		excludeMsg += "출현하지 않았습니다.<br>";
+		excludeMsg += "<br>";
+		
+		return excludeMsg;
+	}
+
+	/**
+	 * 출현번호/미출현번호 메세지 설정
+	 * 
+	 * @param winDataList
+	 * @return
+	 */
+	public Map<String, String> getContainInfo(List<WinDataDto> winDataList) {
+		// 메세지 설정
+		Map<String, String> containInfo = new HashMap<String, String>();
+		String containMsg = "";		
+		String notContainMsg = "";
+		
+		// 최근 당첨정보
+		WinDataDto lastData = winDataList.get(0);
+		int[] winNumbers = LottoUtil.getNumbers(lastData);
+		String containList = "";		
+		String winContainList = "";		
+		int containListCnt = 0;
+		String notContainList = "";
+		String winNotContainList = "";
+		int notContainListCnt = 0;
+		
+		
+		// 출현번호 목록 Map
+		Map<Integer, Integer> containNumbersMap = new HashMap<Integer, Integer>();
+		List<Integer> containNumberList = new ArrayList<Integer>();
+		// 미출현번호 목록 Map
+		Map<Integer, Integer> notContainNumbersMap = new HashMap<Integer, Integer>();
+		
+		// 1. 출현번호 설정
+		// 이전회차 ~ 10회차까지
+		for(int index = 1 ; index <= 10 ; index++){
+			int[] numbers = LottoUtil.getNumbers(winDataList.get(index));
+			for(int number : numbers){
+				if(!containNumbersMap.containsKey(number)){
+					containNumberList.add(number);
+					containNumbersMap.put(number, number);
+				}
+			}
+		}
+		
+		LottoUtil.dataSort(containNumberList);
+		for (int i = 0; i < containNumberList.size(); i++) {
+			if (i > 0) {
+				containList += ", ";
+			}
+			containList += containNumberList.get(i);
+		}
+		
+		// 2. 미출현번호 설정
+		for (int i = 1; i <= 45; i++) {
+			if (!containNumbersMap.containsKey(i)) {
+				notContainNumbersMap.put(i, i);
+				if (!"".equals(notContainList)) {
+					notContainList += ", ";
+				}
+				notContainList += i;
+			}
+		}
+		
+		// 3. 메세지 설정
+		for (int number : winNumbers) {
+			if (containNumbersMap.containsKey(number)) {
+				if (!"".equals(winContainList)) {
+					winContainList += ", ";
+				}
+				winContainList += number;
+				containListCnt++;
+			} else {
+				if (!"".equals(winNotContainList)) {
+					winNotContainList += ", ";
+				}
+				winNotContainList += number;
+				notContainListCnt++;
+			}
+		}
+		
+		containMsg += "<br>";
+		containMsg += "최근 10회차동안 출현한 번호들중에서는<br>";
+		containMsg += containList + "중<br>";
+		if (containListCnt > 0) {
+			containMsg += "[" + winContainList + "]<br>";
+			containMsg += "총 " + containListCnt + "개의 번호가 " + (containListCnt==6?"모두 ":"") + "출현하였고,<br>";
+		} else {
+			containMsg += "당첨번호가 존재하지 않았으며,<br>";
+		}
+		containMsg += "<br>";
+		
+		notContainMsg += "<br>";
+		notContainMsg += "최근 10회차동안 출현하지 않은 번호들 중에서는<br>";
+		notContainMsg += notContainList + "중<br>";
+		if (notContainListCnt > 0) {
+			notContainMsg += "[" + winNotContainList + "]<br>";
+			notContainMsg += "총 " + notContainListCnt + "개의 번호가 당첨번호로 " + (notContainListCnt==6?"모두 ":"") + "출현했습니다.<br>";
+		} else {
+			notContainMsg += "당첨번호는 존재하지 않았습니다.<br>";
+		}
+		notContainMsg += "<br>";
+		
+		containInfo.put("containMsg", containMsg);
+		containInfo.put("notContainMsg", notContainMsg);
+		
+		return containInfo;
+	}
+
+	/**
+	 * 궁합수 메세지 설정
+	 * 
+	 * @param winData
+	 * @param mcNumList
+	 * @return
+	 */
+	public String getMcMatchedMsg(WinDataDto winData, List<MCNumDto> mcNumList) {
+		String mcMatchedMsg = "";
+		Map<String, Object> mcMatchedDataMap = this.getMcMatchedDataMap(winData, mcNumList);
+		int matchedCount = (int) mcMatchedDataMap.get("matchedCount");
+		String result = (String) mcMatchedDataMap.get("result");
+		
+		mcMatchedMsg += "<br>";
+		mcMatchedMsg += "궁합 수는<br>";
+		if (matchedCount > 0) {
+			mcMatchedMsg += result + this.getPostPosition(result, "와") + " 같이<br>";
+			mcMatchedMsg += "각 당첨번호 간 궁합 수가 존재했습니다.<br>";
+		} else {
+			mcMatchedMsg += "이번 회차에서는 존재하지 않았습니다.<br>";
+		}
+		mcMatchedMsg += "<br>";
+		
+		return mcMatchedMsg;
+	}
+
+	/**
+	 * 미출현 번호대 구간 메세지 설정
+	 * 
+	 * @param zeroRangeInfo
+	 * @return
+	 */
+	public String getZeroRangeMsg(ZeroRangeDto zeroRangeInfo) {
+		String zeroRangeMsg = "";
+		
+		zeroRangeMsg += "<br>";
+		if (zeroRangeInfo.getZero_cnt() > 0) {
+			zeroRangeMsg += "미출현 번호대 구간은<br>";
+			zeroRangeMsg += zeroRangeInfo.getZero_range() + " 구간에서<br>";
+			zeroRangeMsg += "당첨번호가 출현하지 않았습니다.<br>";
+		} else {
+			zeroRangeMsg += "이번 회차에서는<br>";
+			zeroRangeMsg += "전체 번호대 구간에서<br>";
+			zeroRangeMsg += "당첨번호가 출현했습니다.<br>";
+		}
+		zeroRangeMsg += "<br>";
+		
+		return zeroRangeMsg;
 	}
 
 }

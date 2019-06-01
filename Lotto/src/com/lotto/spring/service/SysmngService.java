@@ -832,6 +832,16 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
+	 * 미출현구간대 목록 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public ArrayList<ZeroRangeDto> getZeroRangeList(WinDataDto dto) {
+		return (ArrayList<ZeroRangeDto>) baseDao.getList("sysmngMapper.getZeroRangeList", dto);
+	}
+	
+	/**
 	 * 예상번호 정보 조회 (Dto)
 	 * 
 	 * @param dto
@@ -1890,7 +1900,4 @@ public class SysmngService extends DefaultService {
 //		}
 		return flag;
 	}
-
-	
-
 }
