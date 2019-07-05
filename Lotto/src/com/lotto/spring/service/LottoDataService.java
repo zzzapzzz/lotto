@@ -3954,10 +3954,11 @@ public class LottoDataService extends DefaultService {
 	 * 로(으로)<br>
 	 * 은(는)<br>
 	 * 와(과)<br>
+	 * 을(를)<br>
 	 * 2018.05.31<br>
 	 * 
 	 * @param data
-	 * @param str "로","은"
+	 * @param str "로","은","와","을"
 	 * @return
 	 */
 	private String getPostPosition(Object data, String str) {
@@ -3984,16 +3985,14 @@ public class LottoDataService extends DefaultService {
 				postPosition = "로";
 			}
 		} else if ("은".equals(str)) {
-			if ("0".equals(lastData)
-					|| "1".equals(lastData)
-					|| "3".equals(lastData)
-					|| "6".equals(lastData)
-					|| "7".equals(lastData)
-					|| "8".equals(lastData)
+			if ("2".equals(lastData)
+					|| "4".equals(lastData)
+					|| "5".equals(lastData)
+					|| "9".equals(lastData)
 					) {
-				postPosition = "은";
-			} else {
 				postPosition = "는";
+			} else {
+				postPosition = "은";
 			}
 		} else if ("와".equals(str)) {
 			if ("2".equals(lastData)
@@ -4004,6 +4003,16 @@ public class LottoDataService extends DefaultService {
 				postPosition = "와";
 			} else {
 				postPosition = "과";
+			}
+		} else if ("을".equals(str)) {
+			if ("2".equals(lastData)
+					|| "4".equals(lastData)
+					|| "5".equals(lastData)
+					|| "9".equals(lastData)
+					) {
+				postPosition = "를";
+			} else {
+				postPosition = "을";
 			}
 		}
 		
@@ -4121,15 +4130,14 @@ public class LottoDataService extends DefaultService {
 				&& acInfo.getHigh_ac() >= winData.getAc()) {
 			acMsg += "<br>";
 			acMsg += "<strong>AC</strong> 역시<br>";
-			acMsg += "표준 범위 " + acInfo.getAc_range() + "내인<br>";
+			acMsg += "표준 범위 " + acInfo.getAc_range() + " 내인<br>";
 			acMsg += winData.getAc() + this.getPostPosition(winData.getAc()) + " 분석되었습니다.";
 			acMsg += "<br>";	
 		} else {
 			acMsg += "<br>";
 			acMsg += "이번 <strong>AC</strong>는 특이하게<br>";
-			acMsg += "표준 범위 " + acInfo.getAc_range() + "를 벗어난<br>";
-			acMsg += winData.getAc() + this.getPostPosition(winData.getAc()) + " 예측하지 못한 결과로<br>";
-			acMsg += "분석되었습니다.";
+			acMsg += "표준 범위 " + acInfo.getAc_range() + this.getPostPosition(acInfo.getAc_range(), "을") + " 벗어난<br>";
+			acMsg += winData.getAc() + this.getPostPosition(winData.getAc()) + "로 분석되었습니다.<br>";
 			acMsg += "<br>";
 		}
 		return acMsg;
@@ -4257,7 +4265,7 @@ public class LottoDataService extends DefaultService {
 		}
 		
 		containMsg += "<br>";
-		containMsg += "최근 10회차동안 출현한 번호들중에서는<br>";
+		containMsg += "최근 10회차 동안 출현한 번호들 중에서는<br>";
 		containMsg += containList + "중<br>";
 		if (containListCnt > 0) {
 			containMsg += "[" + winContainList + "]<br>";
@@ -4268,7 +4276,7 @@ public class LottoDataService extends DefaultService {
 		containMsg += "<br>";
 		
 		notContainMsg += "<br>";
-		notContainMsg += "최근 10회차동안 출현하지 않은 번호들 중에서는<br>";
+		notContainMsg += "최근 10회차 동안 출현하지 않은 번호들 중에서는<br>";
 		notContainMsg += notContainList + "중<br>";
 		if (notContainListCnt > 0) {
 			notContainMsg += "[" + winNotContainList + "]<br>";

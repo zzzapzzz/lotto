@@ -22,7 +22,7 @@
 				<div class="row">
 					<div class="content">
 						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
-							<h3><strong>로또 ${ex_count?if_exists}회 로또예상번호</strong></h3>
+							<h3><strong>로또${ex_count?if_exists}회예상번호 및 분석</strong></h3>
 							
 							안녕하세요. 심 서방입니다.<br>
 							<br>
@@ -148,7 +148,7 @@
 							당첨번호 숫자들의 합을 의미합니다.<br>
 							<br>
 							총합의 예상범위는<br>
-							출현빈도가 낮은 10%를 제외한<br>
+							출현 빈도가 낮은 10%를 제외한<br>
 							통계치를 측정한 결과<br>
 							${total_range?if_exists} 사이에서<br>
 							약 90%의 확률로 출현했습니다.<br>
@@ -169,7 +169,7 @@
 							1의 자리의 합을 의미합니다.<br>
 							<br>
 							끝수합의 예상범위는<br>
-							출현빈도가 낮은 10%를 제외한<br>
+							출현 빈도가 낮은 10%를 제외한<br>
 							통계치를 측정한 결과<br>
 							${endnum_range?if_exists} 사이에서<br>
 							약 90%의 확률로 출현했습니다.<br>

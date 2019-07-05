@@ -12,7 +12,7 @@
 				<section id="widget-grid" class="">
 
 					<div class="well">
-						<label class="col-md-1 control-label" for="wincount">회차</label>
+						<label class="col-md-1 control-label" for="win_count">회차</label>
 						<div class="col-lg-2">
 							<select class="form-control" id="win_count">
 							</select> 

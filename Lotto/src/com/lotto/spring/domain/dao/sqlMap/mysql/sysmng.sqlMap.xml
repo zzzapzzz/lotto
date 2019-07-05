@@ -698,6 +698,15 @@
 		]]>
 	</delete>
 	
+	<!-- 예상번호 목록 삭제 -->
+	<delete id="deleteExptNumList" parameterType="Map">
+		/* sysmng.deleteExptNumList */
+		<![CDATA[
+		DELETE FROM TB_EXPT_NUM
+		WHERE EX_COUNT = #{ex_count}
+		]]>
+	</delete>
+	
 	<!-- 총합 출현건수 조회 -->
 	<select id="getTotalGroupSumCnt" parameterType="java.util.Map" resultType="Integer">
 		/* sysmng.getTotalGroupSumCnt */

@@ -12,7 +12,19 @@
 				<section id="widget-grid" class="">
 
 					<div class="well">
+						<label class="col-md-1 control-label" for="ex_count">회차</label>
+						<div class="col-lg-2">
+							<select class="form-control" id="ex_count">
+							</select> 
+						</div>						
+						<span id="search" class="btn btn-default btn-primary"><i class="fa fa-search"></i> 조회</span>
 					</div>
+					
+					<span id="add" class="btn btn-success"><i class="fa fa-pencil"></i> 일반등록</span>
+					<span id="autoadd" class="btn btn-warning"><i class="fa fa-edit"></i> 자동등록</span>
+					<span id="filteradd" class="btn btn-info"><i class="fa fa-edit"></i> 필터조합등록</span>
+					<span id="del" class="btn btn-danger"><i class="fa fa-trash-o"></i> 선택삭제</span>
+					
 					
 					<!-- row -->
 					<div class="row">

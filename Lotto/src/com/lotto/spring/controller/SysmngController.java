@@ -1371,6 +1371,11 @@ public class SysmngController extends DefaultSMController {
 			winDataDto.setSord("ASC");
 			List<WinDataAnlyDto> winDataList = sysmngService.getWinDataAnlyList(winDataDto);
 			if (winDataList != null && winDataList.size() > 0) {
+				
+				// 예상번호 목록 삭제
+				int exCount = winDataList.get(winDataList.size()-1).getWin_count()+1;
+				sysmngService.deleteExDataList(exCount);
+				
 				// 번호간 차이 설정
 				lottoDataService.setDifNumbers(winDataList);
 				

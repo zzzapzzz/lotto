@@ -880,6 +880,18 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
+	 * 예상번호 목록 삭제
+	 * 
+	 * @param exCount 예상번호
+	 * @return
+	 */
+	public void deleteExDataList(int exCount) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ex_count", exCount);
+		baseDao.delete("sysmngMapper.deleteExptNumList", map);
+	}
+	
+	/**
 	 * 최근 당첨회차 저고비율 조회
 	 * 
 	 * @param dto
