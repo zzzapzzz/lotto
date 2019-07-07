@@ -7,6 +7,7 @@
 		<script type="text/javascript">
 			var isAction = 'N';
 			var isDim = "";
+			var thisExCount = 0;
 			
 			$(document).ready(function() {
 				setWinCountList();
@@ -32,10 +33,17 @@
 			           		location.href = "/index.do"; 
 			        	}
 			        	
-			        	for (var i = 0 ; i < result.rows.length ; i++) {
-			        		var win_count = result.rows[i].win_count;
+			        	if (result) {
 			        		
-			        		$("#ex_count").append('<option value="'+ win_count +'">'+ win_count +'</option>');
+			        		// 필터 등록 시 회차 설정
+			        		thisExCount = Number(result.rows.length + 1);
+			        	
+			        		$("#ex_count").append('<option value="'+ (result.rows.length + 1) +'">'+ (result.rows.length + 1) +'</option>');
+				        	for (var i = 0 ; i < result.rows.length ; i++) {
+				        		var win_count = result.rows[i].win_count;
+				        		
+				        		$("#ex_count").append('<option value="'+ win_count +'">'+ win_count +'</option>');
+				        	}
 			        	}
 			        	
 			        	initPlugin();
@@ -95,6 +103,10 @@
 						if (data.rows.length == 0) {
 						  	$("#jqgrid>tbody").append ("<tr><td align='center' colspan='"+colLength+"' style='font-weight:bold;'>검색결과가 없습니다.</td></tr>");
 						  	//alert('검색결과가 없습니다.');
+						} else {
+						
+							console.log('data', data);
+						
 						}
 					},
 					//gridComplete : function() {
@@ -147,11 +159,10 @@
 				$(".ui-icon.ui-icon-seek-end").removeClass().addClass("fa fa-fast-forward");
 
 				$("#ex_count").change(searchGo);
-				$("#search").click(searchGo);
-				$("#add").click(addGo);
-				$("#autoadd").click(autoaddGo);
-				$("#filteradd").click(filteraddGo);
-				$('#del').click(delGo);
+				//$("#search").click(searchGo);
+				//$("#add").click(addGo);
+				//$("#filterAdd").click(filterAddGo);
+				//$('#del').click(delGo);
 				
 			}
 			
@@ -175,13 +186,74 @@
 				changeContent(url);
 			}
 			
-			function autoaddGo() {
-				var url = "${APP_ROOT}/mylotto/writeWinDataajax.do";
-				changeContent(url);
+			function autoAddCheckGo() {
+				var param = {
+					ex_count : Number($("#ex_count").val())
+				}
+				
+				$.ajax({
+					type: "POST",
+					url: "${APP_ROOT}/mylotto/autoAddCheck.do",
+					data: param,
+					dataType: "json",
+					async: false,
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+		               		location.href = "/index.do"; 
+		               		return;
+		            	}
+		            	
+						if (result.status == "exist") {
+							if (confirm(result.msg)) {
+								autoAddGo();
+							}
+		            	} else {
+		            		autoAddGo();
+		            	}
+		            	
+					}
+				});
 			}
 			
-			function filteraddGo() {
-				var url = "${APP_ROOT}/mylotto/writeWinDataajax.do";
+			function autoAddGo() {
+				var param = {
+					ex_count : Number($("#ex_count").val())
+				}
+				
+				$.ajax({
+					type: "POST",
+					url: "${APP_ROOT}/mylotto/autoAdd.do",
+					data: param,
+					dataType: "json",
+					async: false,
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+		               		location.href = "/index.do"; 
+		               		return;
+		            	}
+		            	
+	               		showSmallBox(result.msg);
+		            	
+						if (result.status == "success") {
+							searchGo();
+		            	}
+		            	
+					}
+				});
+			}
+			
+			function filterAddGo() {
+				var url = "${APP_ROOT}/mylotto/filterAddajax.do?ex_count=" + thisExCount;
 				changeContent(url);
 			}
 			
@@ -196,6 +268,8 @@
 					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ) {
 						var rowdata = $("#jqgrid").getRowData(idArray[i]);
 						ex_count = rowdata.ex_count;
+						user_no = rowdata.user_no;
+						seq = rowdata.seq;
 						checkCnt = checkCnt + 1;
 					}
 				}

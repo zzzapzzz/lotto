@@ -53,7 +53,9 @@
 		DELETE FROM TB_MY_SAVE_NUM
 		WHERE EX_COUNT = #{ex_count}
 		AND USER_NO = #{user_no}
+		<if test='seq != null and seq != 0'>
 		AND SEQ = #{seq}
+		</if>
 	</delete>
 	
 	<!-- MY로또저장번호 일반등록 -->
@@ -67,4 +69,15 @@
 		 #{item.num1},#{item.num2},#{item.num3},#{item.num4},#{item.num5},#{item.num6},NULL,'N','N',NOW(),NOW())
 		</foreach>
 	</insert>
+	
+	<!-- MY로또저장번호 등록 체크 -->
+	<select id="checkSaveMyData" parameterType="myLottoSaveNumDto" resultType="int">		
+		/* mylotto.checkSaveMyData */
+		SELECT 
+			  COUNT(*)
+		FROM TB_MY_SAVE_NUM
+		WHERE 1=1
+		AND ex_count = #{ex_count}
+		AND user_no = #{user_no}
+	</select>
 </mapper>

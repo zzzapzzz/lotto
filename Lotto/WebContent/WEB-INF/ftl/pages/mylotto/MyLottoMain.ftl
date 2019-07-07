@@ -4,7 +4,7 @@
 
 				<div class="row">
 					<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-						<h1 class="page-title txt-color-blueDark"><i class="fa-fw fa ${CurrMenuInfo.lna_element?if_exists}"></i> ${CurrMenuInfo.p_menu_nm?if_exists} <#if CurrMenuInfo.p_menu_nm != CurrMenuInfo.menu_nm> <span>> ${CurrMenuInfo.menu_nm?if_exists}</span></#if></h1>
+						<h1 class="page-title txt-color-blueDark"><i class="fa-fw fa ${CurrMenuInfo.lna_element?if_exists}"></i> ${CurrMenuInfo.p_menu_nm?if_exists} <#if CurrMenuInfo.p_menu_id != 0> <span>> ${CurrMenuInfo.menu_nm?if_exists}</span></#if></h1>
 					</div>
 				</div>
 				
@@ -17,13 +17,13 @@
 							<select class="form-control" id="ex_count">
 							</select> 
 						</div>						
-						<span id="search" class="btn btn-default btn-primary"><i class="fa fa-search"></i> 조회</span>
+						<span id="search" class="btn btn-default btn-primary" onclick="javascript:searchGo();"><i class="fa fa-search"></i> 조회</span>
 					</div>
 					
-					<span id="add" class="btn btn-success"><i class="fa fa-pencil"></i> 일반등록</span>
-					<span id="autoadd" class="btn btn-warning"><i class="fa fa-edit"></i> 자동등록</span>
-					<span id="filteradd" class="btn btn-info"><i class="fa fa-edit"></i> 필터조합등록</span>
-					<span id="del" class="btn btn-danger"><i class="fa fa-trash-o"></i> 선택삭제</span>
+					<span id="add" class="btn btn-success" onclick="javascript:addGo();"><i class="fa fa-pencil"></i> 일반등록</span>
+					<span id="autoAdd" class="btn btn-warning" onclick="javascript:autoAddCheckGo();"><i class="fa fa-edit"></i> 자동등록</span>
+					<span id="filterAdd" class="btn btn-info" onclick="javascript:filterAddGo();"><i class="fa fa-edit"></i> 필터조합등록</span>
+					<span id="del" class="btn btn-danger" onclick="javascript:delGo();"><i class="fa fa-trash-o"></i> 선택삭제</span>
 					
 					
 					<!-- row -->
@@ -39,7 +39,14 @@
 						<!-- WIDGET END -->
 
 					</div>
-
+					<!-- end row -->
+					
+					<!-- row -->
+					<div class="row">
+						<div id="ex_numbers" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
+							
+						</div>
+					</div>
 					<!-- end row -->
 
 				</section>

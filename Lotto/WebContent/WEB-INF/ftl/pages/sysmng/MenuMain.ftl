@@ -12,7 +12,7 @@
 
 				<!-- breadcrumb -->
 				<ol class="breadcrumb">
-					<li>Home</li><li>${CurrMenuInfo.p_menu_nm?if_exists}</li> <#if CurrMenuInfo.p_menu_nm != CurrMenuInfo.menu_nm> <li>${CurrMenuInfo.menu_nm?if_exists}</li> </#if>
+					<li>Home</li><li>${CurrMenuInfo.p_menu_nm?if_exists}</li> <#if CurrMenuInfo.p_menu_id != 0> <li>${CurrMenuInfo.menu_nm?if_exists}</li> </#if>
 				</ol>
 				<!-- end breadcrumb -->
 
@@ -35,7 +35,7 @@
 
 				<div class="row">
 					<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-						<h1 class="page-title txt-color-blueDark"><i class="fa-fw fa ${CurrMenuInfo.lna_element?if_exists}"></i> ${CurrMenuInfo.p_menu_nm?if_exists} <#if CurrMenuInfo.p_menu_nm != CurrMenuInfo.menu_nm> <span>> ${CurrMenuInfo.menu_nm?if_exists}</span></#if></h1>
+						<h1 class="page-title txt-color-blueDark"><i class="fa-fw fa ${CurrMenuInfo.lna_element?if_exists}"></i> ${CurrMenuInfo.p_menu_nm?if_exists} <#if CurrMenuInfo.p_menu_id != 0> <span>> ${CurrMenuInfo.menu_nm?if_exists}</span></#if></h1>
 					</div>
 				</div>
 			</div>

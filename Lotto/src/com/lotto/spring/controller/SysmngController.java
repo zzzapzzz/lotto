@@ -716,7 +716,10 @@ public class SysmngController extends DefaultSMController {
 		    				
 		    				// 끝수합정보 등록
 		    				sysmngService.insertEndNumInfo(procWinDataList);
-		    				
+
+		    				// AC정보 등록
+		    				sysmngService.insertAcInfo(procWinDataList.get(procWinDataList.size()-1).getWin_count());
+
 		    				if (i >= 10) {
 		    					// 회차합정보 등록
 		    					// 10회차합부터 처리되므로 10회차 이전 데이터는 처리하지 않음.

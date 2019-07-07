@@ -64,5 +64,13 @@ public class MyLottoService extends DefaultService {
 		return flag;
 	}
 
-	
+	/**
+	 * MY로또저장번호 등록체크
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public int checkSaveMyData(MyLottoSaveNumDto dto) {
+		return (Integer) baseDao.getSingleRow("myLottoMapper.checkSaveMyData", dto);
+	}
 }
