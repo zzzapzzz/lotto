@@ -1,3 +1,4 @@
+			<!-- 당첨번호관리 -->
 			<!-- MAIN CONTENT -->
 			<div id="content">
 				<input type="hidden" id="isPlugin" value="Y" />

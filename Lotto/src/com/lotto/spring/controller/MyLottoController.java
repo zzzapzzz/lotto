@@ -212,6 +212,18 @@ public class MyLottoController extends DefaultSMController {
 			if( myLottoSaveNumListCnt > 0 ) {
 				total_pages = (int) Math.ceil((double)myLottoSaveNumListCnt/Double.parseDouble(rows));
 				myLottoSaveNumList = myLottoService.getSaveNumList(map);
+				
+				// 당첨번호가 있으면 결과비교 처리
+				WinDataDto param = new WinDataDto();
+				param.setWin_count(Integer.parseInt(exCount));
+				WinDataDto winData = sysmngService.getWinData(param);
+				if (winData != null) {
+					lottoDataService.getMyDataResult(myLottoSaveNumList, winData);
+					
+					// TODO 당첨결과가 존재하면 알림처리 (Email, SMS 등)
+					
+				}
+				
 			} else { 
 				total_pages = 0; 
 			}  

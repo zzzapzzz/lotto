@@ -14,6 +14,8 @@
 					initPlugin();
 				}
 				
+				setWinCountList();
+				
 			});
 
 			function initPlugin() {
@@ -128,6 +130,38 @@
 			        }
 			    });
 				
+			}
+			
+			function setWinCountList() {
+				var param = {
+					page: '1'
+				};
+				$.ajax({
+					type: "POST",
+					url: "/sysmng/getWinDataList.do",
+					data: param,
+					dataType: "json",
+					async: false,
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+			           		location.href = "/index.do"; 
+			        	}
+			        	
+			        	$("#search_win_count").append('<option value="">전체</option>');
+			        	for (var i = 0 ; i < result.rows.length ; i++) {
+			        		var win_count = result.rows[i].win_count;
+			        		
+			        		$("#search_win_count").append('<option value="'+ win_count +'">'+ win_count +'</option>');
+			        	}
+			        	
+			        	searchGo();
+					}
+				});
 			}
 			
 			$(window).on('resize.jqGrid', function() {

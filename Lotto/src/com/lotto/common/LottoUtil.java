@@ -12,6 +12,7 @@ import java.util.Map;
 
 import com.lotto.spring.domain.dto.ExDataDto;
 import com.lotto.spring.domain.dto.ExptPtrnAnlyDto;
+import com.lotto.spring.domain.dto.MyLottoSaveNumDto;
 import com.lotto.spring.domain.dto.WinDataAnlyDto;
 import com.lotto.spring.domain.dto.WinDataDto;
 
@@ -70,6 +71,8 @@ public final class LottoUtil {
 			numbers = LottoUtil.getNumbers((ExDataDto)data);
 		} else if (data instanceof WinDataAnlyDto) {
 			numbers = LottoUtil.getNumbers((WinDataAnlyDto)data);
+		} else if (data instanceof WinDataAnlyDto) {
+			numbers = LottoUtil.getNumbers((MyLottoSaveNumDto)data);
 		} else if (data instanceof int[]){
 			numbers = (int[])data;
 		}
@@ -103,6 +106,24 @@ public final class LottoUtil {
 	 * @return
 	 */
 	public static int[] getNumbers(WinDataAnlyDto data) {
+		int[] numbers = { 0, 0, 0, 0, 0, 0 };
+		numbers[0] = data.getNum1();
+		numbers[1] = data.getNum2();
+		numbers[2] = data.getNum3();
+		numbers[3] = data.getNum4();
+		numbers[4] = data.getNum5();
+		numbers[5] = data.getNum6();
+		
+		return numbers;
+	}
+	
+	/**
+	 * 번호 배열 가져오기
+	 * 
+	 * @param data
+	 * @return
+	 */
+	public static int[] getNumbers(MyLottoSaveNumDto data) {
 		int[] numbers = { 0, 0, 0, 0, 0, 0 };
 		numbers[0] = data.getNum1();
 		numbers[1] = data.getNum2();

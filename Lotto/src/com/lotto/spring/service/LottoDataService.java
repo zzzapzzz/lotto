@@ -21,6 +21,7 @@ import com.lotto.spring.domain.dto.ExcludeDto;
 import com.lotto.spring.domain.dto.ExptPtrnAnlyDto;
 import com.lotto.spring.domain.dto.LowHighDto;
 import com.lotto.spring.domain.dto.MCNumDto;
+import com.lotto.spring.domain.dto.MyLottoSaveNumDto;
 import com.lotto.spring.domain.dto.OddEvenDto;
 import com.lotto.spring.domain.dto.TotalDto;
 import com.lotto.spring.domain.dto.WinDataAnlyDto;
@@ -1565,10 +1566,34 @@ public class LottoDataService extends DefaultService {
 							
 							//2016.08.05
 							//제외수가 포함 비교하여 있으면 skip 함
+							boolean isProsess = true;
 							for (int l = 0; l < numbers.length; l++) {
 								if (deleteTargetMap.containsKey(numbers[l])) {
-									continue;
+									isProsess = false;
+									break;
 								}
+							}
+							
+							if (!isProsess) {
+								continue;
+							}
+							
+							/*
+							 * 동일번호 존재여부 체크
+							 * 2019.07.24
+							 */
+							Map<Integer, Integer> numbersMap = new HashMap<Integer, Integer>();
+							for (int idx = 0; idx < numbers.length; idx++) {
+								if (numbersMap.containsKey(numbers[idx])) {
+									isProsess = false;
+									break;
+								} else {
+									numbersMap.put(numbers[idx], numbers[idx]);
+								}
+							}
+							
+							if (!isProsess) {
+								continue;
 							}
 							
 							// 예상데이터 등록
@@ -1595,10 +1620,34 @@ public class LottoDataService extends DefaultService {
 						
 						//2016.08.05
 						//제외수가 포함 비교하여 있으면 skip 함
+						boolean isProsess = true;
 						for (int l = 0; l < numbers.length; l++) {
 							if (deleteTargetMap.containsKey(numbers[l])) {
-								continue;
+								isProsess = false;
+								break;
 							}
+						}
+						
+						if (!isProsess) {
+							continue;
+						}
+						
+						/*
+						 * 동일번호 존재여부 체크
+						 * 2019.07.24
+						 */
+						Map<Integer, Integer> numbersMap = new HashMap<Integer, Integer>();
+						for (int idx = 0; idx < numbers.length; idx++) {
+							if (numbersMap.containsKey(numbers[idx])) {
+								isProsess = false;
+								break;
+							} else {
+								numbersMap.put(numbers[idx], numbers[idx]);
+							}
+						}
+						
+						if (!isProsess) {
+							continue;
 						}
 						
 						// 예상데이터 등록
@@ -1627,10 +1676,34 @@ public class LottoDataService extends DefaultService {
 					
 					//2016.08.05
 					//제외수가 포함 비교하여 있으면 skip 함
+					boolean isProsess = true;
 					for (int l = 0; l < numbers.length; l++) {
 						if (deleteTargetMap.containsKey(numbers[l])) {
-							continue;
+							isProsess = false;
+							break;
 						}
+					}
+					
+					if (!isProsess) {
+						continue;
+					}
+					
+					/*
+					 * 동일번호 존재여부 체크
+					 * 2019.07.24
+					 */
+					Map<Integer, Integer> numbersMap = new HashMap<Integer, Integer>();
+					for (int idx = 0; idx < numbers.length; idx++) {
+						if (numbersMap.containsKey(numbers[idx])) {
+							isProsess = false;
+							break;
+						} else {
+							numbersMap.put(numbers[idx], numbers[idx]);
+						}
+					}
+					
+					if (!isProsess) {
+						continue;
 					}
 					
 					// 예상데이터 등록
@@ -3081,6 +3154,20 @@ public class LottoDataService extends DefaultService {
 		modelMap.addAttribute("win5Result", resultCnt[4]);
 		modelMap.addAttribute("exDataListCnt", exDataList.size());
 	}
+	
+	/**
+	 * MY로또 매칭결과
+	 * 
+	 * @param modelMap 
+	 * @param lastData 당첨번호 정보
+	 * @param myDataList MY로 목록
+	 */
+	public void getMyDataResult(List<MyLottoSaveNumDto> myDataList, WinDataDto lastData) {
+		for(MyLottoSaveNumDto myData : myDataList){
+			String result = this.getWinResult(myData, lastData);
+			myData.setWin_rslt(result);
+		}
+	}
 
 	/**
 	 * @description <div id=description><b>등수확인</b></div >
@@ -3093,13 +3180,69 @@ public class LottoDataService extends DefaultService {
 	public String getWinResult(ExDataDto exData, WinDataDto lastWinData) {
 		String result = "";
 
-		int[] lastNumbers = LottoUtil.getNumbers(exData);
+		int[] checkNumbers = LottoUtil.getNumbers(exData);
+		int[] lastWinDataNumbers = LottoUtil.getNumbers(lastWinData);
+		int bonusNumber = lastWinData.getBonus_num();
+		boolean isSecond = false;
+		
+		int matchNumbers = 0;
+
+		// 최근 당첨번호 비교 Map 설정
+		Map<Integer, Integer> winNumberMap = new HashMap<Integer, Integer>();
+		for (int i = 0; i < lastWinDataNumbers.length; i++) {
+			winNumberMap.put(lastWinDataNumbers[i], lastWinDataNumbers[i]);
+		}
+		
+		// 번호 비교
+		for (int i = 0; i < checkNumbers.length; i++) {
+			if (winNumberMap.containsKey(checkNumbers[i])) {
+				matchNumbers++;
+			}
+		}
+		
+		if (matchNumbers == 6) {
+			result = "1등";
+			
+//			logger.info("1등 예상번호 = " + exData.toString());
+			
+			// 보너스 포함여부 확인
+			for (int index = 0; index < checkNumbers.length; index++) {
+				if (checkNumbers[index] == bonusNumber) {
+					result = "2등";
+					break;
+				}
+			}
+		} else if (matchNumbers == 5) {
+			result = "3등";
+		} else if (matchNumbers == 4) {
+			result = "4등";
+		} else if (matchNumbers == 3) {
+			result = "5등";
+		} else {
+			result = "낙첨!";
+		}
+
+		return result;
+	}
+	
+	/**
+	 * @description <div id=description><b>등수확인</b></div >
+	 *              <div id=detail>예상데이터와 실제데이터를 비교하여 등수를 계산한다.</div >
+	 *              
+	 * @param exData 예상번호 정보
+	 * @param lastWinData 당첨번호 정보
+	 * @return
+	 */
+	public String getWinResult(Object data, WinDataDto lastWinData) {
+		String result = "";
+		
+		int[] lastNumbers = LottoUtil.getNumbersFromObj(data);
 		int[] lastDataNumbers = LottoUtil.getNumbers(lastWinData);
 		int bonusNumber = lastWinData.getBonus_num();
-
+		
 		int winNumbers = 0;
 		List<Integer> list = new ArrayList<Integer>();
-
+		
 		for (int index = 0; index < lastNumbers.length; index++) {
 			for (int i = 0; i < lastDataNumbers.length; i++) {
 				if (lastNumbers[index] == lastDataNumbers[i]) {
@@ -3108,7 +3251,7 @@ public class LottoDataService extends DefaultService {
 				}
 			}
 		}
-
+		
 		if (winNumbers == 6) {
 			result = "1등";
 		} else if (winNumbers == 5) {
@@ -3126,7 +3269,7 @@ public class LottoDataService extends DefaultService {
 		} else {
 			result = "낙첨!";
 		}
-
+		
 		return result;
 	}
 

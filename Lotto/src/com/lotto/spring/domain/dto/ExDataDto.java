@@ -147,6 +147,8 @@ public class ExDataDto extends DefaultDto{
 		this.numbers = numbers;
 	}
 	
-	
+	public String toString() {
+		return num1 + ", " + num2 + ", " + num3 + ", " + num4 + ", " + num5 + ", " + num6;
+	}
 	
 }
