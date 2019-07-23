@@ -14,43 +14,43 @@
 						<fieldset>
 							<div class="row">
 								<div class="form-group col-xs-12 col-sm-6 col-md-6 col-lg-1 left-pull">
-									<label>회차</label>
+									<label class="label">회차</label>
 									<label class="input">
 										<input type="text" id="ex_count" name="ex_count" value="${ex_count?if_exists}"/>
 									</label>
 								</div>
 								<div class="form-group col-xs-12 col-sm-6 col-md-6 col-lg-1 left-pull">
-									<label>번호1</label>
+									<label class="label">번호1</label>
 									<label class="input">
 										<input type="text" id="num1" name="num1" />
 									</label>
 								</div>		
 								<div class="form-group col-xs-12 col-sm-6 col-md-6 col-lg-1 left-pull">
-									<label>번호2</label>
+									<label class="label">번호2</label>
 									<label class="input">
 										<input type="text" id="num2" name="num2" />
 									</label>
 								</div>		
 								<div class="form-group col-xs-12 col-sm-6 col-md-6 col-lg-1 left-pull">
-									<label>번호3</label>
+									<label class="label">번호3</label>
 									<label class="input">
 										<input type="text" id="num3" name="num3" />
 									</label>
 								</div>		
 								<div class="form-group col-xs-12 col-sm-6 col-md-6 col-lg-1 left-pull">
-									<label>번호4</label>
+									<label class="label">번호4</label>
 									<label class="input">
 										<input type="text" id="num4" name="num4" />
 									</label>
 								</div>		
 								<div class="form-group col-xs-12 col-sm-6 col-md-6 col-lg-1 left-pull">
-									<label>번호5</label>
+									<label class="label">번호5</label>
 									<label class="input">
 										<input type="text" id="num5" name="num5" />
 									</label>
 								</div>		
 								<div class="form-group col-xs-12 col-sm-6 col-md-6 col-lg-1 left-pull">
-									<label>번호6</label>
+									<label class="label">번호6</label>
 									<label class="input">
 										<input type="text" id="num6" name="num6" />
 									</label>
