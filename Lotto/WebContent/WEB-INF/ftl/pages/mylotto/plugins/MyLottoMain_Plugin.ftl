@@ -1,5 +1,6 @@
 		<#assign APP_ROOT = SystemInfo.app_root>
 		<#assign JS_ROOT = SystemInfo.js_root>
+		<#assign IMG_ROOT = SystemInfo.img_root>
 		
 		<script src="${JS_ROOT}/plugin/jqgrid/jquery.jqGrid.min.js"></script>
 		<script src="${JS_ROOT}/plugin/jqgrid/grid.locale-en.min.js"></script>
@@ -83,7 +84,7 @@
 						, {name : 'num4',	index : 'num4'}
 						, {name : 'num5',	index : 'num5'}
 						, {name : 'num6',	index : 'num6'}
-						, {name : 'win_rslt',		index : 'win_rslt'}						
+						, {name : 'win_rslt',		index : 'win_rslt'}
 					],
 					rowNum : 100,
 					rowList : [10, 20, 30, 100],
@@ -104,8 +105,23 @@
 						  	$("#jqgrid>tbody").append ("<tr><td align='center' colspan='"+colLength+"' style='font-weight:bold;'>검색결과가 없습니다.</td></tr>");
 						  	//alert('검색결과가 없습니다.');
 						} else {
-						
-							console.log('data', data);
+							
+							// 이미지로 표시
+							$("#ex_numbers").html("");
+				        	$("#ex_numbers").append('<br>');
+							for (var i = 0 ; i < data.rows.length ; i++) {
+								$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + data.rows[i].num1 +'.png" alt="' + data.rows[i].num1 + '"/>');
+					        	$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + data.rows[i].num2 +'.png" alt="' + data.rows[i].num2 + '"/>');
+					        	$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + data.rows[i].num3 +'.png" alt="' + data.rows[i].num3 + '"/>');
+					        	$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + data.rows[i].num4 +'.png" alt="' + data.rows[i].num4 + '"/>');
+					        	$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + data.rows[i].num5 +'.png" alt="' + data.rows[i].num5 + '"/>');
+					        	$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + data.rows[i].num6 +'.png" alt="' + data.rows[i].num6 + '"/>');
+					        	$("#ex_numbers").append('<br>');
+					        	
+					        	if ((i+1) % 5 == 0) {
+						        	$("#ex_numbers").append('<br>');
+					        	}
+							}
 						
 						}
 					},
