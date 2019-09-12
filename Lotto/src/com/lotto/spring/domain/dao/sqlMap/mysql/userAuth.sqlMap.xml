@@ -6,6 +6,10 @@
 		{CALL PW_LOGIN (#{email}, #{thwd}, #{access_ip})} 
 	</select>
 	
+	<select id="userSnsLogin" statementType="CALLABLE" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		{CALL PW_LOGIN_SNS (#{sns_type}, #{user_id}, #{email}, #{email_varify_yn}, #{nickname}, #{thumbnail_image}, #{access_ip})} 
+	</select>
+	
 	<select id="getUserInfo" parameterType="java.util.Map" resultType="com.lotto.spring.domain.dao.UserSession">
 		/* userAuth.getUserInfo */
 		SELECT 
@@ -65,6 +69,27 @@
 		order by tmi.menu_id
 	</select>
 	
+	<!-- 일반 사용자 메뉴접근 URL 정보 조회 -->
+	<select id="getMenuAuthUrlListForUser" resultType="org.apache.commons.collections.map.CaseInsensitiveMap" parameterType="java.lang.String">
+		/* userAuth.getMenuAuthUrlListForUser */
+		select tmi.menu_id
+				, tmi.p_menu_id
+				, tmi.menu_nm
+		        , CASE 
+					WHEN tmi.p_menu_id = 0 THEN 'P'
+					ELSE 'C'
+		          END as m_type
+		        , tmi.menu_url
+		        , tmi.lna_element
+		from tb_menu_info tmi		
+		where tmi.menu_id != 0
+		AND tmi.use_yn = 'Y'
+		<if test='isAdmin != null and isAdmin == false'>
+		AND tmi.common_yn = 'Y'
+		</if>
+		order by tmi.menu_id
+	</select>
+	
 	<!-- 사용자 로그 등록 -->
 	<insert id="insertLogAgent" statementType="CALLABLE" parameterType="java.util.Map">
 		{CALL PW_LOGACCESS_I (#{log_type}, #{user_no}, #{user_ip}, #{msg_s}, #{msg_l})} 
@@ -85,4 +110,62 @@
 		{CALL pw_UserInfo_PwInit (#{email}, #{access_ip})}
 	</select>
 	
+	<!-- 이메일 중복 체크 -->
+	<select id="checkDuplEmail" parameterType="java.util.Map" resultType="int">
+		SELECT COUNT(*)
+		FROM TB_USER_INFO
+		WHERE email = #{email}
+	</select>
+	
+	<!-- 권한체크 -->
+	<select id="checkAuth" parameterType="java.util.Map" resultType="int">
+		SELECT
+			COUNT(1)
+		FROM TB_MENU_AUTHINFO MA
+		LEFT OUTER JOIN TB_MENU_INFO MI ON MA.MENU_ID = MI.MENU_ID AND MI.USE_YN = 'Y'
+		WHERE MA.AUTH_CD = (
+			SELECT AUTH_TASK
+			FROM TB_USER_INFO
+			WHERE USER_NO = #{userNo}
+			LIMIT 1
+		)
+		AND MI.MENU_URL = #{menuUrl}
+		AND MA.USE_YN = 'Y'
+	</select>
+	
+	<!-- 회원등록 -->
+	<insert id="join" parameterType="java.util.Map">
+		INSERT INTO TB_USER_INFO
+		(
+			EMAIL
+			, NICKNAME
+			, USER_KEY
+			, GRADE
+			, POINT
+			, USED_POINT
+			, THWD	
+			, SVC_AGREE_YN
+			, LOGIN_FAIL_CNT
+			, AUTH_TASK
+			, AUTH_MENU
+			, CR_DT
+			, UP_DT
+		)
+		VALUES
+		(
+			#{email}
+			, #{nickname}
+			, #{userKey}
+			, 'N'
+			, 0
+			, 0
+			, SHA2(#{thwd}, 256)
+			, 'N'
+			, 0
+			, 'normal'
+			, 'normal'
+			, DATE(NOW())
+			, DATE(NOW())
+		)
+	</insert>
 </mapper>

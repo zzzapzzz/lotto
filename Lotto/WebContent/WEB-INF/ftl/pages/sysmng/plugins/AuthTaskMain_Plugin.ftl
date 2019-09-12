@@ -12,6 +12,11 @@
 			var isDim = "";
 			
 			$(document).ready(function() {
+				dataLayer.push({
+				  'pageCategory': 'AuthTaskMain',
+				  'visitorType': $("#authTask").val()
+				});
+				
 				var isAjax = "${isAjax?if_exists}";
 				if ("N" == isAjax) {
 					initPlugin();

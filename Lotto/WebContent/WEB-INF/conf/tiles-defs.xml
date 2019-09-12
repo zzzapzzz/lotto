@@ -5,7 +5,19 @@
 
 <tiles-definitions>
 
+    <definition name="main" template="/WEB-INF/ftl/layouts/Main.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+    </definition>
+    
     <definition name="login" template="/WEB-INF/ftl/layouts/Login.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+    </definition>
+    
+    <definition name="login/callback/naver" template="/WEB-INF/ftl/layouts/LoginCallBackNaver.ftl">
+        <put-attribute name="title" value="SM Lotto" />
+    </definition>
+    
+    <definition name="login/callback/kakao" template="/WEB-INF/ftl/layouts/LoginCallBackKakao.ftl">
         <put-attribute name="title" value="SM Lotto" />
     </definition>
     

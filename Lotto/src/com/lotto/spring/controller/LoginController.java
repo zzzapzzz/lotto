@@ -25,6 +25,7 @@ import org.springframework.web.bind.support.SessionStatus;
 
 import com.chello.base.common.resource.ResourceManager;
 import com.lotto.common.AuthInfo;
+import com.lotto.common.LottoUtil;
 import com.lotto.common.WebUtil;
 import com.lotto.spring.core.DefaultSMController;
 import com.lotto.spring.domain.dao.SystemSession;
@@ -181,12 +182,34 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 		log.info("fhrmdlsapdls >> 로그인 페이지로 이동하자");
         SystemSession systemInfo = AuthInfo.getSystemSetting(request, response);
 
+        String isLogin = WebUtil.replaceParam(request.getParameter("isLogin"),"");
+        
 		modelMap.addAttribute("SystemInfo", systemInfo);
+		modelMap.addAttribute("isLogin", isLogin);
+		
 		if (!"".equals(systemInfo.getHtml_target())) {
 			return LOGIN+"/"+systemInfo.getHtml_target();
 		} else {
 			return LOGIN;
 		}
+	}
+	
+	@RequestMapping("/api/naver/member/oauth2c")	//네이버로그인콜백
+	public String naverOauth2c(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws SQLException {
+		log.info("naverOauth2c >> 네이버로그인콜백 페이지 이동");
+		SystemSession systemInfo = AuthInfo.getSystemSetting(request, response);
+		
+		modelMap.addAttribute("SystemInfo", systemInfo);
+		return LOGIN+"/callback/naver";
+	}
+	
+	@RequestMapping("/api/kakao/member/oauth2c")	//카카오로그인콜백
+	public String kakaoOauth2c(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws SQLException {
+		log.info("naverOauth2c >> 카카오로그인콜백 페이지 이동");
+		SystemSession systemInfo = AuthInfo.getSystemSetting(request, response);
+		
+		modelMap.addAttribute("SystemInfo", systemInfo);
+		return LOGIN+"/callback/kakao";
 	}
 	
 	
@@ -199,8 +222,8 @@ public class LoginController extends DefaultSMController implements HttpSessionB
         String thwd = WebUtil.replaceParam(request.getParameter("thwd"),"");
         String userIp = WebUtil.getUser_IP(request, response); 
         
-        log.info("[" + email + "][C]  로그인 프로세스 시작");
-        log.debug("[" + email + "] > eamil=" + email );
+        log.info("[" + email + "][C] 일반 로그인 프로세스 시작");
+        log.debug("[" + email + "] > email=" + email );
         log.debug("[" + email + "] > thwd=" + thwd );
         
         //개발자 체크
@@ -271,7 +294,7 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 				paramMap.put("isAdmin", isAdmin);
 					
 				log.info("[" + email + "] > 사용자 메뉴 조회");
-				GNBmenulist = userInfoService.getMenuAuthUrlList(paramMap);
+				GNBmenulist = userInfoService.getMenuAuthUrlListForUser(paramMap);
 		        	
 	        	if (GNBmenulist != null && GNBmenulist.size() > 0) {
 	        		int currPMenuId = 0;
@@ -385,6 +408,7 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 		        	userSession.setLnbMenuAuthList(lnbMenuAuthList);
 		        	userSession.setTaskAuth(taskAuth);
 		        	userSession.setMenuAuthUrlList(menuAuthUrlList);
+		        	userSession.setIsLogin("Y");
 		        	
 		        	userSession.setBeforeUrl("/fhrmdlsapdls.do");
 		        	String nextUrl = jsonObj.getString("goto");
@@ -414,6 +438,252 @@ public class LoginController extends DefaultSMController implements HttpSessionB
         log.debug("JSONObject::"+jsonObj.toString());
 		writeJSON(response, jsonObj);
         
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@RequestMapping
+	public void snsLoginProc(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		ResourceManager resManagerForAuth = ResourceManager.getInstance();
+		
+		String email = WebUtil.replaceParam(request.getParameter("email"),"");
+		String emailVarifyYn = WebUtil.replaceParam(request.getParameter("email_varify_yn"),"");
+		String userId = WebUtil.replaceParam(request.getParameter("user_id"),"");
+		String nickname = WebUtil.replaceParam(request.getParameter("nickname"),"");
+		String thumbnailImage = WebUtil.replaceParam(request.getParameter("thumbnail_image"),"");
+		String snsType = WebUtil.replaceParam(request.getParameter("sns_type"),"");
+		String userIp = WebUtil.getUser_IP(request, response); 
+		
+		log.info("[" + email + "][C] SNS 로그인 프로세스 시작");
+		log.debug("[" + email + "] > email=" + email );
+		log.debug("[" + email + "] > emailVarifyYn=" + emailVarifyYn );
+		log.debug("[" + email + "] > userId=" + userId );
+		log.debug("[" + email + "] > nickname=" + nickname );
+		log.debug("[" + email + "] > thumbnailImage=" + thumbnailImage );
+		log.debug("[" + email + "] > snsType=" + snsType );
+		
+		Map map = new HashMap();
+		map.put("email", email);
+		map.put("email_varify_yn", emailVarifyYn);
+		if (!"".equals(userId)) {
+			map.put("user_id", Integer.parseInt(userId));
+		}
+		map.put("nickname", nickname);
+		map.put("thumbnail_image", thumbnailImage);
+		map.put("sns_type", snsType);
+		map.put("access_ip", userIp);
+		
+		//개발자 체크
+		String admList = WebUtil.replaceParam(resManagerForAuth.getValue("conf.system","SYSTEM"), "");
+		String approot = WebUtil.replaceParam(resManagerForAuth.getValue("conf.system","APP_ROOT"), "");
+		
+		String[] arrAdm = admList.split(",");
+		boolean isAdmin = false;
+		
+		for (int i=0;i<arrAdm.length;i++) {
+			if (email.split("@")[0].equals(arrAdm[i])) {
+				isAdmin = true;				
+				break;
+			}
+		}
+		
+		LoginController loginManager = LoginController.getInstance();
+		HttpSession session = request.getSession();
+		
+		JSONObject jsonObj = new JSONObject();
+		JSONArray rsltJSN = new JSONArray();
+		
+		
+		// 아이디 재설정 후 로그인 아이디로 설정
+		log.info("[" + email + "] > SNS 로그인 수행");
+		
+		CaseInsensitiveMap resultInfo = userInfoService.snsLoginProc(map);
+		if (resultInfo != null) {
+			String loginResult  = (String) resultInfo.get("result");
+			log.debug("result::" + loginResult);
+			int userNo  = (int) resultInfo.get("user_no");
+			
+			for (int i = 0; i < UserSession.RESULT_ARR.length; i++) {
+				if (UserSession.RESULT_ARR[i][0].equals(loginResult)) {
+					jsonObj.put("msg", UserSession.RESULT_ARR[i][1]);
+					jsonObj.put("result", loginResult);
+					break;
+				} else {
+					jsonObj.put("status", "fail");
+					jsonObj.put("msg", "Unknown Msg.");
+					jsonObj.put("result", loginResult);
+				}
+			}
+			
+			if ("T".equals(loginResult)) {
+				
+				// 상단메뉴
+				List<CaseInsensitiveMap> GNBmenulist = null;
+				//사용자 업무권한 설정
+				Map taskAuth = null;
+				// 왼쪽메뉴 정보 조회
+				List<CaseInsensitiveMap> lnbMenuAuthList = null;
+				// 메뉴권한 조회
+				List<HashMap> menuAuthUrlList = null;
+				
+				UserSession userSession = null;
+				
+				if (isAdmin) {
+					//관리자
+					userSession = userInfoService.getAdminUserInfo(email);
+				} else {
+					//사용자
+					userSession = userInfoService.getUserInfo(email);
+				}
+				
+				Map paramMap = new HashMap();
+				paramMap.put("userNo", userNo);
+				paramMap.put("isAdmin", isAdmin);
+				
+				log.info("[" + email + "] > 사용자 메뉴 조회");
+				GNBmenulist = userInfoService.getMenuAuthUrlListForUser(paramMap);
+				
+				if (GNBmenulist != null && GNBmenulist.size() > 0) {
+					int currPMenuId = 0;
+					
+					for(int i = 0 ; i < GNBmenulist.size() ; i++) {
+						CaseInsensitiveMap menuOne = (CaseInsensitiveMap) GNBmenulist.get(i);
+						int pMenuId = Integer.parseInt(String.valueOf(menuOne.get("p_menu_id")));
+						int menuId = Integer.parseInt(String.valueOf(menuOne.get("menu_id")));
+						if (pMenuId == 0) {
+							currPMenuId = menuId; 
+							boolean hasChild = false;
+							for(int j = i+1 ; j < GNBmenulist.size() ; j++) {
+								CaseInsensitiveMap menuTwo = (CaseInsensitiveMap) GNBmenulist.get(j);
+								int subPMenuId = Integer.parseInt(String.valueOf(menuTwo.get("p_menu_id")));
+								if (menuId != 0 && menuId == subPMenuId) {
+									hasChild = true;
+									break;
+								}
+							}
+							
+							menuOne.put("hasChild", hasChild?"Y":"N");
+							GNBmenulist.set(i, menuOne);
+						} else {
+							if (i == 0 || currPMenuId != pMenuId) {
+								//2018.06.26
+								//메뉴 목록에서 첫 번째 항목이 parent 메뉴가 없이 child 메뉴만 있을 경우, parent를 강제로 생성시킴
+								/*
+								 * menu_id
+								 * 100	0	시스템설정	/sysmng/usermng		1	1		100	fa-gear	Y
+								 * 		200	0	오더관리	/odmng/main		1	1		200	fa-database	N
+								 * 300	0	프로모션	/promotion/distributiontable		1	1		300	fa-flag-checkered	Y
+								 * 		500	0	특판오더	/special/order		1	1		500	fa-bullhorn	N
+								 * 600	0	직원세일	/employee/sale		1	1		600	fa-group	Y
+								 * 700	0	프리굳	/freegood/main		1	1		700	fa-cube	Y
+								 */
+								CaseInsensitiveMap menuParent = new CaseInsensitiveMap();
+								String menuNm = "";
+								String menuUrl = String.valueOf(menuOne.get("menu_url"));
+								String lnaElement = "";
+								menuParent.put("menu_id", pMenuId);
+								menuParent.put("p_menu_id", 0);
+								
+								if (100 == pMenuId) {
+									menuNm = "시스템설정";
+									lnaElement = "fa-gear";
+								} else if (300 == pMenuId) {
+									menuNm = "프로모션";
+									lnaElement = "fa-flag-checkered";
+								} else if (600 == pMenuId) {
+									menuNm = "직원세일";
+									lnaElement = "fa-group";
+								} else if (700 == pMenuId) {
+									menuNm = "프리굳";
+									lnaElement = "fa-cube";
+								}  
+								
+								menuParent.put("menu_nm", menuNm);
+								menuParent.put("m_type", "P");
+								menuParent.put("menu_url", menuUrl);
+								menuParent.put("lna_element", lnaElement);
+								
+								GNBmenulist.add(i, menuParent);
+								i--;
+							}
+							
+						}
+					}
+				}
+				
+				//2016.04.04
+				//승인 모듈은 없으므로 주석처리함.
+				String auth = null;
+//				String uAth = userInfoService.userMenuURLAuthCheck(userid, "search", "approval");
+//			    if (uAth != null && !"".equals(uAth)) {
+//			    	jsonObj.put("listenReqCnt", commonService.getReqListenCount(userid));
+//			    } else {
+//			    	jsonObj.put("listenReqCnt", 0);
+//			    }
+				
+				log.info("[" + email + "] > 사용자 메뉴 URL 권한 체크");
+//			    uAth = userInfoService.userMenuURLAuthCheck(userid, "search", "main");
+				
+				if (auth == null || "".equals(auth)) {
+					/*
+			    	if (isAdmin) {
+			    		jsonObj.put("goto", approot+"/base/main.do");
+			    	} else {
+			    		jsonObj.put("goto", approot+"/base/main.do");
+//			    		jsonObj.put("goto", approot+userInfoService.userMenuFirstURL1(userid));
+			    	}
+					 */
+					if (GNBmenulist != null) {
+						CaseInsensitiveMap menuOne = (CaseInsensitiveMap) GNBmenulist.get(0);
+						String menuUrl = (String) menuOne.get("menu_url");
+						jsonObj.put("goto", approot + menuUrl + ".do");
+					} else {
+						jsonObj.put("goto", approot+"/base/main.do");
+					}
+				} 
+//			    else {
+//			    	jsonObj.put("goto", approot+"/base/main.do");
+//			    }
+				
+				//세션 정보
+				if (userSession != null) {
+					session.setAttribute("login.id", userSession.getEmail());
+					session.setAttribute("login.nm", userSession.getNickname());
+					session.setAttribute("login.ip", userIp);
+					
+					userSession.setGNBmenulist(GNBmenulist);
+					userSession.setLnbMenuAuthList(lnbMenuAuthList);
+					userSession.setTaskAuth(taskAuth);
+					userSession.setMenuAuthUrlList(menuAuthUrlList);
+					userSession.setIsLogin("Y");
+					
+					userSession.setBeforeUrl("/fhrmdlsapdls.do");
+					String nextUrl = jsonObj.getString("goto");
+					userSession.setNextUrl(nextUrl);
+					
+				}
+				
+				modelMap.addAttribute("UserInfo", userSession);
+				
+				SystemSession systemInfo = AuthInfo.getSystemSetting();
+				modelMap.addAttribute("SystemInfo", systemInfo);
+				
+				jsonObj.put("status", "success");
+				
+			} else {
+				jsonObj.put("status", "fail");
+			}
+			
+			
+		} else {
+			log.info("[" + email + "] > DB 조회결과 없음.");
+			jsonObj.put("status", "fail");
+			jsonObj.put("result", "noauth");
+			jsonObj.put("msg", UserSession.RESULT_ARR[1][1]);
+		}
+		
+		log.debug("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+		
 	}
 	
 	/**
@@ -632,6 +902,55 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 		log.info("[" + email + "]\t" + msg);
 		jsonObj.put("status", status);
 		jsonObj.put("msg", msg);
+		
+		log.debug("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+		
+	}
+	
+	/**
+	 * 회원가입
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@RequestMapping("/login/join")
+	public void join(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		String joinEmail = WebUtil.replaceParam(request.getParameter("join_email"), "");
+		String joinThwd = WebUtil.replaceParam(request.getParameter("join_thwd"), "");
+		String joinNickname = WebUtil.replaceParam(request.getParameter("join_nickname"), "");
+		String userip = request.getRemoteHost();
+		
+		log.info("[" + userip + "][C] 회원가입");
+		
+		Map map = new HashMap();
+		map.put("email", joinEmail);
+		map.put("thwd", joinThwd);
+		map.put("nickname", joinNickname);
+		map.put("access_ip", userip);
+		
+		int isExist = userInfoService.checkDuplEmail(map);
+		if (isExist > 0) {
+			
+			jsonObj.put("status", "isExist");
+			jsonObj.put("msg", "등록된 이메일이 존재합니다.");
+			log.info("[" + userip + "]\t" + "등록된 이메일이 존재합니다.");
+		} else {
+			int i = userInfoService.join(map);
+			if (i > 0) {
+				log.info("[" + userip + "]\t" + "회원가입 완료");
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("msg", "회원가입이 완료되었습니다. 다시 로그인하세요.");
+		}
+		
 		
 		log.debug("JSONObject::"+jsonObj.toString());
 		writeJSON(response, jsonObj);

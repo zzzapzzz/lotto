@@ -15,6 +15,11 @@
 				}
 
 				setWinCountList();
+				
+				dataLayer.push({
+				  'pageCategory': 'WinMain',
+				  'visitorType': $("#authTask").val()
+				});
 			});
 			
 			function initPlugin() {

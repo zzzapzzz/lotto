@@ -13,6 +13,11 @@
 				if ("N" == isAjax) {
 					initPlugin();
 				}
+				
+				dataLayer.push({
+				  'pageCategory': 'ExptDataMain',
+				  'visitorType': $("#authTask").val()
+				});
 
 			});
 			

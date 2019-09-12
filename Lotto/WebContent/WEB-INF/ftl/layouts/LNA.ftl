@@ -78,10 +78,14 @@
 					success: function(result){
 						$('#main').html(result);
 						
-						
-						var isPlugin = $("#isPlugin").val();
-						if ("Y" == isPlugin) {
-							openPlugin(cid);
+						if ($('#isLogin').val() == 'Y') {
+							var isPlugin = $("#isPlugin").val();
+							if ("Y" == isPlugin) {
+								openPlugin(cid);
+							}
+						} else {
+							showSmallBox($('#checkMsg').val());
+							window.location.href = "/fhrmdlsapdls.do?isLogin=" + $('#isLogin').val();
 						}
 						
 					}
@@ -113,10 +117,14 @@
 					success: function(result){
 						$('#main').html(result);
 						
-						
-						var isPlugin = $("#isPlugin").val();
-						if ("Y" == isPlugin) {
-							openPlugin(cid);
+						if ($('#isLogin').val() == 'Y') {
+							var isPlugin = $("#isPlugin").val();
+							if ("Y" == isPlugin) {
+								openPlugin(cid);
+							}
+						} else {
+							showSmallBox($('#checkMsg').val());
+							window.location.href = "/fhrmdlsapdls.do?isLogin=" + $('#isLogin').val();
 						}
 						
 					}
@@ -193,45 +201,47 @@
 		<!-- Note: This width of the aside area can be adjusted through LESS variables -->
 		<aside id="left-panel">
 
+			<#if UserInfo.isLogin?if_exists == "Y">
 			<!-- User info -->
 			<div class="login-info">
 				<span> <!-- User image size is adjusted inside CSS, it should stay as it --> 
-					
 					<a href="javascript:void(0);" id="show-shortcut" data-action="toggleShortcut">
 						<!-- user img
 						<img src="img/avatars/sunny.png" alt="me" class="online" />
 						--> 
 						<span>
-							${UserInfo.nickname}님 접속중
-						</span>						
+							${UserInfo.nickname?if_exists}님 접속중
+						</span>
 					</a> 
-					
 				</span>
-				<!-- 2018.02.01 set current cid -->
-				<input type="hidden" id="currCid" value="" />
-				<!-- 2018.02.03 set current url -->
-				<input type="hidden" id="currUrl" value="" />
-				
-				<!-- 2018.02.10 set promotion -->
-				<input type="hidden" id="currIdx" value="" />
-				<input type="hidden" id="currUsrId" value="" />
-				<input type="hidden" id="currItemBrand" value="" /> <!-- 2018.04.01 최초 1회 설정 -->
-				<input type="hidden" id="currItemBrandNm" value="" /> <!-- 아이템 추가할 때 검색조건 -->
-				<input type="hidden" id="currOrderType" value="" />
-				<input type="hidden" id="currRemarkType" value="" />
-				<input type="hidden" id="currProcStatus" value="" />
-				
-				<!-- 2018.03.12 current interval id -->
-				<input type="hidden" id="currIntervalId" value="" />
-				
-				<!-- 2018.06.09 current freegood master idx -->
-				<input type="hidden" id="currFGMstIdx" value="" />
-				<!-- 2018.06.14 current employeesale master idx -->
-				<input type="hidden" id="currSSMstIdx" value="" />
-				
 			</div>
 			<!-- end user info -->
+			</#if>
 
+			<!-- 2018.02.01 set current cid -->
+			<input type="hidden" id="currCid" value="" />
+			<!-- 2018.02.03 set current url -->
+			<input type="hidden" id="currUrl" value="" />
+			
+			<!-- 2018.02.10 set promotion -->
+			<input type="hidden" id="currIdx" value="" />
+			<input type="hidden" id="currUsrId" value="" />
+			<input type="hidden" id="currItemBrand" value="" /> <!-- 2018.04.01 최초 1회 설정 -->
+			<input type="hidden" id="currItemBrandNm" value="" /> <!-- 아이템 추가할 때 검색조건 -->
+			<input type="hidden" id="currOrderType" value="" />
+			<input type="hidden" id="currRemarkType" value="" />
+			<input type="hidden" id="currProcStatus" value="" />
+			
+			<!-- 2018.03.12 current interval id -->
+			<input type="hidden" id="currIntervalId" value="" />
+			
+			<!-- 2018.06.09 current freegood master idx -->
+			<input type="hidden" id="currFGMstIdx" value="" />
+			<!-- 2018.06.14 current employeesale master idx -->
+			<input type="hidden" id="currSSMstIdx" value="" />
+				
+			<input type="hidden" id="authTask" value="${UserInfo.auth_task?if_exists}" />
+			
 			<!-- NAVIGATION : This navigation is also responsive-->
 			<nav>
 				<ul>

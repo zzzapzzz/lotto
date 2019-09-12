@@ -81,6 +81,8 @@ public final class LottoUtil {
 		
 	}
 	
+	public static int ACCESS_CNT = 0;
+	
 	/**
 	 * 번호 배열 가져오기
 	 * 

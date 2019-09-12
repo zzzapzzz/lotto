@@ -1,21 +1,26 @@
 package com.lotto.spring.core;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.collections.map.CaseInsensitiveMap;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.ModelMap;
 
 import com.chello.base.spring.core.DefaultController;
 import com.lotto.spring.domain.dao.SystemSession;
 import com.lotto.spring.domain.dao.UserSession;
+import com.lotto.spring.service.UserInfoService;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 /**
  * <pre>
  * DefaultController
@@ -27,6 +32,7 @@ import com.lotto.spring.domain.dao.UserSession;
  */
 public class DefaultSMController extends DefaultController {
 
+	protected final static String MAIN   		= "main";
 	protected final static String LOGIN   		= "login";
 	
     protected final static String MSG       	= "msg";	//2018.02.23
@@ -55,6 +61,11 @@ public class DefaultSMController extends DefaultController {
     
 	/** JS Plugin Page 2017.11.27 */
 	protected final static String PLUGIN_PAGE   = "pluginPage";
+	
+	@Autowired(required = true)
+    private UserInfoService userInfoService;
+	
+	private Logger log = Logger.getLogger(this.getClass());
 	
     protected void writeJSON(HttpServletResponse response, JSONObject jsonObj){
 		try {
@@ -177,5 +188,63 @@ public class DefaultSMController extends DefaultController {
 		modelMap.addAttribute("SystemInfo",  systemInfo);
 		modelMap.addAttribute("GnbMenuList", userInfo.getGNBmenulist());
 		modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, strPageUri));
+    }
+    
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	protected void setModelMapWithAuthCheck (ModelMap modelMap, HttpServletRequest request) {
+    	HttpSession session = request.getSession();
+    	UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+    	SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+    	
+    	// 시스템관리자 여부
+    	String isAdmin = "N";
+    	if (userInfo.isAdmin()) {
+    		isAdmin = "Y";
+    	}
+    	
+    	//URL 확인
+    	String strPageUri = (request.getRequestURI()).replaceFirst(".do", "");
+    	//2018.01.19 메뉴호출시(ajax) url정보 제거
+    	strPageUri = strPageUri.replace("ajax", "");
+    	setActiveMenuSetting(userInfo, strPageUri);
+    	
+    	// Content Page - File which will included in tiles definition
+    	modelMap.addAttribute("IsAdmin",  isAdmin);
+    	modelMap.addAttribute("UserInfo",  userInfo);
+    	modelMap.addAttribute("SystemInfo",  systemInfo);
+    	modelMap.addAttribute("GnbMenuList", userInfo.getGNBmenulist());
+    	modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, strPageUri));
+    	
+    	// TODO 로그인 체크, 권한체크
+    	int loginUserId = userInfo.getUser_no();
+		modelMap.addAttribute("isLogin", userInfo.getIsLogin());
+		if (!"Y".equals(userInfo.getIsLogin())) {
+			log.info("["+loginUserId+"]\t로그인이 필요합니다.");
+			modelMap.addAttribute("checkMsg", "로그인이 필요합니다.");
+			modelMap.addAttribute("status", "need_login");
+		} else {
+			/*
+			 * 권한 존재여부에 따라 차등 처리
+			 * 1. anonymous 체크. 없으면 회원가입 필요
+			 * 2. normal 체크. 없으면 유료가입 필요
+			 * 3. paiduser 체크. 없으면 잘못된 접근.
+			 */
+			Map map = new HashMap();
+			map.put("email", userInfo.getEmail());
+			map.put("userNo", userInfo.getUser_no());
+			map.put("menuUrl", strPageUri);
+			boolean result = userInfoService.checkAuth(map);
+			if (!result) {
+				if (UserSession.GRADE_N.equals(userInfo.getAuth_task())) {
+					log.info("["+loginUserId+"]\t유료 회원만 사용할 수 있습니다.");
+					modelMap.addAttribute("checkMsg", "유료 회원만 사용할 수 있습니다.");
+					modelMap.addAttribute("status", "need_paid");
+				} else {
+					log.info("["+loginUserId+"]\t잘못된 접근입니다.");
+					modelMap.addAttribute("checkMsg", "잘못된 접근입니다.");
+					modelMap.addAttribute("status", "wrong_access");
+				}
+			}
+		}
     }
 }

@@ -21,7 +21,13 @@ public class UserSession {
 			{"T","로그인 성공"}
 	};
 	
+	public static final String GRADE_A = "anonymous";
+	public static final String GRADE_N = "normal";
+	public static final String GRADE_P = "paiduser";
+	public static final String GRADE_S = "system";
+	
 	private int user_no;
+	private long access_no;
 	private String email;
 	private String nickname;
 	private String grade;
@@ -56,6 +62,8 @@ public class UserSession {
     
     private String menu = "";
     
+    private String isLogin = "";
+    
     @SuppressWarnings("rawtypes")
 	private List<HashMap> menuAuthUrlList;
 
@@ -65,6 +73,14 @@ public class UserSession {
 
 	public void setUser_no(int user_no) {
 		this.user_no = user_no;
+	}
+	
+	public long getAccess_no() {
+		return access_no;
+	}
+	
+	public void setAccess_no(long access_no) {
+		this.access_no = access_no;
 	}
 
 	public String getEmail() {
@@ -257,6 +273,14 @@ public class UserSession {
 
 	public void setMenuAuthUrlList(List<HashMap> menuAuthUrlList) {
 		this.menuAuthUrlList = menuAuthUrlList;
+	}
+
+	public String getIsLogin() {
+		return isLogin;
+	}
+
+	public void setIsLogin(String isLogin) {
+		this.isLogin = isLogin;
 	}
     
 

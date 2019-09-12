@@ -73,8 +73,12 @@ public class WinController extends DefaultSMController {
 		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
 		
 		if (userInfo != null) {
-			
-			int loginUserId = userInfo.getUser_no();
+			String loginUserId = null;
+			if (userInfo.getUser_no() != 0) {
+				loginUserId = String.valueOf(userInfo.getUser_no());
+			} else {
+				loginUserId = String.valueOf(userInfo.getAccess_no());
+			}
 			log.info("["+loginUserId+"][C] 당첨번호 화면 호출");
 			
 			setModelMap(modelMap, request);
@@ -87,8 +91,7 @@ public class WinController extends DefaultSMController {
 			//권한에 의한 초기화면 호출시에는 PLUGIN으로 설정해야 함.
 			return BASE_PLUGIN;
 		} else {
-			return "redirect:/fhrmdlsapdls.do";			
-			
+			return "redirect:/fhrmdlsapdls.do";
 		}
 	}
 	
@@ -110,7 +113,12 @@ public class WinController extends DefaultSMController {
 		
 		if (userInfo != null) {
 			
-			int loginUserId = userInfo.getUser_no();
+			String loginUserId = null;
+			if (userInfo.getUser_no() != 0) {
+				loginUserId = String.valueOf(userInfo.getUser_no());
+			} else {
+				loginUserId = String.valueOf(userInfo.getAccess_no());
+			}
 			log.info("["+loginUserId+"][C] 당첨번호 화면 호출(ajax)");
 			
 			setModelMap(modelMap, request);
@@ -142,7 +150,12 @@ public class WinController extends DefaultSMController {
 		
 		if (userInfo != null) {
 			
-			int loginUserId = userInfo.getUser_no();
+			String loginUserId = null;
+			if (userInfo.getUser_no() != 0) {
+				loginUserId = String.valueOf(userInfo.getUser_no());
+			} else {
+				loginUserId = String.valueOf(userInfo.getAccess_no());
+			}
 			log.info("["+loginUserId+"][C] 당첨번호 화면 호출(plugin)");
 			
 			setModelMap(modelMap, request);
@@ -173,8 +186,13 @@ public class WinController extends DefaultSMController {
 		JSONObject jsonObj = new JSONObject();
 		
 		if (userInfo != null) {
-			int loginUserNo = userInfo.getUser_no();
-			log.info("[" + loginUserNo + "][C] 당첨번호 조회");
+			String loginUserId = null;
+			if (userInfo.getUser_no() != 0) {
+				loginUserId = String.valueOf(userInfo.getUser_no());
+			} else {
+				loginUserId = String.valueOf(userInfo.getAccess_no());
+			}
+			log.info("["+loginUserId+"][C] 당첨번호 조회");
 			
 			// 당첨번호 전체 목록 조회
 			WinDataDto winDataDto = new WinDataDto();
@@ -275,8 +293,13 @@ public class WinController extends DefaultSMController {
 		JSONObject jsonObj = new JSONObject();
 		
 		if (userInfo != null) {
-			int loginUserNo = userInfo.getUser_no();
-			log.info("[" + loginUserNo + "][C] 회차합 조회");
+			String loginUserId = null;
+			if (userInfo.getUser_no() != 0) {
+				loginUserId = String.valueOf(userInfo.getUser_no());
+			} else {
+				loginUserId = String.valueOf(userInfo.getAccess_no());
+			}
+			log.info("["+loginUserId+"][C] 회차합 조회");
 			
 			CountSumDto countSumData = sysmngService.getCountSumInfo(dto);
 			

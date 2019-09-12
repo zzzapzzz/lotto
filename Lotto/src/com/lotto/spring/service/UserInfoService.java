@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import com.chello.base.spring.core.DefaultService;
 import com.lotto.spring.domain.dao.UserSession;
-import com.lotto.spring.domain.dto.UserInfoDto;
 
 @Service("userInfoService")
 public class UserInfoService extends DefaultService {
@@ -36,6 +35,25 @@ public class UserInfoService extends DefaultService {
 		map.put("access_ip", access_ip);
 		
 		return (CaseInsensitiveMap) baseDao.getSingleRow("userAuthMapper.userLogin", map);
+	}
+	
+	/**
+	 * SNS 로그인 호출
+	 * 
+	 * @param email
+	 * @param thwd
+	 * @param access_ip
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public CaseInsensitiveMap snsLoginProc(Map map) {
+		String email = (String) map.get("email");
+		String access_ip = (String) map.get("access_ip");
+		log.info("[" + email + "]\t[S] SNS 로그인 호출");
+		log.info("[" + email + "]\t\temail=" + email);
+		log.info("[" + email + "]\t\taccess_ip=" + access_ip);
+		
+		return (CaseInsensitiveMap) baseDao.getSingleRow("userAuthMapper.userSnsLogin", map);
 	}
 	
 	/**
@@ -70,6 +88,17 @@ public class UserInfoService extends DefaultService {
 		userSession.setAdmin(true);
 		
 		return userSession;
+	}
+	
+	/**
+	 * 일반 사용자 메뉴접근 URL 정보 조회
+	 * 
+	 * @param userid
+	 *            로그인ID
+	 * @return
+	 */
+	public List<CaseInsensitiveMap>  getMenuAuthUrlListForUser(Map map) {
+		return (List<CaseInsensitiveMap> ) baseDao.getList("userAuthMapper.getMenuAuthUrlListForUser", map);
 	}
 	
 	/**
@@ -138,6 +167,43 @@ public class UserInfoService extends DefaultService {
 	 */
 	public CaseInsensitiveMap initThwd(Map map) {
 		return (CaseInsensitiveMap) baseDao.getSingleRow("userAuthMapper.initThwd", map);
+	}
+	
+	/**
+	 * 사용자 등록여부 체크
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public int checkDuplEmail(Map map) {
+		return (int) baseDao.getSingleRow("userAuthMapper.checkDuplEmail", map);
+	}
+	
+	/**
+	 * 회원가입
+	 * @param map
+	 * @return
+	 */
+	public int join(Map map) {
+		return (int) baseDao.insert("userAuthMapper.join", map);
+	}
+
+	/**
+	 * 접속권한 체크
+	 * @param map email : 접속자 이메일, authCd : 접속자 권한코드, menuUrl : 현재 접속 URL
+	 * @return true : 권한있음. false : 권한없음.
+	 */
+	public boolean checkAuth(Map map) {
+		String email = (String) map.get("email");
+		log.info("[" + email + "]\t[S] 접속권한 체크");
+		int isExist =  (int) baseDao.getSingleRow("userAuthMapper.checkAuth", map);
+		if (isExist > 0) {
+			log.info("[" + email + "]\t\t권한 있음.");			
+			return true;
+		} else {
+			log.info("[" + email + "]\t\t권한 없음.");			
+			return false;
+		}
 	}
 
 }

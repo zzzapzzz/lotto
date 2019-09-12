@@ -9,7 +9,11 @@
 			
 			$(document).ready(function() {
 				pageSetUp();
-
+				
+				dataLayer.push({
+				  'pageCategory': 'MyLottoProfile',
+				  'visitorType': $("#authTask").val()
+				});
 			});
 
 		</script>

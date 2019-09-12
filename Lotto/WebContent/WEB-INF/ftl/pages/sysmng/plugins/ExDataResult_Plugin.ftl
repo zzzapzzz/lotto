@@ -6,9 +6,17 @@
 			var ex_count = Number($("#ex_count").val());
 			var last_count = Number($("#last_count").val());
 			
+			$(document).ready(function() {
+				dataLayer.push({
+				  'pageCategory': 'ExDataResult',
+				  'visitorType': $("#authTask").val()
+				});
+			});
+			
 			// plugin 화면 초기화
 			function initPlugin() {
-			
+				
+				
 			}
 			
 			function cancel() {

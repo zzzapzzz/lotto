@@ -48,6 +48,13 @@
 				}
 			});
 
+			$(document).ready(function() {
+				dataLayer.push({
+				  'pageCategory': 'ExDataAnalysis',
+				  'visitorType': $("#authTask").val()
+				});
+			});
+			
 			// plugin 화면 초기화
 			function initPlugin() {
 				//예상번호 30조합 조회

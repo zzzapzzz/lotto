@@ -12,6 +12,11 @@
 				var isAjax = "${isAjax?if_exists}";
 
 				searchGo();
+				
+				dataLayer.push({
+				  'pageCategory': 'WinDataAnalysis',
+				  'visitorType': $("#authTask").val()
+				});
 			});
 			
 			function searchGo() {

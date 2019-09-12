@@ -140,6 +140,7 @@ public class SysmngController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/UserMain");
 			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 			
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
@@ -445,6 +446,7 @@ public class SysmngController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/WinDataMain");
 			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 			
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
@@ -568,6 +570,7 @@ public class SysmngController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/WinDataInsert");
 			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 			
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
@@ -917,6 +920,7 @@ public class SysmngController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/WinDataModify");
 			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 			
 			//수정할 당첨번호 조회
 			WinDataDto winData = sysmngService.getWinData(dto);
@@ -1098,6 +1102,7 @@ public class SysmngController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/WinDataAnalysis");
 			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 			
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
@@ -1244,6 +1249,7 @@ public class SysmngController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ExptDataMain");
 			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 			
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
@@ -1466,6 +1472,7 @@ public class SysmngController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ExDataAnalysis");
 			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 			
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
@@ -1556,6 +1563,7 @@ public class SysmngController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ExDataResult");
 			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 			
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
@@ -2023,6 +2031,7 @@ public class SysmngController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ServiceMain");
 			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 			
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
@@ -2124,6 +2133,7 @@ public class SysmngController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/PromotionMain");
 			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 			
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
@@ -2225,6 +2235,7 @@ public class SysmngController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/RequestMain");
 			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 			
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
@@ -2325,6 +2336,7 @@ public class SysmngController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/AuthTaskMain");
 			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 			
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
@@ -2399,8 +2411,8 @@ public class SysmngController extends DefaultSMController {
 		
 		Map map = new HashMap();
 		map.put("search_key", searchKey);
-		map.put("page", Integer.toString(1+((Integer.parseInt(page)-1)*Integer.parseInt(rows))));
-		map.put("rows", Integer.toString(Integer.parseInt(page)*Integer.parseInt(rows)));
+		map.put("startNum", Integer.toString(1+((Integer.parseInt(page)-1)*Integer.parseInt(rows))));
+		map.put("endNum", Integer.toString(Integer.parseInt(page)*Integer.parseInt(rows)));
 		map.put("sidx", sidx);
 		map.put("sord", sord);
 		
@@ -2835,6 +2847,7 @@ public class SysmngController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/AuthMenuMain");
 			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 			
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
@@ -2982,8 +2995,9 @@ public class SysmngController extends DefaultSMController {
 			boolean result = sysmngService.deleteMenuAuthInfo(map);
 			
 			//권한설정 정보 parsing
-			List insertDataList = new ArrayList();
 			String[] datas = tmpMenuId.split("@");
+			
+			log.info("[" + loginUserId + "] > 메뉴권한 매핑정보 저장");
 			for (int i = 0; i < datas.length; i++) {
 				
 				//root 예외처리
@@ -2995,14 +3009,10 @@ public class SysmngController extends DefaultSMController {
 				dataMap.put("auth_cd", authCd);
 				dataMap.put("menu_id", datas[i]);
 				
-				insertDataList.add(dataMap);
+				//업무권한 매핑정보 저장
+				result = sysmngService.saveMenuAuthInfo(dataMap);
 			}
-			map.put("list", insertDataList);
 			
-			
-			//업무권한 매핑정보 저장
-			log.info("[" + loginUserId + "] > 메뉴권한 매핑정보 저장");
-			result = sysmngService.saveMenuAuthInfo(map);
 			if (result) {
 				log.info("[" + loginUserId + "]\t저장 되었습니다.");
 				jsonObj.put("status", "success");

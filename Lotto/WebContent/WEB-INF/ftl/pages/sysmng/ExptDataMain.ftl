@@ -1,6 +1,8 @@
 			<!-- MAIN CONTENT -->
 			<div id="content">
 				<input type="hidden" id="isPlugin" value="Y" />
+				<input type="hidden" id="isLogin" value="${isLogin?if_exists}" />
+				<input type="hidden" id="checkMsg" value="${checkMsg?if_exists}" />
 				<input type="hidden" id="nextWinCount" value="${nextWinCount?if_exists}" />
 				<input type="hidden" id="nextAnnounceDate" value="${nextAnnounceDate?if_exists}" />
 

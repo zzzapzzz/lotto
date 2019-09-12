@@ -13,6 +13,11 @@
 				if ("N" == isAjax) {
 					initPlugin();
 				}
+				
+				dataLayer.push({
+				  'pageCategory': 'TestMain',
+				  'visitorType': $("#authTask").val()
+				});
 			});
 			
 			function initPlugin() {

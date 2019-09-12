@@ -9,6 +9,12 @@
 			
 			$(document).ready(function() {
 				pageSetUp();
+				
+				dataLayer.push({
+				  'pageCategory': 'LowHighStatMain',
+				  'visitorType': $("#authTask").val()
+				});
+				
 
 			});
 

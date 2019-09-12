@@ -9,7 +9,11 @@
 			
 			$(document).ready(function() {
 				pageSetUp();
-
+				
+				dataLayer.push({
+				  'pageCategory': 'EndNumPtrnMain',
+				  'visitorType': $("#authTask").val()
+				});
 			});
 
 		</script>

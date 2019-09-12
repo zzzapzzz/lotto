@@ -9,6 +9,11 @@
 			
 			$(document).ready(function() {
 				pageSetUp();
+				
+				dataLayer.push({
+				  'pageCategory': 'PaymentCntStatMain',
+				  'visitorType': $("#authTask").val()
+				});
 
 			});
 

@@ -20,11 +20,19 @@
 				</div>
 				<!-- end collapse menu -->
 				
+				<#if UserInfo.isLogin?if_exists == "Y">
 				<!-- logout button -->
 				<div id="logout" class="btn-header transparent pull-right">
-					<span> <a href="/logoutProc.do" title="Sign Out" data-action="userLogout" data-logout-msg="이 브라우저를 닫아서 로그아웃 한 후에 보안을 강화할 수 있습니다."><i class="fa fa-sign-out"></i></a> </span>
+					<span> <a href="/logoutProc.do" title="로그아웃" data-action="userLogout" data-logout-msg="이 브라우저를 닫아서 로그아웃 한 후에 보안을 강화할 수 있습니다."><i class="fa fa-sign-out"></i></a> </span>
 				</div>
 				<!-- end logout button -->
+				</#if>
+				
+				<#if UserInfo.isLogin?if_exists == "N">
+				<div id="login" class="btn-header transparent pull-right">
+					<span> <a href="/fhrmdlsapdls.do" title="로그인" ><i class="fa fa-sign-in"></i></a> </span>
+				</div>
+				</#if>
 			</div>
 			<!-- end pulled right: nav area -->
 

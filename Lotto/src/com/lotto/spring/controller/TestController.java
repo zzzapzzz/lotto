@@ -79,6 +79,7 @@ public class TestController extends DefaultSMController {
 			modelMap.addAttribute(CONTENT_PAGE, "test/TestMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "test/plugins/TestMain_Plugin");
 			modelMap.addAttribute("isAjax", "N");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 			
 			//2018.05.02
 			//권한에 의한 초기화면 호출시에는 PLUGIN으로 설정해야 함.
@@ -114,6 +115,7 @@ public class TestController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "test/TestMain");
 			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 			
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");

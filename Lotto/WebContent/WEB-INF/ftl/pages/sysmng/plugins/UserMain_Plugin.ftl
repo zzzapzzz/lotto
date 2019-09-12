@@ -10,6 +10,13 @@
 			var isDim = "";
 			
 			$(document).ready(function() {
+				dataLayer.push({
+				  'pageCategory': 'UserMain',
+				  'visitorType': $("#authTask").val()
+				});
+				
+				console.log('dataLayer=',dataLayer);
+				
 				var isAjax = "${isAjax?if_exists}";
 				if ("N" == isAjax) {
 					initPlugin();

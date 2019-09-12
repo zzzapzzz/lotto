@@ -1033,8 +1033,15 @@
 	<!-- 메뉴권한 매핑정보 저장 -->
 	<insert id="saveMenuAuthInfo" parameterType="java.util.Map">	
 		/* sysmng.saveMenuAuthInfo */
+		INSERT INTO TB_MENU_AUTHINFO (auth_cd, menu_id)
+		VALUES (#{auth_cd}, #{menu_id})
+	</insert>
+	
+	<!-- 메뉴권한 매핑정보 목록 저장 -->
+	<insert id="saveMenuAuthInfoList" parameterType="java.util.Map">	
+		/* sysmng.saveMenuAuthInfoList */
 		<foreach collection="list" item="item">
-		INSERT INTO TB_Menu_AUTHINFO (auth_cd, menu_id)
+		INSERT INTO TB_MENU_AUTHINFO (auth_cd, menu_id)
 		VALUES (#{item.auth_cd}, #{item.menu_id})
 		
 		</foreach>	

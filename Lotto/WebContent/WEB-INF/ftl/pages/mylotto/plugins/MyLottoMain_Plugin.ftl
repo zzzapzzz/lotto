@@ -12,6 +12,11 @@
 			
 			$(document).ready(function() {
 				setWinCountList();
+				
+				dataLayer.push({
+				  'pageCategory': 'MyLottoMain',
+				  'visitorType': $("#authTask").val()
+				});
 			});
 			
 			function setWinCountList() {
@@ -97,6 +102,9 @@
 						if (data.status == "usernotfound") {
 		               		location.href = "/index.do"; 
 		            	}
+
+						// 이미지로 표시영역 초기화
+						$("#ex_numbers").html("");
 		            	
 		            	// 검색결과 없을 시 보여지는 메시지
 						var col = $("#jqgrid").jqGrid ('getGridParam','colNames');
@@ -107,7 +115,6 @@
 						} else {
 							
 							// 이미지로 표시
-							$("#ex_numbers").html("");
 				        	$("#ex_numbers").append('<br>');
 							for (var i = 0 ; i < data.rows.length ; i++) {
 								$("#ex_numbers").append('<img src="${IMG_ROOT}/ballnumber/ball_' + data.rows[i].num1 +'.png" alt="' + data.rows[i].num1 + '"/>');

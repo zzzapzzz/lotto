@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 import com.lotto.common.AuthInfo;
+import com.lotto.common.WebUtil;
 import com.lotto.spring.core.DefaultSMController;
 import com.lotto.spring.domain.dao.SystemSession;
 import com.lotto.spring.domain.dao.UserSession;
@@ -86,25 +87,20 @@ public class IndexController extends DefaultSMController{
 						rd.forward(request, response);
 					}
 				} else {
-					//TODO 로그아웃 처리
+					log.info("[IndexController] 사용자 정보 없음.");
 					
-//					return "redirect:/fhrmdlsapdls.do";	//로그인메인
-					
-//					return LOGIN;
+					String userIp = WebUtil.getUser_IP(request, response);
 					
 					RequestDispatcher rd = request.getRequestDispatcher("/fhrmdlsapdls.do");
-					rd.forward(request, response);
+			        rd.forward(request, response);
 				}
     		} else {
-    			systemInfo = AuthInfo.getSystemSetting();
-    				
     			//로그인 화면으로 이동
-    			log.info("[IndexController] 사용자 정보 없음. 로그인 화면으로 이동.");
+    			log.info("[IndexController] 사용자 정보 없음. 첫 화면으로 이동.");
     			
     			modelMap.addAttribute("SystemInfo", systemInfo);
 //   				return LOGIN;
-    			RequestDispatcher rd = request.getRequestDispatcher("/fhrmdlsapdls.do");
-				rd.forward(request, response);
+    			
 				
 				//TODO
 				//캐시정보 설정하기
@@ -114,6 +110,9 @@ public class IndexController extends DefaultSMController{
 				//TODO
 				//시스템관리자 캐시정보 갱신 기능 개발 필요
 				
+				RequestDispatcher rd = request.getRequestDispatcher("/base/main.do");
+				rd.forward(request, response);
+	            
     		}
     		
     	} else {

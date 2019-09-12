@@ -28,6 +28,7 @@ import com.lotto.spring.core.DefaultSMController;
 import com.lotto.spring.domain.dao.SystemSession;
 import com.lotto.spring.domain.dao.UserSession;
 import com.lotto.spring.domain.dto.ExDataDto;
+import com.lotto.spring.domain.dto.ExcludeDto;
 import com.lotto.spring.domain.dto.ExptPtrnAnlyDto;
 import com.lotto.spring.domain.dto.MyLottoSaveNumDto;
 import com.lotto.spring.domain.dto.WinDataAnlyDto;
@@ -115,11 +116,10 @@ public class MyLottoController extends DefaultSMController {
 		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
 		
 		if (userInfo != null) {
-			
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] MY로또 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			//CurrMenuInfo overwrite
 			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/mylotto/mylotto"));
@@ -247,6 +247,362 @@ public class MyLottoController extends DefaultSMController {
 		}
 		writeJSON(response, json); 
 	} 
+	
+	
+	/**
+	 * MY로또저장번호 목록 조회 (For 원영)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws SQLException
+	 */
+	@RequestMapping("/mylotto/saveNumListForWy")
+	public void getExData30List(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws SQLException {
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		String page = WebUtil.replaceParam(request.getParameter("page"), "1");
+		String rows = WebUtil.replaceParam(request.getParameter("rows"), "100");
+		String sidx = WebUtil.replaceParam(request.getParameter("sidx"), "usr_id");
+		String sord = WebUtil.replaceParam(request.getParameter("sord"), "ASC");
+		
+		JSONObject json = new JSONObject();
+		
+		  		
+		// 로그인 아이디
+		int loginUserNo = userInfo.getUser_no();
+		log.info("[" + loginUserNo + "][C] MY로또저장번호 목록 조회 (For 원영)");
+		String accessip = request.getRemoteHost();
+
+		MyLottoSaveNumDto dto = new MyLottoSaveNumDto();
+		dto.setReg_user_no(3);
+//		dto.setReg_user_no(loginUserNo);
+		dto.setAccess_ip(accessip);
+		
+		
+		// 등록된 데이터 삭제
+		myLottoService.deleteMyData(dto);
+		
+		int maxSaveCnt = 10; 	// 기본값 설정
+		int myLottoSaveNumListCnt = 0;
+		
+		Map<String, Integer> numberMap = new HashMap<String, Integer>();	//숫자를 저장할 HashMap
+		Map<String, Integer> notContainMap = new HashMap<String, Integer>();	//제외할 숫자를 저장할 HashMap
+		
+		// set data
+		List<String> exptDataList = new ArrayList<String>();
+		exptDataList.add("3,9,14,18,26,37");
+		exptDataList.add("8,21,35,36,39,41");
+		exptDataList.add("2,11,14,34,35,41");
+		exptDataList.add("8,10,12,32,38,40");
+		exptDataList.add("8,18,20,27,28,33");
+		
+		exptDataList.add("5,9,20,21,38,41");
+		exptDataList.add("8,11,12,21,38,41");
+		exptDataList.add("4,10,13,18,20,40");
+		exptDataList.add("14,18,20,29,31,44");
+		exptDataList.add("1,4,11,12,25,33");
+		
+		exptDataList.add("11,19,20,38,42,45");
+		exptDataList.add("2,12,20,31,39,40");
+		exptDataList.add("7,8,12,23,39,40");
+		exptDataList.add("11,16,24,34,38,43");
+		exptDataList.add("5,8,16,18,31,45");
+		
+		exptDataList.add("14,20,23,33,36,41");
+		exptDataList.add("13,14,28,36,37,40");
+		exptDataList.add("12,16,25,33,40,43");
+		exptDataList.add("14,18,21,37,40,43");
+		exptDataList.add("7,11,14,20,33,38");
+		
+		exptDataList.add("8,10,27,37,42,43");
+		exptDataList.add("10,12,23,35,39,40");
+		exptDataList.add("13,20,24,33,38,40");
+		exptDataList.add("5,7,12,28,35,42");
+		exptDataList.add("12,14,19,20,27,34");
+		
+		exptDataList.add("14,16,25,37,42,43");
+		exptDataList.add("7,10,16,23,34,39");
+		exptDataList.add("9,13,20,24,28,43");
+		exptDataList.add("4,14,27,30,38,41");
+		exptDataList.add("11,19,20,38,42,45");
+		
+		exptDataList.add("2,12,20,31,39,40");
+		exptDataList.add("7,8,12,23,39,40");
+		exptDataList.add("11,16,24,34,38,43");
+		exptDataList.add("11,13,20,36,40,45");
+		exptDataList.add("1,9,28,33,38,41");
+		
+		exptDataList.add("9,14,16,24,25,41");
+		exptDataList.add("5,9,10,20,25,43");
+		exptDataList.add("2,3,10,19,34,40");
+		exptDataList.add("4,9,11,16,33,37");
+		exptDataList.add("8,10,19,25,33,43");
+		
+		exptDataList.add("12,14,28,36,37,41");
+		exptDataList.add("14,20,29,31,33,40");
+		exptDataList.add("11,14,19,25,27,36");
+		
+		// 최근회차 조회
+		log.info("[" + loginUserNo + "]\t당첨번호 전체 목록 내림차순 조회");
+		WinDataDto winDataDto = new WinDataDto();
+		winDataDto.setSord("DESC");
+		winDataDto.setPage("1");	// 전체조회 설정
+		List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+		
+		/*********************************************************
+		 * 제외수 적용 번호추출
+		 *********************************************************/
+		//제외수를 저장할 list
+		List<Integer> deleteTargetList = new ArrayList<Integer>();
+		//제외수를 저장할 map
+		Map<Integer, Integer> deleteTargetMap = new HashMap<Integer, Integer>();
+		
+		// 제외수 조회
+		ExDataDto exDataDto = new ExDataDto();
+		exDataDto.setEx_count(winDataList.get(0).getWin_count()+1);
+		
+		ExcludeDto excludeDto = sysmngService.getExcludeInfo(exDataDto);
+		String excludeNum = excludeDto.getExclude_num();
+		excludeNum = excludeNum.replaceAll(" ", "");
+		String[] arrExcludeNum = excludeNum.split(",");
+		for (int i = 0; i < arrExcludeNum.length; i++) {
+			notContainMap.put(arrExcludeNum[i], Integer.parseInt(arrExcludeNum[i]));
+			deleteTargetList.add(Integer.parseInt(arrExcludeNum[i]));
+			deleteTargetMap.put(Integer.parseInt(arrExcludeNum[i]), Integer.parseInt(arrExcludeNum[i]));
+		}
+		
+		//제외수를 포함하지 않는 회차합 숫자들
+		List<Integer> numberOfContainList = new ArrayList<Integer>(); 
+		List<Integer> numberOfNotContainList = new ArrayList<Integer>(); 
+		
+		log.info("[" + loginUserNo + "]\t추출번호 대상 목록");			
+		for (int i = 0; i < exptDataList.size(); i++) {
+			String[] datas = exptDataList.get(i).split(",");
+			for (int j = 0; j < datas.length; j++) {
+				if (!numberMap.containsKey(datas[j]) 
+						&& !notContainMap.containsKey(datas[j])	// 제외수 등록 체크
+						) {
+					log.info("[" + loginUserNo + "]\t\t" + datas[j]);			
+					numberMap.put(datas[j], Integer.parseInt(datas[j]));
+					numberOfContainList.add(Integer.parseInt(datas[j]));
+				}
+			}
+		}
+		
+		
+		
+		ExptPtrnAnlyDto exptPtrnAnlyInfo = new ExptPtrnAnlyDto();
+		exptPtrnAnlyInfo.setCont_cnt(6);
+		exptPtrnAnlyInfo.setNot_cont_cnt(0);
+		
+		List<ExDataDto> expectDataList = lottoDataService.getExDataList(exptPtrnAnlyInfo, numberOfContainList, numberOfNotContainList, deleteTargetMap);
+		
+		
+		
+		// 당첨번호 전체 목록 조회
+		List<WinDataAnlyDto> winDataAnlyList = sysmngService.getWinDataAnlyList(winDataDto);
+			
+		// 예상번호 목록 삭제
+		int exCount = winDataAnlyList.get(winDataAnlyList.size()-1).getWin_count()+1;
+		sysmngService.deleteExDataList(exCount);
+		
+		// 번호간 차이 설정
+		lottoDataService.setDifNumbers(winDataAnlyList);
+		
+		// 당첨번호 배열 설정
+		lottoDataService.setNumbers(winDataAnlyList);
+						
+		// 표준 끝수합 범위 설정
+		int[] lowHighEndNumData = lottoDataService.getEndNumberBaseDistribution(winDataAnlyList);
+		/** 번호간 범위 결과 목록 */
+		ArrayList<HashMap<String, Integer>> numbersRangeList = lottoDataService.getNumbersRangeList(winDataAnlyList);
+		/** 숫자별 출현번호 결과 목록 */
+		ArrayList<ArrayList<Integer>> groupByNumbersList = lottoDataService.getGroupByNumbersList(winDataAnlyList);
+		/** 번호별 궁합/불협수 */
+		Map<Integer, Map<String, ArrayList<Integer>>> mcNumberMap = lottoDataService.getMcNumberByAnly(winDataAnlyList);
+		
+		
+		// 총합 일치
+		int cnt = 2;
+		double AIM_PER = 10.0;	// 목표율
+		Map map = new HashMap();
+		map.put("cnt", cnt);
+		List<CaseInsensitiveMap> totalGroupCntList = null;
+		Map<Integer, Integer> totalGroupCntMap = new HashMap<Integer, Integer>();
+		
+		do {
+			map.put("cnt", cnt);
+			int totalGroupSumCnt = sysmngService.getTotalGroupSumCnt(map);
+			double d_cnt = totalGroupSumCnt;
+			double d_total = winDataList.get(winDataList.size()-1).getWin_count();
+			DecimalFormat df = new DecimalFormat("#.##"); 
+			double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+			
+			if (percent * 100 >= AIM_PER) {
+				totalGroupCntList = sysmngService.getTotalGroupCntList(map);
+				break;
+			}
+			// 목표율에 도달하지 못할 경우, 다음 개수 증가
+			cnt++;
+		} while (true);
+		
+		if (totalGroupCntList != null && totalGroupCntList.size() > 0) {
+			
+			for (int i = 0; i < totalGroupCntList.size(); i++) {
+				CaseInsensitiveMap totalGroupCnt = totalGroupCntList.get(i);
+				String total = String.valueOf(totalGroupCnt.get("total"));
+				String totalCnt = String.valueOf(totalGroupCnt.get("cnt"));
+				totalGroupCntMap.put(Integer.parseInt(total), Integer.parseInt(totalCnt));
+			}
+		}
+		
+		// 끝수합 일치
+		cnt = 2;
+		map = new HashMap();
+		map.put("cnt", cnt);
+		List<CaseInsensitiveMap> endnumGroupCntList = null;
+		Map<Integer, Integer> endnumGroupCntMap = new HashMap<Integer, Integer>();
+		
+		do {
+			map.put("cnt", cnt);
+			int endnumGroupSumCnt = sysmngService.getEndnumGroupSumCnt(map);
+			double d_cnt = endnumGroupSumCnt;
+			double d_total = winDataList.get(winDataList.size()-1).getWin_count();
+			DecimalFormat df = new DecimalFormat("#.##"); 
+			double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+			
+			if (percent * 100 >= AIM_PER) {
+				endnumGroupCntList = sysmngService.getEndnumGroupCntList(map);
+				break;
+			}
+			// 목표율에 도달하지 못할 경우, 다음 개수 증가
+			cnt++;
+		} while (true);
+		
+		if (endnumGroupCntList != null && endnumGroupCntList.size() > 0) {
+			for (int i = 0; i < endnumGroupCntList.size(); i++) {
+				CaseInsensitiveMap endnumGroupCnt = endnumGroupCntList.get(i);
+				String total = String.valueOf(endnumGroupCnt.get("sum_end_num"));
+				String endnumCnt = String.valueOf(endnumGroupCnt.get("cnt"));
+				endnumGroupCntMap.put(Integer.parseInt(total), Integer.parseInt(endnumCnt));
+			}
+		}
+					
+		List saveList = new ArrayList();	// 저장할 목록
+		
+
+		if (expectDataList != null && expectDataList.size() > 0) {
+			log.info("추출된 목록 건수 = " + expectDataList.size());
+			//추출된 번호 전체를 패턴과 비교하여 예측패턴과 가장 많이 일치하는 번호 목록을 구한다.
+			
+			long startTime = System.currentTimeMillis();
+			int excuteCnt = 0;
+			Map<Integer, Integer> excutedRandomMap = new HashMap<Integer, Integer>();
+
+			do {
+		
+				int randomSeq = (int) (Math.random() * expectDataList.size());
+				if (excutedRandomMap.containsKey(randomSeq)) {
+					continue;
+				} else {
+					excutedRandomMap.put(randomSeq, randomSeq);
+					exDataDto.setSeq(randomSeq);
+				}
+				
+				log.info("proc idx = " + excuteCnt);
+				ExDataDto exData = expectDataList.get(randomSeq);
+				
+				//예상패턴 일치개수 설정
+				int ptrnMatchCnt = lottoDataService.getExptPtrnMatchCnt(exData, winDataAnlyList, exptPtrnAnlyInfo, lowHighEndNumData, numbersRangeList, groupByNumbersList, mcNumberMap);
+				exData.setPtrn_match_cnt(ptrnMatchCnt);
+
+				
+				if (ptrnMatchCnt >= 5) {
+					// 저장번호 등록
+					boolean result = lottoDataService.compareExptPtrn(exData, winDataAnlyList, exptPtrnAnlyInfo, totalGroupCntMap, endnumGroupCntMap);
+					if (result) {
+						MyLottoSaveNumDto mlsnDto = new MyLottoSaveNumDto();
+						mlsnDto.setEx_count(dto.getEx_count());
+	//					mlsnDto.setUser_no(loginUserNo);
+						mlsnDto.setUser_no(3);
+						mlsnDto.setNum1(exData.getNum1());
+						mlsnDto.setNum2(exData.getNum2());
+						mlsnDto.setNum3(exData.getNum3());
+						mlsnDto.setNum4(exData.getNum4());
+						mlsnDto.setNum5(exData.getNum5());
+						mlsnDto.setNum6(exData.getNum6());
+						saveList.add(mlsnDto);
+					}
+					
+					myLottoSaveNumListCnt++;
+					
+					// 진행도 출력
+					double d_cnt = excuteCnt;
+					double d_total = maxSaveCnt;
+					DecimalFormat df = new DecimalFormat("#.##"); 
+					double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+					log.info("추출횟수 = " + saveList.size() + " / 실행횟수 = " + excuteCnt + " (" + (percent*100) + "%)");
+					
+					if (saveList.size() >= maxSaveCnt || expectDataList.size() == excuteCnt) {
+						break;
+					}
+				}
+				
+				excuteCnt++;
+				
+			} while(true);
+			
+			long endTime = System.currentTimeMillis();
+			long resutTime = endTime - startTime;
+			
+			log.info("전체 " + expectDataList.size() + "건 소요시간  : " + resutTime/1000 + "(ms)");
+		} // end if numberList check
+				
+		if (saveList.size() > 0) {
+			Map paramMap = new HashMap();
+			paramMap.put("list", saveList);
+			myLottoService.insertMyData(paramMap);
+		}
+		
+		ArrayList<MyLottoSaveNumDto> myLottoSaveNumList = new ArrayList<MyLottoSaveNumDto>();
+		
+		int total_pages = 0;
+		if( myLottoSaveNumListCnt > 0 ) {
+			total_pages = (int) Math.ceil((double)myLottoSaveNumListCnt/Double.parseDouble(rows));
+			
+			for (int i = 0; i < saveList.size(); i++) {
+				myLottoSaveNumList.add((MyLottoSaveNumDto) saveList.get(i));
+			}
+			
+			// 당첨번호가 있으면 결과비교 처리
+			WinDataDto param = new WinDataDto();
+			param.setWin_count(exCount);
+			WinDataDto winData = sysmngService.getWinData(param);
+			if (winData != null) {
+				lottoDataService.getMyDataResult(myLottoSaveNumList, winData);
+				
+				// TODO 당첨결과가 존재하면 알림처리 (Email, SMS 등)
+				
+			}
+			
+		} else { 
+			total_pages = 0; 
+		} 
+		
+		json.put("cnt", myLottoSaveNumList.size());
+		json.put("total", total_pages);
+		json.put("page", page);
+		json.put("records", myLottoSaveNumListCnt);
+		json.put("rows", myLottoSaveNumList);		
+		
+		json.put("status", "success");		
+		writeJSON(response, json); 
+	}
+	
 	
 	/**
 	 * MY로또저장번호 일반등록 화면 호출(ajax)

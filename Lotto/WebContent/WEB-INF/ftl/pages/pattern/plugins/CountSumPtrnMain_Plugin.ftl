@@ -9,7 +9,11 @@
 			
 			$(document).ready(function() {
 				pageSetUp();
-
+				
+				dataLayer.push({
+				  'pageCategory': 'CountSumPtrnMain',
+				  'visitorType': $("#authTask").val()
+				});
 			});
 
 		</script>

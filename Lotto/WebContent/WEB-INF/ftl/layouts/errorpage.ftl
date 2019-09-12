@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html>
 	<head>
 		<meta charset="utf-8">
 		<!--<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">-->
@@ -124,6 +124,21 @@
 
 	</div>
 	<!-- END MAIN PANEL -->
+	<script type="text/javascript">
+		$(function() {
+			dataLayer.push({
+			  'pageCategory': 'Error'
+			});
+		}
+	</script>
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-YRLXXYRZXT"></script>
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
 	
+	  gtag('config', 'G-YRLXXYRZXT');
+	</script>
 	</body>
 </html>

@@ -59,6 +59,19 @@
 		<link rel="apple-touch-startup-image" href="${IMG_ROOT}/splash/ipad-portrait.png" media="screen and (min-device-width: 481px) and (max-device-width: 1024px) and (orientation:portrait)">
 		<link rel="apple-touch-startup-image" href="${IMG_ROOT}/splash/iphone.png" media="screen and (max-device-width: 320px)">
 
+		<!-- login image -->
+		<style>
+	    input.img-button-naver {
+		    background: url( "${IMG_ROOT}/sclogin/Naver_Perfect_Green.PNG" ) no-repeat;
+		    border: none;
+		    width: 210px;
+		    cursor: pointer;
+	    }	
+	        
+	    input.kor {
+	    	ime-mode:active;
+	    }
+	    </style>
 	</head>
 	
 	<body class="animated fadeInDown">
@@ -79,7 +92,9 @@
 
 			<!-- MAIN CONTENT -->
 			<div id="content" class="container">
-
+				
+				<input type="hidden" id="isLogin" name="isLogin" value="${isLogin?if_exists}">
+				
 				<div class="row">
 					<div class="col-xs-12 col-sm-12 col-md-7 col-lg-8 hidden-xs hidden-sm">
 						<h1 class="txt-color-red login-header-big">SM Lotto</h1>
@@ -99,26 +114,26 @@
 							<!-- 로그인 -->
 							<form action="javascript:loginProc();" id="login-form" class="smart-form client-form">
 								<header>
-									로그인
+									<i class="fa fa-sign-in"></i> 로그인
 								</header>
 
 								<fieldset>
 									
 									<section>
-										<label class="label">이메일</label>
-										<label class="input"> <i class="icon-append fa fa-user"></i>
-											<input type="email" id="email" name="email">
+										<label class="label">아이디</label>
+										<label class="input"> <i class="icon-append fa fa-envelope-o"></i>
+											<input type="email" id="email" name="email" placeholder="이메일을 입력하세요." >
 											<!--
 											<input type="text" id="usr_id" name="usr_id">
 											-->
-											<b class="tooltip tooltip-top-right"><i class="fa fa-user txt-color-teal"></i>이메일을 입력하세요.</b>
+											<b class="tooltip tooltip-top-right"><i class="fa fa-envelope txt-color-teal"></i>이메일을 입력하세요.</b>
 										</label>
 									</section>
 
 									<section>
 										<label class="label">비밀번호</label>
 										<label class="input"> <i class="icon-append fa fa-lock"></i>
-											<input type="password" id="thwd" name="thwd">
+											<input type="password" id="thwd" name="thwd" placeholder="비밀번호를 입력하세요.">
 											<b class="tooltip tooltip-top-right"><i class="fa fa-lock txt-color-teal"></i> 비밀번호를 입력하세요.</b> </label>
 										<div class="note">
 											<a href="javascript:forgetProcGo();">비밀번호를 잊어버렸나요?</a>
@@ -128,15 +143,30 @@
 									<section>
 										<label class="checkbox">
 											<input type="checkbox" name="remember" checked="">
-											<i></i>로그인 유지</label>
+											<i></i>로그인 유지
+										</label>
 									</section>
 								</fieldset>
 								<footer>
 									<button type="submit" class="btn btn-primary">
 										로그인
 									</button>
+									<input type="button" id="join" class="btn btn-primary" value="회원가입" />
+								</footer>
+								<footer>
+									<ul class="list-inline text-center">
+										<li>
+											<!-- Naver Login Button -->
+											<div id="naverIdLogin"></div>
+										</li>
+										<li>
+											<!-- Kakao Login Button -->
+											<div id="kakaoIdLogin"><a id="kakao-login-btn"></a></div>
+										</li>
+									</ul>
 								</footer>
 							</form>
+							
 							<!-- end 로그인 -->
 							
 							<!-- 비밀번호 변경 -->
@@ -278,8 +308,61 @@
 							</form>
 							<!-- end 비밀번호 찾기 -->
 							
+							<!-- 회원가입 -->
+							<form action="javascript:joinProc();" id="join-form" class="smart-form client-form hide">
+								<header>
+									<i class="fa fa-edit"></i> 회원가입
+								</header>
+
+								<fieldset>
+									
+									<section>
+										<div class="note">
+											심서방 로또에 가입하셔서 더 많은 정보를 얻으시고, 꼭 당첨되세요!!
+										</div>
+									</section>
+									
+									<section>
+										<label class="label">아이디</label>
+										<label class="input"> <i class="icon-append fa fa-envelope-o"></i>
+											<input type="text" id="join_email" name="join_email" placeholder="이메일">
+											<b class="tooltip tooltip-top-right"><i class="fa fa-envelope txt-color-teal"></i>이메일을 입력하세요.</b>
+										</label>
+									</section>
+
+									<section>
+										<label class="label">닉네임(별명)</label>
+										<label class="input"> <i class="icon-append fa fa-tag"></i>
+											<input type="text" class="kor" id="join_nickname" name="join_nickname" placeholder="닉네임(별명)">
+											<b class="tooltip tooltip-top-right"><i class="fa fa-tag txt-color-teal"></i> 닉네임(별명)을 입력하세요.</b> </label>
+										</label>
+									</section>
+									
+									<section>
+										<label class="label">비밀번호</label>
+										<label class="input"> <i class="icon-append fa fa-lock"></i>
+											<input type="password" id="join_thwd" name="join_thwd" placeholder="비밀번호">	
+											<b class="tooltip tooltip-top-right"><i class="fa fa-lock txt-color-teal"></i> 비밀번호를 입력하세요.</b> </label>										
+										</label>
+									</section>
+									
+									<section>
+										<label class="label">비밀번호 확인</label>
+										<label class="input"> <i class="icon-append fa fa-lock"></i>
+											<input type="password" id="join_thwd_confirm" name="join_thwd_confirm" placeholder="비밀번호 확인">
+											<b class="tooltip tooltip-top-right"><i class="fa fa-lock txt-color-teal"></i> 비밀번호를 다시 한 번 입력하세요.</b> </label>
+										</label>
+									</section>
+								</fieldset>
+								<footer>
+									<button type="submit" class="btn btn-primary">
+										회원가입
+									</button>
+								</footer>
+							</form>
+							<!-- end 회원가입 -->
+							
 						</div>
-						
 					</div>
 				</div>
 			</div>
@@ -306,12 +389,23 @@
 
 		<!-- BOOTSTRAP JS -->		
 		<script src="${JS_ROOT}/bootstrap/bootstrap.min.js"></script>
+		
+		<!-- CUSTOM NOTIFICATION -->
+		<script src="${JS_ROOT}/notification/SmartNotification.min.js"></script>
 
 		<!-- JQUERY VALIDATE -->
 		<script src="${JS_ROOT}/plugin/jquery-validate/jquery.validate.min.js"></script>
 		
 		<!-- JQUERY MASKED INPUT -->
 		<script src="${JS_ROOT}/plugin/masked-input/jquery.maskedinput.min.js"></script>
+		
+		<!-- 소셜로그인 설정 -->
+		<!-- NAVER LOGIN -->
+		<script type="text/javascript" src="https://static.nid.naver.com/js/naveridlogin_js_sdk_2.0.0.js" charset="utf-8"></script>
+		
+		<!-- KAKAO -->
+		<script src="//developers.kakao.com/sdk/js/kakao.min.js"></script>
+		<!-- 소셜로그인 설정 끝-->
 		
 		<!--[if IE 8]>
 			
@@ -321,30 +415,63 @@
 
 		<!-- MAIN APP JS FILE -->
 		<script src="${JS_ROOT}/app.min.js"></script>
+		<script src="${JS_ROOT}/common.min.js"></script>
 
 		<script type="text/javascript">
 			runAllForms();
 
+			Kakao.init('1342d57c2672941f535211c80bf2b025');
+
+			// 네이버 로그인 버튼 생성
+			var naverLogin = new naver.LoginWithNaverId(
+				{
+					clientId: "_vZ13kySrEVrBIV2C9Di",
+					// callbackUrl: "http://smlotto.com/api/naver/member/oauth2c.do",
+					callbackUrl: "http://127.0.0.1/api/naver/member/oauth2c.do",
+					isPopup: false, /* 팝업을 통한 연동처리 여부 */
+					loginButton: {color: "green", type: 3, height: 48} /* 로그인 버튼의 타입을 지정 */
+				}
+			);
+			
+			// 카카오 로그인 버튼 생성
+		    Kakao.Auth.createLoginButton({
+		    	container: '#kakao-login-btn',
+		      	success: function(authObj) {
+     				// Kakao.Auth.createLoginButton에서 불러온 결과값 json형태로 출력
+		        	console.log('kakao login success=', JSON.stringify(authObj));
+		        	window.location.href = "/api/kakao/member/oauth2c.do";
+		      	},
+		      	fail: function(err) {
+		        	console.log('kakao login fail=',JSON.stringify(err));
+		      	}
+		    });
+		    
+	
 			$(function() {
+				dataLayer.push({
+				  'pageCategory': 'Login'
+				});
+			
 				// Validation
 				$("#login-form").validate({
 					// Rules for form validation
 					rules : {
-						usr_id : {
+						email : {
 							required : true,
+							email : true,
 							minlength : 7,
-							maxlength : 20
+							maxlength : 100
 						},
 						thwd : {
 							required : true,
 							minlength : 3,
-							maxlength : 20
+							maxlength : 50
 						}
 					},
 
 					// Messages for form validation
 					messages : {
-						usr_id : {
+						email : {
 							required : '사원ID를 입력하세요.'
 						},
 						thwd : {
@@ -461,6 +588,57 @@
 					}
 				});
 				
+				$("#join-form").validate({
+					// Rules for form validation
+					rules : {
+						join_email : {
+							required : true,
+							email : true,
+							minlength : 3,
+							maxlength : 100
+						},
+						join_thwd : {
+							required : true,
+							minlength : 3,
+							maxlength : 50
+						},
+						join_thwd_confirm : {
+							required : true,
+							minlength : 3,
+							maxlength : 50,
+							equalTo : '#join_thwd'
+						},
+						join_nickname : {
+							required : true,
+							minlength : 3,
+							maxlength : 50
+						}
+					},
+
+					// Messages for form validation
+					messages : {
+						join_email : {
+							required : '이메일을 입력하세요.',
+							email : '이메일 형식이 아닙니다.'
+						},
+						join_thwd : {
+							required : '비밀번호를 입력하세요.'
+						},
+						join_thwd_confirm : {
+							required : '비밀번호를 다시 한 번 입력하세요.',
+							equalTo : '입력한 비밀번호와 일치하지 않습니다.'
+						},
+						join_nickname : {
+							required : '닉네임(별명)을 입력하세요.'
+						}
+					},
+
+					// Do not change code below
+					errorPlacement : function(error, element) {
+						error.insertAfter(element.parent());
+					}
+				});
+				
 				$("#new_thwd").keypress(function (e) {
 			        if(e.keyCode == 13){
 			        	$("#thwd_confirm").focus();
@@ -498,7 +676,26 @@
 			        	$("#change_thwd_confirm").focus();
 			        }
 			    });
+			    
+			    
+				$("#join_email").keypress(function (e) {
+			        if(e.keyCode == 13){
+			        	$("#join_nickname").focus();
+			        }
+			    });
+			    
+				$("#join_nickname").keypress(function (e) {
+			        if(e.keyCode == 13){
+			        	$("#join_thwd").focus();
+			        }
+			    });
 				
+				$("#join_thwd").keypress(function (e) {
+			        if(e.keyCode == 13){
+			        	$("#join_thwd_confirm").focus();
+			        }
+			    });
+			    
 				/*
 				$("#change_thwd_confirm").keypress(function (e) {
 			        if(e.keyCode == 13){
@@ -506,14 +703,28 @@
 			        }
 			    });
 				*/
+
+				/* 소셜로그인 설정정보를 초기화하고 연동을 준비 */
+				naverLogin.init();
+							
+				$("#join").click(function () {
+					joinProcGo();
+			    });
 				
 				//TEST
 				$("#email").val("smlotto@naver.com");
 				$("#thwd").val("Qudrkfl!3023");
 				
+				// 로그인체크 메세지 표시
+				if ("N" == $("#isLogin").val()) {
+					showSmallBox("로그인이 필요합니다.");
+				}
+				
 			});
 			
 			function loginProc() {
+				dataLayer.push({'event': 'login-click'});
+				
 				var paramMap = {};
 				var email      = '';
 				var thwd     = '';
@@ -594,6 +805,8 @@
 			}
 			
 			function resetProc() {
+				dataLayer.push({'event': 'user-init-click'});
+				
 				var setUsrId      = $.trim($('#set_usr_id').val());
 				var newThwd    = $.trim($('#new_thwd').val());
 				var thwdQ      = $.trim($('#thwd_q').val());
@@ -700,6 +913,38 @@
 		        });	
 			}
 			
+			function joinProc() {
+				var joinEmail = $.trim($('#join_email').val());
+				var joinThwd = $.trim($('#join_thwd').val());
+				var joinNickname = $.trim($('#join_nickname').val());
+				
+				var param = {
+					'join_email' : joinEmail,
+					'join_thwd' : joinThwd,
+					'join_nickname' : joinNickname
+				};
+				
+		        $.ajax({
+		            type: "POST",
+		            url: "${APP_ROOT}/login/join.do",
+		            data: param,
+		            dataType: "json",
+		            async: true,
+		            error:function(data, a, b){
+		            	alert('서버와의 연결이 원활하지 않습니다.');
+		            },
+		            success: function(result){
+				        $("#join-form").addClass("hide");
+						$("#login-form").removeClass("hide");
+						
+						if ("success" == result.status) {
+							showSmallBox(result.msg);
+					        $("#email").val(joinEmail);
+						}
+		            }
+		        });	
+			}
+			
 			function authenticationProcGo(result) {
 				$("#change_usr_id").val($("#usr_id").val());
 				
@@ -725,6 +970,7 @@
 			}
 			
 			function forgetProcGo() {
+				dataLayer.push({'event': 'find-pw-click'});
 				
 				$("#search_usr_id").val($("#usr_id").val());
 				
@@ -733,7 +979,23 @@
 		        
 				$("#search_usr_id").focus();
 			}
+			
+			function joinProcGo() {
+				dataLayer.push({'event': 'join-click'});
+				
+				$("#login-form").addClass("hide");
+		        $("#join-form").removeClass("hide");
+			}
 		</script>
 
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-YRLXXYRZXT"></script>
+		<script>
+		  window.dataLayer = window.dataLayer || [];
+		  function gtag(){dataLayer.push(arguments);}
+		  gtag('js', new Date());
+		
+		  gtag('config', 'G-YRLXXYRZXT');
+		</script>
 	</body>
 </html>

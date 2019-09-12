@@ -8,6 +8,10 @@
 		<script type="text/javascript">
 			// plugin 화면 초기화
 			function initPlugin() {
+				dataLayer.push({
+				  'pageCategory': 'WinDataModify',
+				  'visitorType': $("#authTask").val()
+				});
 				
 				$.validator.addMethod("lessThan", function(value, element, params){
 					// true : SUCCESS , false : FAIL 

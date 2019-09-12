@@ -1,6 +1,8 @@
 			<!-- MAIN CONTENT -->
 			<div id="content">
 				<input type="hidden" id="isPlugin" value="Y" />
+				<input type="hidden" id="isLogin" value="${isLogin?if_exists}" />
+				<input type="hidden" id="checkMsg" value="${checkMsg?if_exists}" />
 
 				<div class="row">
 					<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">

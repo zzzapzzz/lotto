@@ -9,6 +9,11 @@
 			
 			$(document).ready(function() {
 				pageSetUp();
+				
+				dataLayer.push({
+				  'pageCategory': 'TakeStatMain',
+				  'visitorType': $("#authTask").val()
+				});
 
 			});
 

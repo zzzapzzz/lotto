@@ -16,6 +16,11 @@
 				
 				setWinCountList();
 				
+				dataLayer.push({
+				  'pageCategory': 'WinDataMain',
+				  'visitorType': $("#authTask").val()
+				});
+				
 			});
 
 			function initPlugin() {

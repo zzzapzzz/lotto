@@ -9,6 +9,11 @@
 			// plugin 화면 초기화
 			function initPlugin() {
 				
+				dataLayer.push({
+				  'pageCategory': 'WinDataInsert',
+				  'visitorType': $("#authTask").val()
+				});
+				
 				//회차값 자동설정
 				setNextWinData();
 				
