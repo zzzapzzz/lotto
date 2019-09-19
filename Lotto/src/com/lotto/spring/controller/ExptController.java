@@ -151,7 +151,7 @@ public class ExptController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] SM예상번호 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "expt/SmExptMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "expt/plugins/SmExptMain_Plugin");
@@ -187,7 +187,7 @@ public class ExptController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] SM예상번호 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "expt/SmExptMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -219,7 +219,7 @@ public class ExptController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] SM예상번호 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "expt/plugins/SmExptMain_Plugin");
 			

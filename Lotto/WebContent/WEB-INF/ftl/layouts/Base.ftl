@@ -183,10 +183,10 @@
 		<![endif]-->
 
 		<!-- MAIN APP JS FILE -->
-		<script src="${JS_ROOT}/app.min.js"></script>
+		<script src="${JS_ROOT}/app.min.js?v=0.01"></script>
 		
 		<!-- SM Lotto COMMON JS FILE -->
-		<script src="${JS_ROOT}/common.min.js"></script>
+		<script src="${JS_ROOT}/common.min.js?v=0.02"></script>
 		<script src="${JS_ROOT}/plugin/jquery-form/jquery-form.min.js"></script>
 		
 		<script>

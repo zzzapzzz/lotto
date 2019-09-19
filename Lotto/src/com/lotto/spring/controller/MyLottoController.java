@@ -84,7 +84,7 @@ public class MyLottoController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] MY로또 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "mylotto/MyLottoMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "mylotto/plugins/MyLottoMain_Plugin");

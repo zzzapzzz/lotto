@@ -215,7 +215,7 @@ public class DefaultSMController extends DefaultController {
     	modelMap.addAttribute("GnbMenuList", userInfo.getGNBmenulist());
     	modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, strPageUri));
     	
-    	// TODO 로그인 체크, 권한체크
+    	// 로그인 체크, 권한체크
     	int loginUserId = userInfo.getUser_no();
 		modelMap.addAttribute("isLogin", userInfo.getIsLogin());
 		if (!"Y".equals(userInfo.getIsLogin())) {
@@ -240,10 +240,17 @@ public class DefaultSMController extends DefaultController {
 					modelMap.addAttribute("checkMsg", "유료 회원만 사용할 수 있습니다.");
 					modelMap.addAttribute("status", "need_paid");
 				} else {
-					log.info("["+loginUserId+"]\t잘못된 접근입니다.");
-					modelMap.addAttribute("checkMsg", "잘못된 접근입니다.");
-					modelMap.addAttribute("status", "wrong_access");
+					if (userInfo.isAdmin()) {
+						log.info("["+loginUserId+"]\t시스템관리자 입니다.");
+						modelMap.addAttribute("status", "authenticatedUser");
+					} else {
+						log.info("["+loginUserId+"]\t잘못된 접근입니다.");
+						modelMap.addAttribute("checkMsg", "잘못된 접근입니다.");
+						modelMap.addAttribute("status", "wrong_access");
+					}
 				}
+			} else {
+				modelMap.addAttribute("status", "authenticatedUser");	
 			}
 		}
     }

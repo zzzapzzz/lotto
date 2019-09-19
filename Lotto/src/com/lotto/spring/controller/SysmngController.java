@@ -100,7 +100,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 회원관리 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/UserMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/UserMain_Plugin");
@@ -136,7 +136,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 회원관리 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/UserMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -169,7 +169,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 회원관리 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/UserMain_Plugin");
 			
@@ -406,7 +406,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 당첨번호관리 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/WinDataMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/WinDataMain_Plugin");
@@ -442,7 +442,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 당첨번호관리 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/WinDataMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -475,7 +475,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 당첨번호관리 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/WinDataMain_Plugin");
 			
@@ -563,7 +563,7 @@ public class SysmngController extends DefaultSMController {
 			long loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 당첨번호 등록 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			//CurrMenuInfo overwrite
 			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/windatamng"));
@@ -599,7 +599,7 @@ public class SysmngController extends DefaultSMController {
 			long loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 당첨번호 등록 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			//CurrMenuInfo overwrite
 			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/windatamng"));
@@ -913,7 +913,7 @@ public class SysmngController extends DefaultSMController {
 			long loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 당첨번호 수정 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			//CurrMenuInfo overwrite
 			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/windatamng"));
@@ -953,7 +953,7 @@ public class SysmngController extends DefaultSMController {
 			long loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 당첨번호 수정 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			//CurrMenuInfo overwrite
 			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/windatamng"));
@@ -1071,7 +1071,7 @@ public class SysmngController extends DefaultSMController {
 			long loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 당첨번호 분석 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			// 당첨번호 전체 목록 조회
 			WinDataDto winDataDto = new WinDataDto();
@@ -1131,7 +1131,7 @@ public class SysmngController extends DefaultSMController {
 			long loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 당첨번호 분석 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			//CurrMenuInfo overwrite
 			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/windatamng"));
@@ -1167,7 +1167,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 예상번호관리 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ExptDataMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/ExptDataMain_Plugin");
@@ -1203,7 +1203,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 예상번호관리 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 
 			// 당첨번호 전체 목록 조회
 			WinDataDto winDataDto = new WinDataDto();
@@ -1278,7 +1278,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 예상번호관리 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/ExptDataMain_Plugin");
 			
@@ -1436,7 +1436,7 @@ public class SysmngController extends DefaultSMController {
 			long loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 예상번호 분석 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			// 당첨번호 전체 목록 조회
 			WinDataDto winDataDto = new WinDataDto();
@@ -1501,7 +1501,7 @@ public class SysmngController extends DefaultSMController {
 			long loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 예상번호 분석 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			//CurrMenuInfo overwrite
 			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/exptdatamng"));
@@ -1536,7 +1536,7 @@ public class SysmngController extends DefaultSMController {
 			long loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 전회차 매칭결과 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			// 당첨번호 전체 목록 조회
 			WinDataDto winDataDto = new WinDataDto();
@@ -1592,7 +1592,7 @@ public class SysmngController extends DefaultSMController {
 			long loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 전회차 매칭결과 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			//CurrMenuInfo overwrite
 			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/exptdatamng"));
@@ -1991,7 +1991,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 서비스관리 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ServiceMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/ServiceMain_Plugin");
@@ -2027,7 +2027,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 서비스관리 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ServiceMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -2060,7 +2060,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 서비스관리 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/ServiceMain_Plugin");
 			
@@ -2093,7 +2093,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 프로모션관리 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/PromotionMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/PromotionMain_Plugin");
@@ -2129,7 +2129,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 프로모션관리 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/PromotionMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -2162,7 +2162,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 프로모션관리 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/PromotionMain_Plugin");
 			
@@ -2195,7 +2195,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 사용자요청관리 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/RequestMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/RequestMain_Plugin");
@@ -2231,7 +2231,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 사용자요청관리 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/RequestMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -2264,7 +2264,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 사용자요청관리 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/RequestMain_Plugin");
 			
@@ -2296,7 +2296,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 업무권한관리 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/AuthTaskMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/AuthTaskMain_Plugin");
@@ -2332,7 +2332,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 업무권한관리 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/AuthTaskMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -2365,7 +2365,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 업무권한관리 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/AuthTaskMain_Plugin");
 			
@@ -2807,7 +2807,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 메뉴권한관리 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/AuthMenuMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "sysmng/plugins/AuthMenuMain_Plugin");
@@ -2843,7 +2843,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 메뉴권한관리 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/AuthMenuMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -2876,7 +2876,7 @@ public class SysmngController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 메뉴권한관리 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/AuthMenuMain_Plugin");
 			

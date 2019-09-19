@@ -414,8 +414,8 @@
 		<![endif]-->
 
 		<!-- MAIN APP JS FILE -->
-		<script src="${JS_ROOT}/app.min.js"></script>
-		<script src="${JS_ROOT}/common.min.js"></script>
+		<script src="${JS_ROOT}/app.min.js?v=0.01"></script>
+		<script src="${JS_ROOT}/common.min.js?v=0.02"></script>
 
 		<script type="text/javascript">
 			runAllForms();

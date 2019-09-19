@@ -50,7 +50,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 예상패턴 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/ExptPtrnMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "pattern/plugins/ExptPtrnMain_Plugin");
@@ -86,7 +86,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 예상패턴 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/ExptPtrnMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -118,7 +118,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 예상패턴 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/plugins/ExptPtrnMain_Plugin");
 			
@@ -151,7 +151,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 홀짝패턴 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/OddEvenPtrnMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "pattern/plugins/OddEvenPtrnMain_Plugin");
@@ -187,7 +187,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 홀짝패턴 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/OddEvenPtrnMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -219,7 +219,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 홀짝패턴 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/plugins/OddEvenPtrnMain_Plugin");
 			
@@ -252,7 +252,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 저고패턴 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/LowHighPtrnMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "pattern/plugins/LowHighPtrnMain_Plugin");
@@ -288,7 +288,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 저고패턴 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/LowHighPtrnMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -320,7 +320,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 저고패턴 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/plugins/LowHighPtrnMain_Plugin");
 			
@@ -353,7 +353,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 총합패턴 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/TotalPtrnMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "pattern/plugins/TotalPtrnMain_Plugin");
@@ -389,7 +389,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 총합패턴 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/TotalPtrnMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -421,7 +421,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 총합패턴 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/plugins/TotalPtrnMain_Plugin");
 			
@@ -454,7 +454,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 끝수합패턴 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request); 
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/EndNumPtrnMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "pattern/plugins/EndNumPtrnMain_Plugin");
@@ -490,7 +490,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 끝수합패턴 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/EndNumPtrnMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -522,7 +522,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 끝수합패턴 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/plugins/EndNumPtrnMain_Plugin");
 			
@@ -555,7 +555,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] AC패턴 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/AcPtrnMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "pattern/plugins/AcPtrnMain_Plugin");
@@ -591,7 +591,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] AC패턴 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/AcPtrnMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -623,7 +623,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] AC패턴 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/plugins/AcPtrnMain_Plugin");
 			
@@ -656,7 +656,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 회차합패턴 화면 호출");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/CountSumPtrnMain");
 			modelMap.addAttribute(PLUGIN_PAGE, "pattern/plugins/CountSumPtrnMain_Plugin");
@@ -692,7 +692,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 회차합패턴 화면 호출(ajax)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/CountSumPtrnMain");
 			modelMap.addAttribute("isAjax", "Y");
@@ -724,7 +724,7 @@ public class PatternController extends DefaultSMController {
 			int loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 회차합패턴 화면 호출(plugin)");
 			
-			setModelMap(modelMap, request);
+			setModelMapWithAuthCheck(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "pattern/plugins/CountSumPtrnMain_Plugin");
 			

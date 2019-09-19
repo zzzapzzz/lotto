@@ -59,3 +59,75 @@ function showSmallBox (title) {
 		timeout : 4000
 	});
 }
+
+/*
+ * type
+ * W : warning
+ * B : bell
+ * S : shield
+ * C : check
+ */
+function showBigBox (title, content, type) {
+	if (type == "W") {
+		$.bigBox({
+			title : title,
+			content : content,
+			color : "#C46A69",
+			timeout : 4000,
+			icon : "fa fa-warning shake animated"
+			// number : "1",
+		});
+	} else if (type == "B") {
+		$.bigBox({
+			title : title,
+			content : content,
+			color : "#3276B1",
+			timeout : 4000,
+			icon : "fa fa-bell swing animated"
+		});
+	} else if (type == "S") {
+		$.bigBox({
+			title : title,
+			content : content,
+			color : "#C79121",
+			timeout: 4000,
+			icon : "fa fa-shield fadeInLeft animated"
+		});
+	} else if (type == "C") {
+		$.bigBox({
+			title : title,
+			content : content,
+			color : "#739E73",
+			timeout: 4000,
+			icon : "fa fa-check"
+		//}
+		//, function() {
+		//	closedthis();
+		});
+	}
+}
+
+function showMessageBox (title, content, type, url) {
+	if (type == "C") {
+		$.SmartMessageBox({
+			title : title,
+			content : content,
+			buttons : '[아니오][네]'
+		}, function(ButtonPressed) {
+			if (ButtonPressed === "Yes") {
+				showSmallBox($('#checkMsg').val());
+				window.location.href = url;
+			}
+			if (ButtonPressed === "No") {
+				$.smallBox({
+					title : "아니오",
+					content : "<i class='fa fa-clock-o'></i> <i>알겠습니다...</i>",
+					color : "#C46A69",
+					iconSmall : "fa fa-times fa-2x fadeInRight animated",
+					timeout : 4000
+				});
+			}
+
+		});
+	}
+}

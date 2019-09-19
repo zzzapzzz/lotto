@@ -6,6 +6,7 @@
 				<input type="hidden" id="isPlugin" value="Y" />
 				<input type="hidden" id="isLogin" value="${isLogin?if_exists}" />
 				<input type="hidden" id="checkMsg" value="${checkMsg?if_exists}" />
+				<input type="hidden" id="status" value="${status?if_exists}" />
 				<input type="hidden" id="win_count" value="${last_count?if_exists}" />
 				<input type="hidden" id="last_count" value="${last_count?if_exists}" />
 
