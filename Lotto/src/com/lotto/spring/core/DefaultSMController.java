@@ -182,6 +182,9 @@ public class DefaultSMController extends DefaultController {
 	    strPageUri = strPageUri.replace("ajax", "");
 	    setActiveMenuSetting(userInfo, strPageUri);
 	    
+	    // 기본 설정 시 anonymous 권한허용 처리 2019.09.23 
+	    modelMap.addAttribute("status", "authenticatedUser");
+	    
 	    // Content Page - File which will included in tiles definition
 	    modelMap.addAttribute("IsAdmin",  isAdmin);
 	    modelMap.addAttribute("UserInfo",  userInfo);

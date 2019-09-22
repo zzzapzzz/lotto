@@ -9,6 +9,7 @@
 			var isAction = 'N';
 			
 			$(document).ready(function() {
+				console.log('WinMain');
 				var isAjax = "${isAjax?if_exists}";
 				if ("N" == isAjax) {
 					initPlugin();
@@ -29,6 +30,7 @@
 			}
 			
 			function setWinCountList() {
+				console.log('setWinCountList');
 				var param = {
 					page: '1'
 				};

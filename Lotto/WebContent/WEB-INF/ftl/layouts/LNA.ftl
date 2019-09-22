@@ -78,23 +78,17 @@
 					success: function(result){
 						$('#main').html(result);
 						
-						console.log('check status', $('#status').val());
-						
 						if ($('#status').val() == 'authenticatedUser') {
-							console.log('authenticatedUser');
 							var isPlugin = $("#isPlugin").val();
 							if ("Y" == isPlugin) {
 								openPlugin(cid);
 							}
 						} else {
 							if ($('#status').val() == 'need_login') {
-								console.log('need_login');
 								window.location.href = "/fhrmdlsapdls.do?isLogin=" + $('#isLogin').val();
 							} else if ($('#status').val() == 'need_paid') {
-								console.log('need_paid');
 								showMessageBox('유료회원 전용', '유료 회원만 사용할 수 있습니다. 결재안내 페이지로 이동하시겠습니까?', 'C', 'url');
 							} else {
-								console.log('else');
 								showBigBox($('Wrong Access','#checkMsg').val(), 'W');
 							}
 						}
@@ -128,23 +122,17 @@
 					success: function(result){
 						$('#main').html(result);
 						
-						console.log('check status', $('#status').val());
-						
 						if ($('#status').val() == 'authenticatedUser') {
-							console.log('authenticatedUser');
 							var isPlugin = $("#isPlugin").val();
 							if ("Y" == isPlugin) {
 								openPlugin(cid);
 							}
 						} else {
 							if ($('#status').val() == 'need_login') {
-								console.log('need_login');
 								window.location.href = "/fhrmdlsapdls.do?isLogin=" + $('#isLogin').val();
 							} else if ($('#status').val() == 'need_paid') {
-								console.log('need_paid');
 								showMessageBox('유료회원 전용', '유료 회원만 사용할 수 있습니다. 결재안내 페이지로 이동하시겠습니까?', 'C', 'url');
 							} else {
-								console.log('else');
 								showBigBox($('Wrong Access','#checkMsg').val(), 'W');
 							}
 						}
