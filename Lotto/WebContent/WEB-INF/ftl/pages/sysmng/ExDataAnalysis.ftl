@@ -229,8 +229,16 @@
 							<table class="table table-bordered" style="font-size:15px; text-align: center; margin-left: auto; margin-right: auto;">
 								<thead>
 									<tr>
-										<th style="width:20%;">번호</th>
-										<th style="width:80%;">궁합수</th>
+										<th style="width:4%;">번호</th>
+										<th style="width:16%;">궁합수</th>
+										<th style="width:4%;">번호</th>
+										<th style="width:16%;">궁합수</th>
+										<th style="width:4%;">번호</th>
+										<th style="width:16%;">궁합수</th>
+										<th style="width:4%;">번호</th>
+										<th style="width:16%;">궁합수</th>
+										<th style="width:4%;">번호</th>
+										<th style="width:16%;">궁합수</th>
 									</tr>
 								</thead>
 								<tbody id="mcNumberList">

@@ -411,13 +411,49 @@
 						if (result.status == "success") {
 							if (result.mcNumList.length > 0) {
 								
+								for (var i = 0 ; i < 10 ; i++) {
+									var mcNumberList = "";
+									mcNumberList += '<tr>';
+									
+									for (var j = 0 ; j < 5 ; j++) {
+										mcNumberList += '<td>';
+										if (i > 4 && j == 4) {
+											mcNumberList += '';
+										} else {
+											mcNumberList += result.mcNumList[i + (j*10)].num;
+										}
+										mcNumberList += '</td><td style="text-align: left;">';
+										if (result.mcNumList[i].mc_num.length > 0) {
+											if (i > 4 && j == 4) {
+												mcNumberList += '';
+											} else {
+												mcNumberList += result.mcNumList[i + (j*10)].mc_num;
+											} 
+										} else {
+											mcNumberList += '궁합수가 없습니다.';
+										}
+										mcNumberList += '</td>';
+									}
+									
+									mcNumberList += '</tr>';
+									$("#mcNumberList").append(mcNumberList);
+								}
+								
+								
+								
+								
+								
+								/*
 								for (var i = 0 ; i < result.mcNumList.length ; i++) {
 									var mcNumberList = "";
 									mcNumberList += '<tr><td>';
-									mcNumberList += '<img src="${IMG_ROOT}/ballnumber/ball_' + result.mcNumList[i].num +'.png" alt="' + result.mcNumList[i].num + '"/>';
+									// mcNumberList += '<img src="${IMG_ROOT}/ballnumber/ball_' + result.mcNumList[i].num +'.png" alt="' + result.mcNumList[i].num + '"/>';
+									mcNumberList += result.mcNumList[i].num;
 									mcNumberList += '</td><td style="text-align: left;">';
 									
 									if (result.mcNumList[i].mc_num.length > 0) {
+										
+										mcNumberList += result.mcNumList[i].mc_num; 
 										if (result.mcNumList[i].mc_num.indexOf(",") > -1) {
 											var mcNum = result.mcNumList[i].mc_num.split(",");
 											for (var j = 0 ; j < mcNum.length ; j++) {
@@ -432,6 +468,7 @@
 									mcNumberList += '</td></tr>';
 									$("#mcNumberList").append(mcNumberList);
 								}
+								*/
 							} else {
 								var mcNumberList = "";
 			            		mcNumberList += '<tr><td>';
