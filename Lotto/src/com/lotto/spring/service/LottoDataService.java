@@ -4425,7 +4425,7 @@ public class LottoDataService extends DefaultService {
 			notContainMsg += "[" + winNotContainList + "]<br>";
 			notContainMsg += "총 " + notContainListCnt + "개의 번호가 당첨번호로 " + (notContainListCnt==6?"모두 ":"") + "출현했습니다.<br>";
 		} else {
-			notContainMsg += "당첨번호는 존재하지 않았습니다.<br>";
+			notContainMsg += "당첨번호는 출현하지 않았습니다.<br>";
 		}
 		notContainMsg += "<br>";
 		

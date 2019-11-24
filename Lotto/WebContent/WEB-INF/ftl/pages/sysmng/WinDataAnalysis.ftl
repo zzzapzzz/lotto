@@ -33,8 +33,8 @@
 								1등은 총 00명이 당첨되었고,<br>
 								당첨금은 약 00억 0천만 원입니다.<br>
 								<br>
-								지난주 로또 ${last_count?if_exists}회차 당첨번호를<br>
-								아래와 같이 간략하게 분석해 보았습니다.<br>
+								지난주 #로또${last_count?if_exists}회당첨번호 분석 정보는<br>
+								아래의 내용을 참고하세요.<br>
 								<br>
 								<br>
 							</div>
@@ -171,7 +171,7 @@
 								
 								<br>								
 								다음 포스트는<br>
-								${ex_count?if_exists}회 로또예상번호<br>
+								#로또${ex_count?if_exists}회예상번호<br>
 								분석 내용으로 찾아뵙겠습니다.<br>
 								<br>
 								이웃을 신청하시면,<br>

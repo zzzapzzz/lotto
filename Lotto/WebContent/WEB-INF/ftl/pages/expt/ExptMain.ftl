@@ -4,6 +4,7 @@
 				<input type="hidden" id="isLogin" value="${isLogin?if_exists}" />
 				<input type="hidden" id="checkMsg" value="${checkMsg?if_exists}" />
 				<input type="hidden" id="status" value="${status?if_exists}" />
+				<input type="hidden" id="ex_count" value="${ex_count?if_exists}" />
 
 				<div class="row">
 					<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
@@ -11,26 +12,30 @@
 					</div>
 				</div>
 				
+				<div class="row">
+					<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">
+						<h3><strong>로또 ${ex_count?if_exists}회차 예상번호</strong></h3>
+					</div>
+				</div>
+				
 				<!-- widget grid -->
 				<section id="widget-grid" class="">
 
+					<!--					
 					<div class="well">
 					</div>
+					-->
+					
+					<span id="search10" class="btn btn-success" onclick="javascript:search10();"><i class="fa fa-search"></i> 10조합</span>
+					<span id="search20" class="btn btn-success" onclick="javascript:search20();"><i class="fa fa-search"></i> 20조합</span>
+					<span id="search30" class="btn btn-success" onclick="javascript:search30();"><i class="fa fa-search"></i> 30조합</span>
 					
 					<!-- row -->
 					<div class="row">
-
-						<!-- NEW WIDGET START -->
-						<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-
-							<table id="jqgrid"></table>
-							<div id="pjqgrid"></div>
-
-						</article>
-						<!-- WIDGET END -->
-
+						<div id="ex_numbers" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
+							
+						</div>
 					</div>
-
 					<!-- end row -->
 
 				</section>

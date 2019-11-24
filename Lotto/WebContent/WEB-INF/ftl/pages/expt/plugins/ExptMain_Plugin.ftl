@@ -14,7 +14,11 @@
 				  'pageCategory': 'ExptMain',
 				  'visitorType': $("#authTask").val()
 				});
+				
+				search10();
 
 			});
 
+			function initPlugin() {
+			}
 		</script>
