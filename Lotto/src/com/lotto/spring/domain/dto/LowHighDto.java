@@ -14,6 +14,9 @@ public class LowHighDto extends DefaultDto{
 	/** 비율 (RATIO) */
 	private String ratio;
 	
+	/** 출현회수 (통계) */
+	private int appearCnt;
+	
 	public int getWin_count() {
 		return win_count;
 	}
@@ -31,5 +34,11 @@ public class LowHighDto extends DefaultDto{
 	}
 	public void setRatio(String ratio) {
 		this.ratio = ratio;
+	}
+	public int getAppearCnt() {
+		return appearCnt;
+	}
+	public void setAppearCnt(int appearCnt) {
+		this.appearCnt = appearCnt;
 	}
 }

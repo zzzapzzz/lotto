@@ -16,6 +16,11 @@ public class TotalDto extends DefaultDto{
 	/** 총합범위 (TOTAL_RANGE) */
 	private String total_range;
 	
+	/** 총합 (통계) */
+	private int total;
+	/** 출현회수 (통계) */
+	private int appearCnt;
+	
 	public int getWin_count() {
 		return win_count;
 	}
@@ -39,6 +44,18 @@ public class TotalDto extends DefaultDto{
 	}
 	public void setTotal_range(String total_range) {
 		this.total_range = total_range;
+	}
+	public int getTotal() {
+		return total;
+	}
+	public void setTotal(int total) {
+		this.total = total;
+	}
+	public int getAppearCnt() {
+		return appearCnt;
+	}
+	public void setAppearCnt(int appearCnt) {
+		this.appearCnt = appearCnt;
 	}
 	
 	

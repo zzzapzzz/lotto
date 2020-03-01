@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.lotto.spring.domain.dto.ExDataDto;
+import com.lotto.spring.domain.dto.ExcludeDto;
 import com.lotto.spring.domain.dto.ExptPtrnAnlyDto;
 import com.lotto.spring.domain.dto.MyLottoSaveNumDto;
 import com.lotto.spring.domain.dto.WinDataAnlyDto;
@@ -71,7 +72,7 @@ public final class LottoUtil {
 			numbers = LottoUtil.getNumbers((ExDataDto)data);
 		} else if (data instanceof WinDataAnlyDto) {
 			numbers = LottoUtil.getNumbers((WinDataAnlyDto)data);
-		} else if (data instanceof WinDataAnlyDto) {
+		} else if (data instanceof MyLottoSaveNumDto) {
 			numbers = LottoUtil.getNumbers((MyLottoSaveNumDto)data);
 		} else if (data instanceof int[]){
 			numbers = (int[])data;
@@ -138,6 +139,52 @@ public final class LottoUtil {
 	}
 	
 	/**
+	 * 번호 배열 가져오기 (제외수)
+	 * 2020.02.02
+	 * 
+	 * @param data
+	 * @return
+	 */
+	public static int[] getNumbers(ExcludeDto data) {
+		
+		String excludeNum = data.getExclude_num();
+		excludeNum = excludeNum.replaceAll(" ", "");
+		String[] excludeNumArr = excludeNum.split(",");
+		
+		int[] numbers = new int[excludeNumArr.length];
+		for (int i = 0; i < numbers.length; i++) {
+			numbers[i] = Integer.parseInt(excludeNumArr[i]);
+		}
+
+		return numbers;
+	}
+	
+	/**
+	 * 문자열을 int 배열 가져오기
+	 * 2020.02.02
+	 * 
+	 * @param data
+	 * @return
+	 */
+	public static int[] getNumbers(String data) {
+		
+		int[] numbers = null;
+		
+		if (data != null) {
+			if (data.length() > 0) {
+				String[] dataArr = data.split(",");
+				
+				numbers = new int[dataArr.length];
+				for (int i = 0; i < numbers.length; i++) {
+					numbers[i] = Integer.parseInt(dataArr[i]);
+				}
+			}
+		}
+		
+		return numbers;
+	}
+	
+	/**
 	 * 번호 배열 가져오기
 	 * 
 	 * @param data
@@ -151,7 +198,7 @@ public final class LottoUtil {
 		numbers[3] = data.getNum4();
 		numbers[4] = data.getNum5();
 		numbers[5] = data.getNum6();
-
+		
 		return numbers;
 	}
 
@@ -533,5 +580,31 @@ public final class LottoUtil {
 		} else {
 			return 0.0;
 		}
+	}
+	
+	/**
+	 * @description <div id=description><b>통계 Ticks Step Size 구하기</b></div>
+     *              <div id=detail>Chart.js에서 사용할 차트의 Ticks Range를 구하기 위한 Step Size 구하기.</div>
+     * @param i 계산하기 위한 Max 수치
+	 * @return
+	 * @since 2020.02.23
+	 */
+	public static double getTicksStepSize(int i){
+		double stepSize = 0.0;
+		if (i <= 5) {
+			stepSize = 0.5;
+		} else if (i <= 10) {
+			stepSize = 1.0;
+		} else if (i <= 20) {
+			stepSize = 2.0;
+		} else {
+			int quotient = i / 10;
+			int remainder = i % 10;
+			if (remainder > 0) {
+				quotient++;
+			}
+			stepSize = 10 * getTicksStepSize(quotient);
+		}
+		return stepSize;
 	}
 }

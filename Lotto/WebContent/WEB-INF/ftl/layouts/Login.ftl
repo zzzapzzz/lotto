@@ -79,7 +79,7 @@
 		<header id="header">
 
 			<div id="logo-group">
-				<span id="logo"> <img src="${IMG_ROOT}/logo.png" alt="Logo Image"> </span>
+				<span id="logo"> <a href="/"><img src="${IMG_ROOT}/logo.png" alt="Logo Image"></a> </span>
 			</div>
 			
 			<!--

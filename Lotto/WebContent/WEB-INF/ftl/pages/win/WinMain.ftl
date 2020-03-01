@@ -100,7 +100,7 @@
 						</table>
 					</div>
 					
-					<div class="row">
+					<div class="row hide">
 						<div class="content">
 							<!-- 저고 비율 정보 -->
 							<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 tac">

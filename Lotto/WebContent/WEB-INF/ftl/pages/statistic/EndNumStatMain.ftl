@@ -1,3 +1,11 @@
+			<#assign JS_ROOT = SystemInfo.js_root>
+			<#assign IMG_ROOT = SystemInfo.img_root>
+			
+			<!-- chart.js -->
+			<script src="${JS_ROOT}/plugin/chartjs/Chart.min.js"></script>
+			<script src="${JS_ROOT}/plugin/chartjs/Chart.bundle.js"></script>
+			<script src="${JS_ROOT}/plugin/chartjs/utils.js"></script>
+			
 			<!-- MAIN CONTENT -->
 			<div id="content">
 				<input type="hidden" id="isPlugin" value="Y" />
@@ -19,18 +27,12 @@
 					
 					<!-- row -->
 					<div class="row">
-
-						<!-- NEW WIDGET START -->
-						<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-
-							<table id="jqgrid"></table>
-							<div id="pjqgrid"></div>
-
-						</article>
-						<!-- WIDGET END -->
-
+						<div class="content">
+							<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+								<canvas id="chartArea" width="500" height="1000"></canvas>
+							</div>
+						</div>
 					</div>
-
 					<!-- end row -->
 
 				</section>

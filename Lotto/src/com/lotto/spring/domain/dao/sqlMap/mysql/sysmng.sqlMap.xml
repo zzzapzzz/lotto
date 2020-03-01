@@ -443,7 +443,7 @@
 			, NOT_MC_NUM
 		FROM TB_MCNUM_INFO
 		WHERE WIN_COUNT = #{win_count}
-		ORDER BY NUM		
+		ORDER BY NUM
 	</select>
 	
 	<!-- 저고비율정보 등록 -->

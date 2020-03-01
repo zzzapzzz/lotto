@@ -41,7 +41,7 @@
 	
 								var padding = -15;
 								var position = element.tooltipPosition();
-								ctx.fillText(dataString, position.x, position.y - (fontSize / 2) - padding);
+								ctx.fillText(dataString, position.x, position.y - fontSize + 5);
 							});
 						}
 					});
@@ -408,6 +408,7 @@
 		            	}
 
 						$("#mcNumberList").html("");
+						$("#mcNumberList2").html("");
 						if (result.status == "success") {
 							if (result.mcNumList.length > 0) {
 								
@@ -415,7 +416,7 @@
 									var mcNumberList = "";
 									mcNumberList += '<tr>';
 									
-									for (var j = 0 ; j < 5 ; j++) {
+									for (var j = 0 ; j < 5 - 2 ; j++) {
 										mcNumberList += '<td>';
 										if (i > 4 && j == 4) {
 											mcNumberList += '';
@@ -437,6 +438,31 @@
 									
 									mcNumberList += '</tr>';
 									$("#mcNumberList").append(mcNumberList);
+									
+									var mcNumberList2 = "";
+									mcNumberList2 += '<tr>';
+									for (var j = 0 + 3 ; j < 5 ; j++) {
+										mcNumberList2 += '<td>';
+										if (i > 4 && j == 4) {
+											mcNumberList2 += '';
+										} else {
+											mcNumberList2 += result.mcNumList[i + (j*10)].num;
+										}
+										mcNumberList2 += '</td><td style="text-align: left;">';
+										if (result.mcNumList[i].mc_num.length > 0) {
+											if (i > 4 && j == 4) {
+												mcNumberList2 += '';
+											} else {
+												mcNumberList2 += result.mcNumList[i + (j*10)].mc_num;
+											} 
+										} else {
+											mcNumberList2 += '궁합수가 없습니다.';
+										}
+										mcNumberList2 += '</td>';
+									}
+									
+									mcNumberList2 += '</tr>';
+									$("#mcNumberList2").append(mcNumberList2);
 								}
 								
 								

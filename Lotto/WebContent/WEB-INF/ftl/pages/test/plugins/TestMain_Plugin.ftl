@@ -26,6 +26,23 @@
 				$("#testNumbersRange").click(numbersRangeTest);
 				$("#testZeroCntRange").click(zeroCntRangeTest);
 				$("#insertAllAcInfo").click(insertAllAcInfoGo);
+				$("#testExclude").click(excludeTest);
+				$("#testExcludeCount").click(excludeCountTest);
+				
+				/*
+				$("#testTheory1").click(function(){
+					testTheory(1);
+				});
+				$("#testTheory2").click(testTheory(2));
+				$("#testTheory3").click(testTheory(3));
+				$("#testTheory4").click(testTheory(4));
+				$("#testTheory5").click(testTheory(5));
+				$("#testTheory6").click(testTheory(6));
+				$("#testTheory7").click(testTheory(7));
+				$("#testTheory8").click(testTheory(8));
+				$("#testTheory9").click(testTheory(9));
+				$("#testTheory10").click(testTheory(10));
+				*/
 				
 				// 총합 테스트
 				totalTest();
@@ -232,4 +249,102 @@
 				});
 			}
 			
+			// 임시추출 테스트
+			function user001Test() {
+				$.ajax({
+					type: "POST",
+					url: "/test/user001Test.do",
+					dataType: "json",
+					async: false,
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+			           		location.href = "/index.do"; 
+			        	}
+					}
+				});
+			}
+			
+			// 제외수 테스트
+			function excludeTest() {
+				$.ajax({
+					type: "POST",
+					url: "/test/testExclude.do",
+					dataType: "json",
+					async: false,
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+			           		location.href = "/index.do"; 
+			        	}
+					}
+				});
+			}
+			
+			// 특정회차 제외수 테스트
+			function excludeCountTest() {
+				var param = {
+					ex_count : $("#testExcludeCount").val()
+				};
+				
+				$.ajax({
+					type: "POST",
+					url: "/test/testExcludeCount.do",
+					data: param,
+					dataType: "json",
+					async: false,
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+			           		location.href = "/index.do"; 
+			        	}
+					}
+				});
+			}
+			
+			// 나대길 검증
+			function testTheory(num) {
+				var param = {
+					fromCheckCount : $("#fromCheckCount").val()
+				};
+					
+				var url = "/test/testTheory" + num + ".do";
+				var allAppearCnt = "theory" + num + "AllAppearCnt"; 
+				var matchedCnt = "theory" + num + "MatchedCnt"; 
+				var matchedPer = "theory" + num + "MatchedPer"; 
+				
+				$.ajax({
+					type: "POST",
+					url: url,
+					data: param,
+					dataType: "json",
+					async: false,
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+			           		location.href = "/index.do"; 
+			        	}
+			        	
+			        	$("#"+allAppearCnt).text(result.allAppearCnt);
+			        	$("#"+matchedCnt).text(result.matchedCnt);
+			        	$("#"+matchedPer).text(result.matchedPer);
+					}
+				});
+			}
 		</script>

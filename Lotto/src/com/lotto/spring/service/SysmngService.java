@@ -853,6 +853,8 @@ public class SysmngService extends DefaultService {
 		if (exData != null) {
 			exData.setNumbers(LottoUtil.getNumbers(exData));
 			exData.setDifNumbers(LottoUtil.getDifNumbers(exData.getNumbers()));
+			exData.setTotal(LottoUtil.getTotal(exData));
+			exData.setSum_end_num(LottoUtil.getSumEndNumber(exData));
 		}
 		
 		return exData;
@@ -1912,4 +1914,5 @@ public class SysmngService extends DefaultService {
 //		}
 		return flag;
 	}
+	
 }

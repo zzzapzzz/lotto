@@ -16,6 +16,11 @@ public class EndNumDto extends DefaultDto{
 	/** 끝수합범위 (ENDNUM_RANGE) */
 	private String endnum_range;
 	
+	/** 끝수합 (통계) */
+	private int sumEndNum;
+	/** 출현회수 (통계) */
+	private int appearCnt;
+	
 	public int getWin_count() {
 		return win_count;
 	}
@@ -39,6 +44,18 @@ public class EndNumDto extends DefaultDto{
 	}
 	public void setEndnum_range(String endnum_range) {
 		this.endnum_range = endnum_range;
+	}
+	public int getSumEndNum() {
+		return sumEndNum;
+	}
+	public void setSumEndNum(int sumEndNum) {
+		this.sumEndNum = sumEndNum;
+	}
+	public int getAppearCnt() {
+		return appearCnt;
+	}
+	public void setAppearCnt(int appearCnt) {
+		this.appearCnt = appearCnt;
 	}
 	
 	

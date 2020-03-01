@@ -47,12 +47,90 @@
 					],
 					colModel : [
 						  {name:'win_count',index:'win_count',width:100, align:'center'}
-						, {name:'num1',index:'num1',width:100, align:'center'}
-						, {name:'num2',index:'num2',width:100, align:'center'}
-						, {name:'num3',index:'num3',width:100, align:'center'}
-						, {name:'num4',index:'num4',width:100, align:'center'}
-						, {name:'num5',index:'num5',width:100, align:'center'}
-						, {name:'num6',index:'num6',width:100, align:'center'}
+						, {name:'num1',index:'num1',width:100, align:'center', cellattr:function(rowId,tv,rowObject,cm,rdata){
+					  		//그리드 셀 색상 설정
+					  		if (rowObject.num1 <= 10) {
+					  			return 'style="background-color:#fedfa8;"'
+					  		} else if (rowObject.num1 <= 20) {
+					  			return 'style="background-color:#b2bede;"'
+					  		} else if (rowObject.num1 <= 30) {
+					  			return 'style="background-color:#f1b5ac;"'
+					  		} else if (rowObject.num1 <= 40) {
+					  			return 'style="background-color:#bfbfbf;"'
+					  		} else {
+					  			return 'style="background-color:#cce895;"'
+					  		}
+						}}
+						, {name:'num2',index:'num2',width:100, align:'center', cellattr:function(rowId,tv,rowObject,cm,rdata){
+					  		//그리드 셀 색상 설정
+					  		if (rowObject.num2 <= 10) {
+					  			return 'style="background-color:#fedfa8;"'
+					  		} else if (rowObject.num2 <= 20) {
+					  			return 'style="background-color:#b2bede;"'
+					  		} else if (rowObject.num2 <= 30) {
+					  			return 'style="background-color:#f1b5ac;"'
+					  		} else if (rowObject.num2 <= 40) {
+					  			return 'style="background-color:#bfbfbf;"'
+					  		} else {
+					  			return 'style="background-color:#cce895;"'
+					  		}
+						}}
+						, {name:'num3',index:'num3',width:100, align:'center', cellattr:function(rowId,tv,rowObject,cm,rdata){
+					  		//그리드 셀 색상 설정
+					  		if (rowObject.num3 <= 10) {
+					  			return 'style="background-color:#fedfa8;"'
+					  		} else if (rowObject.num3 <= 20) {
+					  			return 'style="background-color:#b2bede;"'
+					  		} else if (rowObject.num3 <= 30) {
+					  			return 'style="background-color:#f1b5ac;"'
+					  		} else if (rowObject.num3 <= 40) {
+					  			return 'style="background-color:#bfbfbf;"'
+					  		} else {
+					  			return 'style="background-color:#cce895;"'
+					  		}
+						}}
+						, {name:'num4',index:'num4',width:100, align:'center', cellattr:function(rowId,tv,rowObject,cm,rdata){
+					  		//그리드 셀 색상 설정
+					  		if (rowObject.num4 <= 10) {
+					  			return 'style="background-color:#fedfa8;"'
+					  		} else if (rowObject.num4 <= 20) {
+					  			return 'style="background-color:#b2bede;"'
+					  		} else if (rowObject.num4 <= 30) {
+					  			return 'style="background-color:#f1b5ac;"'
+					  		} else if (rowObject.num4 <= 40) {
+					  			return 'style="background-color:#bfbfbf;"'
+					  		} else {
+					  			return 'style="background-color:#cce895;"'
+					  		}
+						}}
+						, {name:'num5',index:'num5',width:100, align:'center', cellattr:function(rowId,tv,rowObject,cm,rdata){
+					  		//그리드 셀 색상 설정
+					  		if (rowObject.num5 <= 10) {
+					  			return 'style="background-color:#fedfa8;"'
+					  		} else if (rowObject.num5 <= 20) {
+					  			return 'style="background-color:#b2bede;"'
+					  		} else if (rowObject.num5 <= 30) {
+					  			return 'style="background-color:#f1b5ac;"'
+					  		} else if (rowObject.num5 <= 40) {
+					  			return 'style="background-color:#bfbfbf;"'
+					  		} else {
+					  			return 'style="background-color:#cce895;"'
+					  		}
+						}}
+						, {name:'num6',index:'num6',width:100, align:'center', cellattr:function(rowId,tv,rowObject,cm,rdata){
+					  		//그리드 셀 색상 설정
+					  		if (rowObject.num6 <= 10) {
+					  			return 'style="background-color:#fedfa8;"'
+					  		} else if (rowObject.num6 <= 20) {
+					  			return 'style="background-color:#b2bede;"'
+					  		} else if (rowObject.num6 <= 30) {
+					  			return 'style="background-color:#f1b5ac;"'
+					  		} else if (rowObject.num6 <= 40) {
+					  			return 'style="background-color:#bfbfbf;"'
+					  		} else {
+					  			return 'style="background-color:#cce895;"'
+					  		}
+						}}
 						, {name:'bonus_num',index:'bonus_num',width:100,align:'center'}
 					],
 					rowNum : 100,

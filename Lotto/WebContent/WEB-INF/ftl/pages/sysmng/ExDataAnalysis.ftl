@@ -30,8 +30,8 @@
 							안녕하세요. 심 서방입니다.<br>
 							<br>
 							이번 주 ${nextAnnounceDate?if_exists}에 발표되는<br>
-							로또 ${ex_count?if_exists}회차 예상번호를 예측해 봤습니다.<br>
-							<br>
+							#로또${ex_count?if_exists}회예상번호<br>
+							<br>							
 							1~${last_count?if_exists}회 로또 당첨번호를 분석하여<br>
 							일정한 패턴을 찾아<br>
 							가장 당첨 확률이 높은 규칙을 적용하여,<br>
@@ -39,15 +39,13 @@
 							예상번호 조합 30개를 예측했습니다.<br>
 							<br>
 							예상번호 30조합은<br>
-							심 서방 로또에서 예측한 번호입니다.<br>
-							번호 그대로 선택하셔도 좋고,<br>
-							마음에 드는 번호만 선택하셔도 좋습니다.<br>
-							1등 조합이 선택된다면<br>
-							그것은 여러분의 운입니다.<br>
+							심서방이 무작위로 예측한 번호입니다.<br>
 							당첨이 될 수도 있고,<br>
 							안 될 수도 있으니<br>
-							아래 조합들에 대한<br>
 							오해 없으시길 바랍니다.<br>
+							1등 조합이 선택된다면<br>
+							그것은 이 블로그를 보고 계시는<br>
+							여러분의 운입니다.<br>							
 							<br>
 						</div>
 						
@@ -85,6 +83,14 @@
 							<br>
 							
 							<canvas id="barChartLowHigh" height="120"></canvas>
+							
+							<br>
+							최근 10회 동안의<br>
+							저고 비율 출현 패턴을<br>
+							아래와 같이 분석해봤습니다.<br>
+							<br>
+							[저고비율 패턴분석 차트]<br>
+							<br>
 						</div>
 						<br>
 					</div>
@@ -109,6 +115,14 @@
 							<br>
 							
 							<canvas id="barChartOddEven" height="120"></canvas>
+							
+							<br>
+							최근 10회 동안의<br>
+							홀짝 비율 출현 패턴을<br>
+							아래와 같이 분석해봤습니다.<br>
+							<br>
+							[홀짝비율 패턴분석 차트]<br>
+							<br>
 						</div>
 						<br>
 					</div>
@@ -135,6 +149,12 @@
 							</div>
 							
 							<br>
+							최근 10회 동안의<br>
+							회차합 출현 패턴을<br>
+							아래와 같이 분석해봤습니다.<br>
+							<br>
+							[회차합 패턴분석 차트]<br>
+							<br>
 							
 						</div>
 						<br>
@@ -157,6 +177,13 @@
 							약 90%의 확률로 출현했습니다.<br>
 							<br>
 							
+							<br>
+							최근 10회 동안의<br>
+							총합 출현 패턴을<br>
+							아래와 같이 분석해봤습니다.<br>
+							<br>
+							[총합 패턴분석 차트]<br>
+							<br>
 						</div>
 						<br>
 					</div>
@@ -178,6 +205,13 @@
 							약 90%의 확률로 출현했습니다.<br>
 							<br>
 							
+							<br>
+							최근 10회 동안의<br>
+							끝수합 출현 패턴을<br>
+							아래와 같이 분석해봤습니다.<br>
+							<br>
+							[끝수합 패턴분석 차트]<br>
+							<br>
 						</div>
 						<br>
 					</div>
@@ -203,6 +237,16 @@
 							-->
 							<br>
 							
+							<br>
+							위의 제외 6수 이외에<br>
+							추가로 예상되는 제외수는<br>
+							1,2,3,4,8,10,14,20,24,26,27,29,30,34,44<br>
+​							<br>
+							추가 제외수는<br>
+							분석하고 계시는 번호와 맞춰<br>
+							아니라고 생각하시는 번호는<br>
+							개인적으로 필터 하시면 좋겠습니다.<br>
+							<br>
 						</div>
 						<br>
 					</div>
@@ -229,16 +273,12 @@
 							<table class="table table-bordered" style="font-size:15px; text-align: center; margin-left: auto; margin-right: auto;">
 								<thead>
 									<tr>
-										<th style="width:4%;">번호</th>
-										<th style="width:16%;">궁합수</th>
-										<th style="width:4%;">번호</th>
-										<th style="width:16%;">궁합수</th>
-										<th style="width:4%;">번호</th>
-										<th style="width:16%;">궁합수</th>
-										<th style="width:4%;">번호</th>
-										<th style="width:16%;">궁합수</th>
-										<th style="width:4%;">번호</th>
-										<th style="width:16%;">궁합수</th>
+										<th style="width:10%;">번호</th>
+										<th style="width:23%;">궁합수</th>
+										<th style="width:10%;">번호</th>
+										<th style="width:23%;">궁합수</th>
+										<th style="width:10%;">번호</th>
+										<th style="width:24%;">궁합수</th>										
 									</tr>
 								</thead>
 								<tbody id="mcNumberList">
@@ -246,6 +286,21 @@
 								</tbody>
 							</table>
 							<br>
+							<table class="table table-bordered" style="font-size:15px; text-align: center; margin-left: auto; margin-right: auto;">
+								<thead>
+									<tr>
+										<th style="width:15%;">번호</th>
+										<th style="width:35%;">궁합수</th>
+										<th style="width:15%;">번호</th>
+										<th style="width:35%;">궁합수</th>
+									</tr>
+								</thead>
+								<tbody id="mcNumberList2">
+									
+								</tbody>
+							</table>
+							<br>
+							
 							
 						</div>
 						<br>
@@ -262,7 +317,7 @@
 							한 장의 행복을 구입하여<br>
 							일주일 동안 희망에 가득한 마음으로<br>
 							행복하시기를 바라며,<br>
-							로또 ${ex_count?if_exists}회 예상번호<br>
+							#로또${ex_count?if_exists}회예상번호<br>
 							분석을 마칩니다.<br>
 							<br>
 							※후원안내<br>

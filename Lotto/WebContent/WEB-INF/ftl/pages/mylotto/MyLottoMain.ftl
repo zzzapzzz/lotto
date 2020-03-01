@@ -27,6 +27,7 @@
 					<span id="autoAdd" class="btn btn-warning" onclick="javascript:autoAddCheckGo();"><i class="fa fa-edit"></i> 자동등록</span>
 					<span id="filterAdd" class="btn btn-info" onclick="javascript:filterAddGo();"><i class="fa fa-edit"></i> 필터조합등록</span>
 					<span id="del" class="btn btn-danger" onclick="javascript:delGo();"><i class="fa fa-trash-o"></i> 선택삭제</span>
+					<span id="autoAddibm1077" class="btn btn-warning" onclick="javascript:autoAddibm1077();"><i class="fa fa-edit"></i> 태화강 자동등록</span>
 					
 					
 					<!-- row -->

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
 
@@ -33,6 +34,9 @@ public class LottoDataService extends DefaultService {
 
 	private Logger log = Logger.getLogger(this.getClass());
 
+	@Autowired(required = true)
+    private SysmngService sysmngService;
+	
 	/**
 	 * @description <div id=description><b>고저 비율 구하기</b></div>
      *              <div id=detail>고저 비율을 구한다.</div>
@@ -1018,6 +1022,32 @@ public class LottoDataService extends DefaultService {
 		List<Integer> containList = new ArrayList<Integer>();
 		
 		for(int index = winDataList.size() - 10 ; index < winDataList.size() ; index++){
+			int[] numbers = LottoUtil.getNumbers(winDataList.get(index));
+			
+			for(int number : numbers){
+				if(!map.containsKey(number)){
+					containList.add(number);
+					map.put(number, number);
+				}
+			}
+		}
+		
+		return (List<Integer>) LottoUtil.dataSort(containList);
+	}
+	
+	/**
+	 * @description <div id=description><b>10회차합 구하기</b></div>
+     *              <div id=detail>지정된 회차 이전의 지난 10회동안 출현했던 번호들을 구한다.</div>
+     *              
+	 * @param winDataList 전체 당첨번호 (오름차순)
+	 * @param winCount 기준회차
+	 * @return
+	 */
+	public List<Integer> getContain10List(List<WinDataDto> winDataList, int winCount) {
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		List<Integer> containList = new ArrayList<Integer>();
+		
+		for(int index = winCount - 10 ; index < winCount ; index++){
 			int[] numbers = LottoUtil.getNumbers(winDataList.get(index));
 			
 			for(int number : numbers){
@@ -3558,28 +3588,14 @@ public class LottoDataService extends DefaultService {
 			return false;
 		}
 		
-		/*
-		 * 98. 임시 예외처리
-		 * 
-		 * 2019.03.08
-		 * 40번대 구간 미출현
-		 * 10번대 출현
-		 * 이전 출현번호는 1개는 나옴.
-		 * 2:4 ~ 4:2면 OK
-		 * 
-		 * 2019.03.15
-		 * 미출구간 체크 제외 
-		 */
-		result = this.checkCustomException(exData, winDataList);
-		if (!result) {
-			return false;
+		// 7. 한 구간 4개 출현 제외
+		int[] containGroupCnt = this.getZeroCntRangeData(exData);
+		for (int i = 0; i < containGroupCnt.length; i++) {
+			if (containGroupCnt[i] > 3) {
+				log.info("한 구간 4개 출현 제외");
+				return false;
+			}
 		}
-		
-		/*
-		 * 99. Cherokee 사이트 참고 예외처리 추가
-		 * https://blog.naver.com/cameto13
-		 * 2019.02.24 결과 망!
-		 */
 		
 		return true;
 	}
@@ -4485,4 +4501,1661 @@ public class LottoDataService extends DefaultService {
 		return zeroRangeMsg;
 	}
 
+	/**
+	 * 향상된 규칙들 조회
+	 * 2020.02.06
+	 * 
+	 * @param exCount
+	 * @return
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public Map getEnhancedRules(int loginUserNo, int exCount) {
+		Map enhancedRulesMap = new HashMap();
+		
+		// 당첨번호 전체 목록 조회
+		log.info("[" + loginUserNo + "]\t 당첨번호 전체 목록 조회 (오름차순)");
+		WinDataDto winDataDto = new WinDataDto();
+		winDataDto.setSord("ASC");
+		winDataDto.setPage("1");	// 전체조회 설정
+		List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+		
+		// 최근회차 조회 
+		WinDataDto lastWinData = winDataList.get(winDataList.size()-1);
+		log.info("[" + loginUserNo + "]\t 최근회차 조회 : " + lastWinData.getWin_count());
+		
+		// 궁합수 조회 (최근회차)
+		log.info("[" + loginUserNo + "]\t 궁합수 조회 (최근회차)");
+		WinDataDto dtoForMC = new WinDataDto();
+		dtoForMC.setWin_count(lastWinData.getWin_count());
+		List<MCNumDto> mcNumList = sysmngService.getMcNumList(dtoForMC);
+		
+
+		// 미출궁합수 중복제크 Map, List
+		Map checkMcListOfNotContMap = new HashMap();
+		List<Integer> mcListOfNotContList = new ArrayList<Integer>();
+		
+		// 제외수 중복제크 Map, List
+		Map checkExcludeNumber = new HashMap();
+		List<Integer> excludeNumberList = new ArrayList<Integer>();
+		
+		// 미출궁합수에 없는 미출수목록1
+		List<Integer> excludeList1 = new ArrayList<Integer>();
+		
+		// 미출수목록1의 궁합수 중복제크 Map, List
+		Map excludeList2Map = new HashMap();
+		List<Integer> excludeList2 = new ArrayList<Integer>();
+		
+		// 제외수 궁합수 중 미출수
+		int excludeNumOfMcNum = 0;
+		int maxCount = 0;
+		
+		// 제외수 궁합수 중 포함할 미출수
+		Map excludeList3Map = new HashMap();
+		List<Integer> excludeList3 = new ArrayList<Integer>();
+		
+		// 전체제외수 중복제크 Map, List
+		Map checkAllExcludeNumMap = new HashMap();
+		List<Integer> allExcludeNumList = new ArrayList<Integer>();
+		Map<Integer, Integer> allExcludeNumMap = new HashMap<Integer, Integer>();
+			
+			
+		/*****************************************************
+		 * 1. 최근 10회동안 미출한 번호들의 궁합수 목록을 구함
+		 *****************************************************/
+		// 10회차 포함번호 목록 조회
+		List<Integer> contain10List = this.getContain10List(winDataList, lastWinData.getWin_count());
+		// 10회차 미포함번호 목록 조회
+		List<Integer> notContain10List = this.getNotContain10List(contain10List);
+		
+		for (int j = 0; j < notContain10List.size(); j++) {
+			int notContainNum = notContain10List.get(j);
+			
+			for (int k = 0; k < mcNumList.size(); k++) {
+				MCNumDto mCNumDto = mcNumList.get(k);
+				int mcNum = mCNumDto.getNum();
+				if (notContainNum == mcNum) {
+					// 궁합수 문자열을 int 배열로 변환
+					int[] mcNumbers = LottoUtil.getNumbers(mCNumDto.getMc_num().replaceAll(" ", ""));
+					
+					for (int l = 0; l < mcNumbers.length; l++) {
+						int mcNumOfexcludeNum = mcNumbers[l];
+						
+						// 미출수의 궁합수를 미출궁합수 목록에 등록
+						if (!checkMcListOfNotContMap.containsKey(mcNumOfexcludeNum)) {
+							checkMcListOfNotContMap.put(mcNumOfexcludeNum, mcNumOfexcludeNum);
+							mcListOfNotContList.add(mcNumOfexcludeNum);
+						}
+					}
+					
+					// 현재 제외수의 궁합수 반복 중단처리
+					break;
+				}
+			}
+		}
+		mcListOfNotContList = (List<Integer>) LottoUtil.dataSort(mcListOfNotContList);
+		
+		/*****************************************************
+		 * 2. 1번 중 미출수에 없는 번호 선별
+		 *****************************************************/
+		for (int j = 0; j < notContain10List.size(); j++) {
+			boolean exist = false;
+			int notContainNum = notContain10List.get(j);
+			
+			for (int k = 0; k < mcListOfNotContList.size(); k++) {
+				int mcNum = mcListOfNotContList.get(k);
+				
+				if (notContainNum == mcNum) {
+					exist = true;
+					break;
+				}
+			}
+			
+			if (!exist) {
+				excludeList1.add(notContainNum);
+			}
+		}
+		
+		/*****************************************************
+		 * 3. 미출수의 궁합수 중 2번째까지만 선별
+		 *****************************************************/
+		for (int j = 0; j < excludeList1.size(); j++) {
+			int excludeNum = excludeList1.get(j);
+			
+			for (int k = 0; k < mcNumList.size(); k++) {
+				MCNumDto mCNumDto = mcNumList.get(k);
+				int mcNum = mCNumDto.getNum();
+				if (excludeNum == mcNum) {
+					// 궁합수 문자열을 int 배열로 변환
+					int[] mcNumbers = LottoUtil.getNumbers(mCNumDto.getMc_num().replaceAll(" ", ""));
+					
+					// 2번째까지만 설정
+					for (int l = 0; l < (mcNumbers.length > 2 ? 2 : mcNumbers.length); l++) {
+						int mcNumOfexcludeNum = mcNumbers[l];
+						
+						// 미출수목록1의 궁합수를 미출수목록2에 등록
+						if (!excludeList2Map.containsKey(mcNumOfexcludeNum)) {
+							excludeList2Map.put(mcNumOfexcludeNum, mcNumOfexcludeNum);
+							excludeList2.add(mcNumOfexcludeNum);
+						}
+					}
+					
+					// 현재 제외수의 궁합수 반복 중단처리
+					break;
+				}
+			}
+		}
+		
+		/*****************************************************
+		 * 4. 제외수의 궁합수 목록을 구함.
+		 *****************************************************/
+		// 제외수 조회
+		ExDataDto exDataDto = new ExDataDto();
+		exDataDto.setEx_count(exCount);
+		ExcludeDto excludeDto = sysmngService.getExcludeInfo(exDataDto);
+		
+		// 제외수 문자열을 int 배열로 변환
+		int[] excludeNumbers = LottoUtil.getNumbers(excludeDto.getExclude_num().replaceAll(" ", ""));
+		
+		// 제외수의 궁합수 목록을 추출
+		for (int j = 0; j < excludeNumbers.length; j++) {
+			int excludeNum = excludeNumbers[j];
+			
+			if (!checkExcludeNumber.containsKey(excludeNum)) {
+				checkExcludeNumber.put(excludeNum, excludeNum);
+				excludeNumberList.add(excludeNum);
+			}
+			
+			for (int k = 0; k < mcNumList.size(); k++) {
+				MCNumDto mCNumDto = mcNumList.get(k);
+				int mcNum = mCNumDto.getNum();
+				if (excludeNum == mcNum) {
+					// 궁합수 문자열을 int 배열로 변환
+					int[] mcNumbers = LottoUtil.getNumbers(mCNumDto.getMc_num().replaceAll(" ", ""));
+					
+					for (int l = 0; l < mcNumbers.length; l++) {
+						int mcNumOfexcludeNum = mcNumbers[l];
+						
+						// 제외수의 궁합수를 목록에 등록
+						if (!checkExcludeNumber.containsKey(mcNumOfexcludeNum)) {
+							checkExcludeNumber.put(mcNumOfexcludeNum, mcNumOfexcludeNum);
+							excludeNumberList.add(mcNumOfexcludeNum);
+						}
+					}
+					
+					// 현재 제외수의 궁합수 반복 중단처리
+					break;
+				}
+			}
+			
+		} // end 제외수 목록 반복
+		
+		/*****************************************************
+		 * 5. 제외수 궁합수 목록에서 미출수에 포함된 번호 중 가장 오래된 번호는 제외
+		 * 6. 5번의 나머지 번호중 미출수에 있는 번호는 추가
+		 *****************************************************/
+		for (int j = 0; j < excludeNumberList.size(); j++) {
+			int excludeNum = excludeNumberList.get(j);
+			
+			for (int k = 0; k < notContain10List.size(); k++) {
+				int notContainNum = notContain10List.get(k);
+				
+				if (excludeNum == notContainNum) {
+					
+					// 제외수의 궁합수 중 미포함수는 미출수목록3에 등록
+					if (!excludeList3Map.containsKey(notContainNum)) {
+						excludeList3Map.put(notContainNum, notContainNum);
+						excludeList3.add(notContainNum);
+					}
+					
+					int checkCount = 0;
+					
+					// 이전 출현회수 비교하여 가장 오래된 미출수 선별
+					for (int l = lastWinData.getWin_count() - 1; l >= 0; l--) {
+						checkCount++;
+						
+						WinDataDto bfWinData = winDataList.get(l);
+						
+						if (notContainNum == bfWinData.getNum1()
+								|| notContainNum == bfWinData.getNum2()
+								|| notContainNum == bfWinData.getNum3()
+								|| notContainNum == bfWinData.getNum4()
+								|| notContainNum == bfWinData.getNum5()
+								|| notContainNum == bfWinData.getNum6()
+								) {
+							break;
+						}
+					}
+					
+					if (excludeNumOfMcNum == 0) {
+						excludeNumOfMcNum = notContainNum;
+						maxCount = checkCount;
+					} else {
+						// 기존과 비교 (가장 오래된 미출수 선별)
+						if (maxCount < checkCount) {
+							excludeNumOfMcNum = notContainNum;
+							maxCount = checkCount;
+						}
+					}
+					
+					break;
+				}
+			}
+		}
+		
+		/*****************************************************
+		 * 7. 전체 제외수 목록을 구함.
+		 *    (미출수 & 미출수 궁합수 + 제외수)
+		 *****************************************************/
+		for (int j = 0; j < excludeList1.size(); j++) {
+			int excludeNum = excludeList1.get(j);
+			
+			// 제외수의 궁합수 중 미포함수는 미출수목록3에 등록
+			if (!checkAllExcludeNumMap.containsKey(excludeNum)) {
+				checkAllExcludeNumMap.put(excludeNum, excludeNum);
+				allExcludeNumList.add(excludeNum);
+			}
+		}
+		
+		for (int j = 0; j < excludeList2.size(); j++) {
+			int excludeNum = excludeList2.get(j);
+			
+			// 제외수의 궁합수 중 미포함수는 미출수목록3에 등록
+			if (!checkAllExcludeNumMap.containsKey(excludeNum)) {
+				checkAllExcludeNumMap.put(excludeNum, excludeNum);
+				allExcludeNumList.add(excludeNum);
+			}
+		}
+		
+		for (int j = 0; j < excludeList3.size(); j++) {
+			int excludeNum = excludeList3.get(j);
+			
+			// 제외수의 궁합수 중 미포함수는 미출수목록3에 등록
+			if (!checkAllExcludeNumMap.containsKey(excludeNum)) {
+				checkAllExcludeNumMap.put(excludeNum, excludeNum);
+				allExcludeNumList.add(excludeNum);
+			}
+		}
+		
+		for (int j = 0; j < excludeNumbers.length; j++) {
+			int excludeNum = excludeNumbers[j]; 
+			
+			// 제외수의 궁합수 중 미포함수는 미출수목록3에 등록
+			if (!checkAllExcludeNumMap.containsKey(excludeNum)) {
+				checkAllExcludeNumMap.put(excludeNum, excludeNum);
+				allExcludeNumList.add(excludeNum);
+			}
+		}
+		
+		allExcludeNumList = (List<Integer>) LottoUtil.dataSort(allExcludeNumList);
+		
+		// 존재하면, 제외수 궁합수 중 포함할 미출수 목록에서 제거 
+		if (excludeNumOfMcNum > 0) {
+			for (int k = 0; k < allExcludeNumList.size(); k++) {
+				int excludeNum = allExcludeNumList.get(k);
+				if (excludeNumOfMcNum == excludeNum) {
+					allExcludeNumList.remove(k);
+					break;
+				}
+			}
+			log.info("[" + loginUserNo + "]\t\t " + exCount + "회차의 장기 미출수는 제외수에서 미포함 : " + excludeNumOfMcNum);
+		}
+		
+		/*****************************************************
+		 * 8. 연번 규칙 적용
+		 *    (연번 출현 시 다음회차의 +2, -2 번호 1개는 출현)
+		 *****************************************************/
+		int[] numbers = LottoUtil.getNumbers(lastWinData);
+		for (int i = 0; i < numbers.length-1; i++) {
+			if (numbers[i+1] - numbers[i] == 1) {
+				// 끝수 존재여부 체크
+				if (i+2 < numbers.length) {
+					if(numbers[i+2] - numbers[i+1] == 1) {
+						// 다음수가 3연속은 규칙 제외
+						continue;
+					}
+				} else if (i-1 >= 0) {
+					if(numbers[i] - numbers[i-1] == 1) {
+						// 이전수가 3연속은 규칙 제외
+						continue;
+					}
+				}
+				
+				// 연번
+				List<Integer> list = new ArrayList<Integer>();
+				list.add(numbers[i] - 2);
+				list.add(numbers[i] + 2);
+				list.add(numbers[i+1] - 2);
+				list.add(numbers[i+1] + 2);
+				
+				for (int j = 0; j < list.size(); j++) {
+					int consecutivelyNumber = list.get(j);
+					
+					for (int k = 0; k < allExcludeNumList.size(); k++) {
+						int excludeNum = allExcludeNumList.get(k);
+						if (consecutivelyNumber == excludeNum) {
+							allExcludeNumList.remove(k);
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		/*****************************************************
+		 * 9. 2회 전회차의 1구간 3개수 규칙 적용
+		 *    (연번 출현 시 다음회차의 +2, -2 번호 1개는 출현)
+		 *****************************************************/
+		WinDataDto checkDto = winDataList.get(winDataList.size()-2);
+		int[] containGroupCnt = this.getZeroCntRangeData(checkDto);
+		boolean isCheck = false;
+		int checkRangeCnt = 0;
+		for (int i = 0; i < containGroupCnt.length; i++) {
+			if (containGroupCnt[i] == 3) {
+				isCheck = true;
+				checkRangeCnt = i;
+				break;
+			}
+		}
+
+		if (isCheck) {
+			int[] bf2CountNumbers = LottoUtil.getNumbers(checkDto);
+			int[] compareNumbers = new int[3];
+			int cnt = 0;
+			
+			int startIdx = 10 * checkRangeCnt;
+			if (checkRangeCnt < 4) {
+				int endIdx = 10 * (checkRangeCnt+1);
+				
+				for (int i = 0; i < bf2CountNumbers.length; i++) {
+					if (startIdx < bf2CountNumbers[i] 
+							&& bf2CountNumbers[i] <= endIdx) {
+						compareNumbers[cnt++] = bf2CountNumbers[i];
+					}
+				}
+			} else {
+				int endIdx = 10 * checkRangeCnt + 5;
+				for (int i = 0; i < bf2CountNumbers.length; i++) {
+					if (startIdx < bf2CountNumbers[i] 
+							&& bf2CountNumbers[i] <= endIdx) {
+						compareNumbers[cnt++] = bf2CountNumbers[i];
+					}
+				}
+			}
+			
+			// 3연속 수의 차이수
+			List<Integer> list = new ArrayList<Integer>();
+			list.add(compareNumbers[2] - compareNumbers[1]);
+			list.add(compareNumbers[1] - compareNumbers[0]);
+			
+			for (int j = 0; j < list.size(); j++) {
+				int difNumber = list.get(j);
+				
+				for (int k = 0; k < allExcludeNumList.size(); k++) {
+					int excludeNum = allExcludeNumList.get(k);
+					if (difNumber == excludeNum) {
+						allExcludeNumList.remove(k);
+						break;
+					}
+				}
+			}
+		}
+		
+		
+		
+		// 결과 확인
+		String modiExcludeNum = "";
+		for (int j = 0; j < allExcludeNumList.size(); j++) {
+			int excludeNum = allExcludeNumList.get(j);
+			allExcludeNumMap.put(excludeNum, excludeNum);
+			if (!"".equals(modiExcludeNum)) {
+				modiExcludeNum += ",";
+			}
+			modiExcludeNum = "" + modiExcludeNum + excludeNum;
+		}
+		
+		log.info("[" + loginUserNo + "]\t\t " + exCount + "회차 제외수 : " + excludeDto.getExclude_num());
+		log.info("[" + loginUserNo + "]\t\t " + exCount + "회차 개선된 제외수 : " + modiExcludeNum);
+					
+		// 개선된 제외수
+		enhancedRulesMap.put("allExcludeNumList", allExcludeNumList);	
+		enhancedRulesMap.put("allExcludeNumMap", allExcludeNumMap);	
+		// 장기 미출수 (1 포함)
+		enhancedRulesMap.put("excludeNumOfMcNum", excludeNumOfMcNum);			
+					
+					
+		return enhancedRulesMap;
+	}
+
+	/**
+	 * 3연속 수 존재 확인
+	 * 2020.02.29
+	 * 
+	 * @param sourceNnumbers
+	 * @return
+	 */
+	public boolean check3ConsecutivelyNumbers(int[] sourceNnumbers) {
+		// 체크
+		boolean isAppear = false;	// 출현여부
+		
+		for (int i = 0; i < sourceNnumbers.length - 2; i++) {
+			if (sourceNnumbers[i+1] - sourceNnumbers[i] == 1) {
+				
+				// 끝수 존재여부 체크
+				if (i+2 < sourceNnumbers.length) {
+					if(sourceNnumbers[i+2] - sourceNnumbers[i+1] == 1) {
+						// 다음수가 3연속 확인
+						isAppear = true;
+						
+						break;
+					}
+				}
+			}
+		}
+		return isAppear;
+	}
+
+	/**
+	 * 같은번호 3개 존재 확인
+	 * 2020.02.29
+	 * 
+	 * @param sourceNnumbers
+	 * @return
+	 */
+	public boolean check1Range3Numbers(int[] sourceNnumbers) {
+		// 체크
+		boolean isAppear = false;	// 출현여부
+		int[] rangeCnt = {0,0,0,0,0};
+		for (int i = 0; i < sourceNnumbers.length; i++) {
+			if (sourceNnumbers[i] < 10 ) {
+				rangeCnt[0] += 1; 
+			} else if (sourceNnumbers[i] < 20 ) {
+				rangeCnt[1] += 1;
+			} else if (sourceNnumbers[i] < 30 ) {
+				rangeCnt[2] += 1;
+			} else if (sourceNnumbers[i] < 40 ) {
+				rangeCnt[3] += 1;
+			} else {
+				rangeCnt[4] += 1;
+			}
+		}
+		
+		for (int i = 0; i < rangeCnt.length; i++) {
+			if (rangeCnt[i] == 3) {
+				isAppear = true;
+				break;
+			}
+		}
+		
+		return isAppear;
+	}
+	
+	/**
+	 * 같은번호 3개 존재 확인
+	 * checkNumber이 19일 때는 30,40 구간만 확인
+	 * 2020.02.29
+	 * 
+	 * @param sourceNnumbers
+	 * @return
+	 */
+	public boolean check1Range3Numbers(int[] sourceNnumbers, int checkNumber) {
+		// 체크
+		boolean isAppear = false;	// 출현여부
+		int[] rangeCnt = {0,0};
+		for (int i = 0; i < sourceNnumbers.length; i++) {
+			if (sourceNnumbers[i] < 10 ) {
+				continue; 
+			} else if (sourceNnumbers[i] < 20 ) {
+				continue;
+			} else if (sourceNnumbers[i] < 30 ) {
+				continue;
+			} else if (sourceNnumbers[i] < 40 ) {
+				rangeCnt[0] += 1;
+			} else {
+				rangeCnt[1] += 1;
+			}
+		}
+		
+		if (rangeCnt[0] == 3 || rangeCnt[1] == 3) {
+			isAppear = true;
+		}
+		
+		return isAppear;
+	}
+
+	/**
+	 * 필터 추가 (from 나대길)
+	 * 2020.02.29
+	 * 
+	 * @param theoryNumber 가설번호
+	 * @param winDataList 당첨번호 전체 목록 (오름차순)
+	 * @param fromCount 체크할 이전회차 수
+	 * @param aimMatchedPer 목표적중율
+	 * @return
+	 */
+	public boolean getMatchedPer(int theoryNumber, List<WinDataDto> winDataList, int fromCount, int aimMatchedPer) {
+		double matchedPer = 0.0; 
+		
+		if (theoryNumber == 1) {
+			matchedPer = getTheory1MatchedPer(winDataList, fromCount);
+		} else if (theoryNumber == 2) {
+			matchedPer = getTheory2MatchedPer(winDataList, fromCount);
+		} else if (theoryNumber == 3) {
+			matchedPer = getTheory3MatchedPer(winDataList, fromCount);
+		} else if (theoryNumber == 4) {
+			matchedPer = getTheory4MatchedPer(winDataList, fromCount);
+		} else if (theoryNumber == 5) {
+			matchedPer = getTheory5MatchedPer(winDataList, fromCount);
+		} else if (theoryNumber == 6) {
+			matchedPer = getTheory6MatchedPer(winDataList, fromCount);
+		} else if (theoryNumber == 7) {
+			matchedPer = getTheory7MatchedPer(winDataList, fromCount);
+		} else if (theoryNumber == 8) {
+			matchedPer = getTheory8MatchedPer(winDataList, fromCount);
+		} else if (theoryNumber == 9) {
+			matchedPer = getTheory9MatchedPer(winDataList, fromCount);
+		} else if (theoryNumber == 10) {
+			matchedPer = getTheory10MatchedPer(winDataList, fromCount);
+		}
+		
+		return aimMatchedPer > (int) matchedPer;
+	}
+
+	/**
+	 * 가설10. 
+	 * 40번대 멸 이면, 당첨번호의 앞뒤 바뀐수가 출현한다.(예: 21 <-> 12)
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory10MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0;
+		
+		// 마지막 회차의 전회차까지만 반복해야함.
+		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+			
+			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
+			
+			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] sourceZeroCntRange = this.getZeroCntRangeData(sourceWinDataDto);
+			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			
+			// 체크
+			boolean isAppear = false;	// 출현여부
+			String appearNumber = ""; 
+			
+			// 40대 멸 체크
+			if (sourceZeroCntRange[4] == 0) {
+				allAppearCnt++;
+				
+				// 출현번호의 역번호 Map 설정 (출현여부 확인용)
+				Map<Integer, Integer> reverseNumberMap = new HashMap<Integer, Integer>(); 
+				for (int i = 0; i < sourceNnumbers.length; i++) {
+					int number = sourceNnumbers[i];
+					// 2자리수만 확인
+					if (number >= 10) {
+						String strNumber = String.valueOf(number);
+						String strReverseNumber = strNumber.substring(1, 2) + strNumber.substring(0, 1);
+						int reverseNumber = Integer.parseInt(strReverseNumber);
+						if (reverseNumber <= 45) {
+							reverseNumberMap.put(reverseNumber, reverseNumber);
+						}
+					}
+				}
+				
+				for (int i = 0; i < targetNumbers.length; i++) {
+					if (reverseNumberMap.containsKey(targetNumbers[i])) {
+						isAppear = true;
+						
+						if (!"".equals(appearNumber)) {
+							appearNumber += ",";
+						}
+						appearNumber += targetNumbers[i];
+					}
+				}
+				
+				if (isAppear) {
+					matchedCnt++;
+					log.info((countIdx+1) + "회 40번대 멸 (" + (sourceZeroCntRange[4] == 0) + ")");
+					log.info((countIdx+2) + "회 역번호 출현(" + appearNumber + ")");
+					log.info("==============================================================");		
+				}
+			}
+			
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+					
+		return matchedPer;
+	}
+	
+	/**
+	 * 가설9.
+	 * 3연속수가 출현하면, 1구간 3수가 출현한다.
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory9MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0;
+		
+		// 마지막 회차의 전회차까지만 반복해야함.
+		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+			
+			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
+			
+			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+//			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			int[] targetZeroCntRange = this.getZeroCntRangeData(targetWinDataDto);
+			
+			// 체크
+			boolean isAppear = false;	// 출현여부
+			String consecutivelyNumbers = ""; 
+//			String appearNumber = ""; 
+			
+			for (int i = 0; i < sourceNnumbers.length - 2; i++) {
+				if (sourceNnumbers[i+1] - sourceNnumbers[i] == 1) {
+					consecutivelyNumbers += sourceNnumbers[i];
+					
+					if (!"".equals(consecutivelyNumbers)) {
+						consecutivelyNumbers += ",";
+					}
+					consecutivelyNumbers += sourceNnumbers[i+1];
+					
+					// 끝수 존재여부 체크
+					if (i+2 < sourceNnumbers.length) {
+						if(sourceNnumbers[i+2] - sourceNnumbers[i+1] == 1) {
+							// 다음수가 3연속 확인
+							isAppear = true;
+							
+							if (!"".equals(consecutivelyNumbers)) {
+								consecutivelyNumbers += ",";
+							}
+							consecutivelyNumbers += sourceNnumbers[i+2];
+							
+							break;
+						}
+					}
+				}
+			}
+			
+			if (isAppear) {
+				allAppearCnt++;
+				
+				boolean isAppear2 = false;	// 출현여부
+				
+				// 1구간 3수 출현여부 체크
+				String[] rangeTitle = {"1~10","11~20","21~30","31~40","41~45"};
+				int appearIndex = 0;
+				for (int i = 0; i < targetZeroCntRange.length; i++) {
+					if (targetZeroCntRange[i] == 3) {
+						isAppear2 = true;
+						appearIndex = i;
+					}
+				}
+				
+				if (isAppear2) {
+					matchedCnt++;
+					log.info((countIdx+2) + "회 " + rangeTitle[appearIndex] + "구간 3수 출현");
+					log.info("==============================================================");		
+				}
+			}
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+		
+		return matchedPer;
+	}
+	
+	/**
+	 * 가설8.
+	 * 8번이 출현하면, 8배수가 출현한다.
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory8MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0;
+		
+		// 마지막 회차의 전회차까지만 반복해야함.
+		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+			
+			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
+			
+			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			
+			// 체크
+			boolean isAppear = false;	// 출현여부
+			String appearNumber = ""; 
+			
+			for (int i = 0; i < sourceNnumbers.length; i++) {
+				if (sourceNnumbers[i] == 8) {
+					isAppear = true;
+					break;
+				}
+			}
+			
+			if (isAppear) {
+				allAppearCnt++;
+				
+				boolean isAppear2 = false;	// 출현여부
+				// 0끝수 출현여부 체크
+				for (int i = 0; i < targetNumbers.length; i++) {
+					if (targetNumbers[i] % 8 == 0) {
+						isAppear2 = true;
+						
+						if (!"".equals(appearNumber)) {
+							appearNumber += ",";
+						}
+						appearNumber += targetNumbers[i];
+					}
+				}
+				
+				if (targetWinDataDto.getBonus_num() % 8 == 0) {
+					isAppear2 = true;
+					
+					if (!"".equals(appearNumber)) {
+						appearNumber += ",";
+					}
+					appearNumber += targetWinDataDto.getBonus_num(); 
+				}
+				
+				if (isAppear2) {
+					matchedCnt++;
+					log.info((countIdx+2) + "회 8배수 출현(" + appearNumber + ")");
+					log.info("==============================================================");		
+				}
+			}
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+					
+		return matchedPer;
+	}
+	
+	/**
+	 * 가설7.
+	 * 쌍수(11,22,33,44)가 나오면, 자기번호나 가족번호(끝수가 같은)가 출현한다.
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory7MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0;
+		
+		// 마지막 회차의 전회차까지만 반복해야함.
+		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+			
+			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
+			
+			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			
+			// 체크
+			boolean isAppear = false;	// 출현여부
+			String appearNumber = ""; 
+			
+			int checkNumber = 0;
+			
+			for (int i = 0; i < sourceNnumbers.length; i++) {
+				if (sourceNnumbers[i] == 11
+						|| sourceNnumbers[i] == 22
+						|| sourceNnumbers[i] == 33
+						|| sourceNnumbers[i] == 44
+						) {
+					isAppear = true;
+					checkNumber = sourceNnumbers[i]; 
+					break;
+				}
+			}
+			
+			if (isAppear) {
+				allAppearCnt++;
+				
+				boolean isAppear2 = false;	// 출현여부
+				// 0끝수 출현여부 체크
+				for (int i = 0; i < targetNumbers.length; i++) {
+					if (targetNumbers[i] % 10 == checkNumber % 10) {
+						isAppear2 = true;
+						
+						if (!"".equals(appearNumber)) {
+							appearNumber += ",";
+						}
+						appearNumber += targetNumbers[i];
+					}
+				}
+				
+				if (isAppear2) {
+					matchedCnt++;
+					log.info((countIdx+2) + "회 쌍수의 가족수 출현(" + appearNumber + ")");
+					log.info("==============================================================");		
+				}
+			}
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+					
+		return matchedPer;
+	}
+	
+	/**
+	 * 가설6. 19번호 이후 0끝 번호가 출현한다. 
+	 * 		  뒤에 (1구간 3수)가 나오면 뒤에는 0끝이 출현하지 않는다. (2020.02.29)
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory6MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0;
+		
+		// 마지막 회차의 전회차까지만 반복해야함.
+		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+			
+			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
+			
+			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			
+			// 체크
+			boolean isAppear = false;	// 출현여부
+			String appearNumber = ""; 
+			
+			for (int i = 0; i < sourceNnumbers.length; i++) {
+				if (sourceNnumbers[i] == 19) {
+					isAppear = true;
+					break;
+				}
+			}
+			
+			if (isAppear) {
+				allAppearCnt++;
+			
+				boolean isAppear2 = false;	// 출현여부
+				// 0끝수 출현여부 체크
+				boolean is1Range3CNumbers = this.check1Range3Numbers(sourceNnumbers);
+				String msg = "";
+				if (is1Range3CNumbers) {
+					// 3연수 있음.
+					int appearCnt = 0;
+					for (int i = 0; i < targetNumbers.length; i++) {
+						if (targetNumbers[i] % 10 == 0) {
+							appearCnt++;
+						}
+					}
+					
+					if (appearCnt == 0) {
+						isAppear2 = true;
+						
+						msg = "3연수 있음. 0끝수 미출현";
+					}
+					
+				} else {
+					// 3연수 없음.
+					for (int i = 0; i < targetNumbers.length; i++) {
+						if (targetNumbers[i] % 10 == 0) {
+							isAppear2 = true;
+							
+							if (!"".equals(appearNumber)) {
+								appearNumber += ",";
+							}
+							appearNumber += targetNumbers[i];
+							break;
+						}
+					}
+					
+					msg = "0끝수 출현(" + appearNumber + ")";
+				}
+				
+				if (isAppear2) {
+					matchedCnt++;
+					log.info((countIdx+2) + "회 " + msg);
+					log.info("==============================================================");		
+				}
+			}
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+					
+		return matchedPer;
+	}
+	
+	/**
+	 * 가설5. 
+	 * 28번이 출현하면, 4끝수가 출현한다.
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory5MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0;
+		
+		// 마지막 회차의 전회차까지만 반복해야함.
+		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+			
+			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
+			
+			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			
+			// 체크
+			boolean isAppear = false;	// 출현여부
+			String appearNumber = ""; 
+			
+			int checkNumber = 0;
+			
+			for (int i = 0; i < sourceNnumbers.length; i++) {
+				if (sourceNnumbers[i] == 28) {
+					isAppear = true;
+					break;
+				}
+			}
+			
+			if (isAppear) {
+				allAppearCnt++;
+				
+				boolean isAppear2 = false;	// 출현여부
+				// 4끝수 출현여부 체크
+				for (int i = 0; i < targetNumbers.length; i++) {
+					if (targetNumbers[i] % 10 == 4) {
+						isAppear2 = true;
+						
+						if (!"".equals(appearNumber)) {
+							appearNumber += ",";
+						}
+						appearNumber += targetNumbers[i];
+					}
+				}
+				
+				if (isAppear2) {
+					matchedCnt++;
+					log.info((countIdx+2) + "회 4끝수 출현(" + appearNumber + ")");
+					log.info("==============================================================");		
+				}
+			}
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+					
+		return matchedPer;
+	}
+	
+	/**
+	 * 가설4.
+	 * 42번이 나오면 42의 앞 2번째 수 -1이 출현한다.
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory4MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0;
+		
+		// 마지막 회차의 전회차까지만 반복해야함.
+		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+			
+			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
+			
+			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			
+			// 체크
+			boolean isAppear = false;	// 출현여부
+			boolean isAppear42 = false;	// 42출현여부
+			String appearNumber = ""; 
+			
+			int checkNumber = 0;
+			
+			for (int i = 0; i < sourceNnumbers.length; i++) {
+				if (sourceNnumbers[i] == 42) {
+					isAppear42 = true;
+					if (i >= 2) {
+						// 앞 2번째 수 - 1
+						checkNumber = sourceNnumbers[i-2] - 1; 
+					}
+					break;
+				}
+			}
+			
+			if (isAppear42) {
+				allAppearCnt++;
+				
+				// 앞 2번째 수-1 출현여부 체크
+				for (int i = 0; i < targetNumbers.length; i++) {
+					if (targetNumbers[i] == checkNumber) {
+						isAppear = true;
+						
+						if (!"".equals(appearNumber)) {
+							appearNumber += ",";
+						}
+						appearNumber += targetNumbers[i];
+					}
+				}
+				
+				if (isAppear) {
+					matchedCnt++;
+					log.info((countIdx+2) + "회 앞 2번째 수-1 출현(" + appearNumber + ")");
+					log.info("==============================================================");		
+				}
+			}
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+		
+		return matchedPer;
+	}
+	
+	/**
+	 * 가설3.
+	 * 20번대(20~29) 2개 & 30번대(30~39) 2개가 나오면, 다음 회차에서는 0끝수가 1개 이상 출현한다.
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory3MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0;
+		
+		// 마지막 회차의 전회차까지만 반복해야함.
+		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+			
+			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
+			
+			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			
+			// 체크
+			boolean isAppear = false;	// 출현여부
+			String appearNumber = ""; 
+			
+			int appear2RangeCnt = 0;
+			int appear3RangeCnt = 0;
+			
+			String numbers = "";
+			for (int i = 0; i < sourceNnumbers.length; i++) {
+				if (20 <= sourceNnumbers[i] && sourceNnumbers[i] <= 29) {
+					appear2RangeCnt++;
+				}
+				if (30 <= sourceNnumbers[i] && sourceNnumbers[i] <= 39) {
+					appear3RangeCnt++;
+				}
+				
+				if (!"".equals(numbers)) {
+					numbers += ",";
+				}
+				numbers += sourceNnumbers[i];
+			}
+			
+			
+			if (appear2RangeCnt == 2 && appear3RangeCnt == 2) {
+				allAppearCnt++;
+				
+				log.info((countIdx+1) + "회 (" + numbers + ")");
+				log.info((countIdx+1) + "회 구간수 출현(" + appear2RangeCnt + ", " + appear3RangeCnt + ")");
+				
+				// 0끝수 출현여부 체크
+				for (int i = 0; i < targetNumbers.length; i++) {
+					if (targetNumbers[i] % 10 == 0) {
+						isAppear = true;
+						
+						if (!"".equals(appearNumber)) {
+							appearNumber += ",";
+						}
+						appearNumber += targetNumbers[i];
+					}
+				}
+				
+				if (isAppear) {
+					matchedCnt++;
+					log.info((countIdx+2) + "회 0끝수 출현(" + appearNumber + ")");
+					log.info("==============================================================");		
+				}
+			}
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+					
+		return matchedPer;
+	}
+	
+	/**
+	 * 가설2.
+	 * 단번대 멸 & 첫수가 10번대 라면, 당첨숫자 4, 5, 6번째 중 1개가 이월된다.
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory2MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0;
+		
+		// 마지막 회차의 전회차까지만 반복해야함.
+		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+			
+			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
+			
+			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] sourceZeroCntRange = this.getZeroCntRangeData(sourceWinDataDto);
+			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			
+			// 체크
+			boolean isAppear = false;	// 출현여부
+			String appearNumber = ""; 
+			String numbers = ""; 
+			
+			// 단번대 멸 체크
+			
+			if (sourceZeroCntRange[0] == 0) {
+				for (int i = 0; i < sourceNnumbers.length; i++) {
+					if (!"".equals(numbers)) {
+						numbers += ",";
+					}
+					numbers += sourceNnumbers[i];
+				}
+				
+				// 첫번째 수가 10번대 체크
+//							if (11 <= targetNumbers[0] || targetNumbers[0] <= 20) {
+				if (10 <= sourceNnumbers[0] || sourceNnumbers[0] <= 19) {
+					allAppearCnt++;
+					
+					//지난 당첨번호 3수
+					int num4 = sourceNnumbers[3];
+					int num5 = sourceNnumbers[4];
+					int num6 = sourceNnumbers[5];
+					
+					//이월여부 체크
+					for (int i = 0; i < targetNumbers.length; i++) {
+						if (targetNumbers[i] == num4
+								|| targetNumbers[i] == num5
+								|| targetNumbers[i] == num6
+								) {
+							isAppear = true;
+							
+							if (!"".equals(appearNumber)) {
+								appearNumber += ",";
+							}
+							appearNumber += targetNumbers[i]; 
+						}
+					}
+					
+					if (isAppear) {
+						matchedCnt++;
+						log.info((countIdx+1) + "회 (" + numbers + ")");
+						log.info((countIdx+2) + "회 이월수 출현(" + appearNumber + ")");
+						log.info("==============================================================");		
+					}
+				}
+			}
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+					
+		return matchedPer;
+	}
+
+	/**
+	 * 가설1.
+	 * 10차이나는 수 사이에 다른 숫자가 있으면, 다음회차에서 큰 수에서 중간수를 뺀 끝수가 출현한다.
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory1MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0; 
+		
+		// 마지막 회차의 전회차까지만 반복해야함.
+		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+			
+			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
+			
+			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			
+			// 체크
+			boolean isAppear = false;
+			int appearCnt = 0;
+			boolean isCheckAppear = false;
+			boolean isCheckMatch = false;
+			for (int i = 0; i < sourceNnumbers.length - 2; i++) {
+				isCheckAppear = false;
+				int num1 = sourceNnumbers[i];
+				int num2 = sourceNnumbers[i+1];
+				int num3 = sourceNnumbers[i+2];
+				
+				if (num3 - num1 == 10) {
+					log.info((countIdx+1) + "회 " + num1 + ", " + num3 + " 존재");
+					isAppear = true;
+					isCheckAppear = true;
+					appearCnt++;
+					
+					int difNum = num3 - num2;
+					int difAppearCnt = 0;
+					
+					log.info((countIdx+1) + "회 차이수 = " + difNum);
+					for (int j = 0; j < targetNumbers.length; j++) {
+						if (targetNumbers[j] % 10 == difNum) {
+							log.info((countIdx+2) + "회 " + targetNumbers[j] + " 존재함");
+							difAppearCnt++;
+						}
+					}
+					
+					if (difAppearCnt > 0) { 
+						matchedCnt++;
+						isCheckMatch = true;
+					}
+				}
+				
+				if (isCheckAppear) {
+					if (isCheckMatch) {
+						log.info((countIdx+2) + "회 일치");
+					} else {
+						log.info((countIdx+2) + "회 불일치");
+					}
+				}
+			}
+			
+			if (isAppear) {
+				log.info((countIdx+1) + "회 10차이나는 수 출현(" + appearCnt + "개)");
+				log.info("==============================================================");
+				allAppearCnt++;
+			}
+			
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+		
+		return matchedPer;
+	}
+
+	/**
+	 * 필터1.
+	 * 10차이나는 수 사이에 다른 숫자가 있으면, 다음회차에서 큰 수에서 중간수를 뺀 끝수가 출현한다.
+	 * 
+	 * @param sourceNnumbers
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter1(int[] sourceNnumbers, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		for (int i = 0; i < sourceNnumbers.length - 2; i++) {
+			int num1 = sourceNnumbers[i];
+			int num2 = sourceNnumbers[i+1];
+			int num3 = sourceNnumbers[i+2];
+			
+			if (num3 - num1 == 10) {
+				int difNum = num3 - num2;
+				int difAppearCnt = 0;
+				
+				for (int j = 0; j < targetNumbers.length; j++) {
+					if (targetNumbers[j] % 10 == difNum) {
+						difAppearCnt++;
+					}
+				}
+				
+				if (difAppearCnt > 0) { 
+					isMatched = true;
+					break;
+				}
+			}
+			
+		}
+		
+		return isMatched;
+	}
+	
+	/**
+	 * 필터2. 
+	 * 단번대 멸 & 첫수가 10번대 라면, 당첨숫자 4, 5, 6번째 중 1개가 이월된다.
+	 * 
+	 * @param sourceNnumbers
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter2(int[] sourceNnumbers, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		
+		//지난 당첨번호 3수
+		int num4 = sourceNnumbers[3];
+		int num5 = sourceNnumbers[4];
+		int num6 = sourceNnumbers[5];
+		
+		//이월여부 체크
+		for (int i = 0; i < targetNumbers.length; i++) {
+			if (targetNumbers[i] == num4
+					|| targetNumbers[i] == num5
+					|| targetNumbers[i] == num6
+					) {
+				isMatched = true;
+				break;
+			}
+		}
+		
+		return isMatched;
+	}
+	
+	/**
+	 * 필터3. 
+	 * 20번대(20~29) 2개 & 30번대(30~39) 2개가 나오면, 다음 회차에서는 0끝수가 1개 이상 출현한다.
+	 * 
+	 * @param sourceNnumbers
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter3(int[] sourceNnumbers, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		
+		// 0끝수 출현여부 체크
+		for (int i = 0; i < targetNumbers.length; i++) {
+			if (targetNumbers[i] % 10 == 0) {
+				isMatched = true;
+				break;
+			}
+		}
+		
+		return isMatched;
+	}
+	
+	/**
+	 * 필터4. 
+	 * 42번이 나오면 42의 앞 2번째 수 -1이 출현한다.
+	 * 
+	 * @param sourceNnumbers
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter4(int[] sourceNnumbers, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		int checkNumber = 0;
+		
+		for (int i = 0; i < sourceNnumbers.length; i++) {
+			if (sourceNnumbers[i] == 42) {
+				if (i >= 2) {
+					// 앞 2번째 수 - 1
+					checkNumber = sourceNnumbers[i-2] - 1; 
+				}
+				break;
+			}
+		}
+		
+		// 앞 2번째 수-1 출현여부 체크
+		for (int i = 0; i < targetNumbers.length; i++) {
+			if (targetNumbers[i] == checkNumber) {
+				isMatched = true;
+				break;
+			}
+		}
+		
+		return isMatched;
+	}
+	
+	/**
+	 * 필터5. 
+	 * 28번이 출현하면, 4끝수가 출현한다.
+	 * 
+	 * @param sourceNnumbers
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter5(int[] sourceNnumbers, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		
+		// 4끝수 출현여부 체크
+		for (int i = 0; i < targetNumbers.length; i++) {
+			if (targetNumbers[i] % 10 == 4) {
+				isMatched = true;
+				break;
+			}
+		}
+		
+		return isMatched;
+	}
+	
+	/**
+	 * 필터6. 
+	 * 19번호 이후 0끝 번호가 출현한다. 
+	 * 뒤에 (1구간 3수)가 나오면 뒤에는 0끝이 출현하지 않는다. (2020.02.29)
+	 * 
+	 * @param sourceNnumbers
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter6(int[] sourceNnumbers, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		
+		boolean isAppear2 = false;	// 출현여부
+		// 0끝수 출현여부 체크
+		boolean is1Range3CNumbers = this.check1Range3Numbers(sourceNnumbers);
+		if (is1Range3CNumbers) {
+			// 3연수 있음.
+			int appearCnt = 0;
+			for (int i = 0; i < targetNumbers.length; i++) {
+				if (targetNumbers[i] % 10 == 0) {
+					appearCnt++;
+				}
+			}
+			
+			if (appearCnt == 0) {
+				isMatched = true;
+			}
+			
+		} else {
+			// 3연수 없음.
+			for (int i = 0; i < targetNumbers.length; i++) {
+				if (targetNumbers[i] % 10 == 0) {
+					isMatched = true;
+					break;
+				}
+			}
+		}
+		
+		return isMatched;
+	}
+	
+	/**
+	 * 필터7. 
+	 * 쌍수(11,22,33,44)가 나오면, 자기번호나 가족번호(끝수가 같은)가 출현한다.
+	 * 
+	 * @param sourceNnumbers
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter7(int[] sourceNnumbers, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		
+		int[] checkNumber = {0,0,0,0};
+		
+		for (int i = 0; i < sourceNnumbers.length; i++) {
+			if (sourceNnumbers[i] == 11) {
+				checkNumber[0] = 1;
+			} else if (sourceNnumbers[i] == 22) {
+				checkNumber[1] = 2;
+			} else if (sourceNnumbers[i] == 33) {
+				checkNumber[2] = 3;
+			} else if (sourceNnumbers[i] == 44) {
+				checkNumber[3] = 4;
+			}
+		}
+		
+		// 0끝수 출현여부 체크
+		for (int j = 0; j < checkNumber.length; j++) {
+			if (checkNumber[j] > 0) {
+				for (int i = 0; i < targetNumbers.length; i++) {
+					if (targetNumbers[i] % 10 == checkNumber[j]) {
+						isMatched = true;
+					}
+				}
+			}
+			if (isMatched) {
+				break;
+			}
+		}
+		
+		return isMatched;
+	}
+	
+	/**
+	 * 필터8. 
+	 * 8번이 출현하면, 8배수가 출현한다.
+	 * 
+	 * @param sourceNnumbers
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter8(int[] sourceNnumbers, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		
+		// 0끝수 출현여부 체크
+		for (int i = 0; i < targetNumbers.length; i++) {
+			if (targetNumbers[i] % 8 == 0) {
+				isMatched = true;
+				break;
+			}
+		}
+		
+		return isMatched;
+	}
+	
+	/**
+	 * 필터9. 
+	 * 3연속수가 출현하면, 1구간 3수가 출현한다.
+	 * 
+	 * @param sourceNnumbers
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter9(int[] sourceNnumbers, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		
+		/** 각 자리의 포함개수 */
+		int[] containGroupCnt = {0,0,0,0,0};
+		
+		//각 자리의 포함개수를 구한다.
+		for(int index = 0 ; index < targetNumbers.length ; index++){
+			int mok = targetNumbers[index]/10;
+			/*
+			 * 10의자리수는 작은 자리 수로 설정한다.
+			 * 10 : 1의 자리
+			 * 20 : 10의 자리
+			 * 30 : 20의 자리
+			 * 40 : 30의 자리
+			 */
+			if(mok > 0 && (targetNumbers[index] % 10 == 0)){
+				mok -= 1;
+			}
+			containGroupCnt[mok] = containGroupCnt[mok] + 1;
+		}
+		
+		// 1구간 3수 출현여부 체크
+		for (int i = 0; i < containGroupCnt.length; i++) {
+			if (containGroupCnt[i] == 3) {
+				isMatched = true;
+			}
+		}
+		
+		return isMatched;
+	}
+	
+	/**
+	 * 필터10. 
+	 * 40번대 멸 이면, 당첨번호의 앞뒤 바뀐수가 출현한다.(예: 21 <-> 12)
+	 * 
+	 * @param sourceNnumbers
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter10(int[] sourceNnumbers, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		
+		// 출현번호의 역번호 Map 설정 (출현여부 확인용)
+		Map<Integer, Integer> reverseNumberMap = new HashMap<Integer, Integer>(); 
+		for (int i = 0; i < sourceNnumbers.length; i++) {
+			int number = sourceNnumbers[i];
+			// 2자리수만 확인
+			if (number >= 10) {
+				String strNumber = String.valueOf(number);
+				String strReverseNumber = strNumber.substring(1, 2) + strNumber.substring(0, 1);
+				int reverseNumber = Integer.parseInt(strReverseNumber);
+				if (reverseNumber <= 45) {
+					reverseNumberMap.put(reverseNumber, reverseNumber);
+				}
+			}
+		}
+		
+		for (int i = 0; i < targetNumbers.length; i++) {
+			if (reverseNumberMap.containsKey(targetNumbers[i])) {
+				isMatched = true;
+				break;
+			}
+		}
+		
+		return isMatched;
+	}
+	
+	
 }

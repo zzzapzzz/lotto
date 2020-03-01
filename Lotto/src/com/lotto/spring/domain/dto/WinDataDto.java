@@ -38,6 +38,18 @@ public class WinDataDto extends DefaultDto{
 	/** 수정일자 */
 	private String up_dt;
 	
+	/** 
+	 * 홀짝비율(차트용)
+	 * 1 : 6:0
+	 * 2 : 1:5
+	 * 3 : 2:4
+	 * 4 : 3:3
+	 * 5 : 2:4
+	 * 6 : 1:5
+	 * 7 : 0:6
+	 */
+	private int yAxis;
+	
 	public int getWin_count() {
 		return win_count;
 	}
@@ -109,6 +121,12 @@ public class WinDataDto extends DefaultDto{
 	}
 	public void setOdd_even(String odd_even) {
 		this.odd_even = odd_even;
+	}
+	public int getyAxis() {
+		return yAxis;
+	}
+	public void setyAxis(int yAxis) {
+		this.yAxis = yAxis;
 	}
 	public int getAc() {
 		return ac;
