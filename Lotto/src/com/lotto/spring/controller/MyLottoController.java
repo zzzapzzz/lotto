@@ -1463,6 +1463,56 @@ public class MyLottoController extends DefaultSMController {
 			isCheck = false;	//체크여부 초기화
 			
 			
+			// 필터11
+			boolean isFilter11 = false;
+			// 최근 당첨번호에서 10구간(10~19) 3수 출현여부 확인
+			isCheck = lottoDataService.checkRange3Numbers(lastWinNnumbers, 1);
+			
+			if (isCheck) {
+				isFilter11 = lottoDataService.getMatchedPer(11, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
+			
+			
+			// 필터12
+			boolean isFilter12 = false;
+			// 최근 당첨번호에서 38번 출현여부 확인
+			for (int i = 0; i < lastWinNnumbers.length; i++) {
+				if (lastWinNnumbers[i] == 38) {
+					isCheck = true;
+					break;
+				}
+			}
+			
+			if (isCheck) {
+				isFilter12 = lottoDataService.getMatchedPer(12, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
+			
+			
+			// 필터13
+			boolean isFilter13 = false;
+			// 최근 당첨번호에서 4회차 전부터 1씩 감소하는 수가 4회 출현 후 5회차에서 2 적은수가 출현 확인
+			isCheck = lottoDataService.isCheckFilter13(winDataListForFilter);
+			
+			if (isCheck) {
+				isFilter13 = lottoDataService.getMatchedPer(13, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
+			
+			
+			// 필터14
+			boolean isFilter14 = false;
+			// 최근 당첨번호에서 3회차 전부터 1씩 감소하는 수가 3회동안 출현 확인
+			isCheck = lottoDataService.isCheckFilter14(winDataListForFilter);
+			
+			if (isCheck) {
+				isFilter14 = lottoDataService.getMatchedPer(14, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
+			
+			
+			
 			
 			// 자동목록 조회, 예상패턴 비교, 등록
 			// 추출된 번호목록 Map 2020.02.07
@@ -1746,6 +1796,50 @@ public class MyLottoController extends DefaultSMController {
 							continue;
 						} else {
 							log.info("\t추가 필터10 성공.");
+						}
+					}
+					
+					if (isFilter11) {
+						log.info("추가 필터11 체크합니다.");
+						result = lottoDataService.isMatchedFilter11(lastWinNnumbers, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터11 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터11 성공.");
+						}
+					}
+					
+					if (isFilter12) {
+						log.info("추가 필터12 체크합니다.");
+						result = lottoDataService.isMatchedFilter12(lastWinNnumbers, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터12 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터12 성공.");
+						}
+					}
+					
+					if (isFilter13) {
+						log.info("추가 필터13 체크합니다.");
+						result = lottoDataService.isMatchedFilter13(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터13 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터13 성공.");
+						}
+					}
+					
+					if (isFilter14) {
+						log.info("추가 필터14 체크합니다.");
+						result = lottoDataService.isMatchedFilter14(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터14 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터14 성공.");
 						}
 					}
 					

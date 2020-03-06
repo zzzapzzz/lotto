@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
  
 @Component("fileUtils")
 public class FileUtils {
-    private static final String filePath = "C:\\ios\\temp\\";
+    private static final String filePath = "C:\\smlotto\\temp\\";
      
     public static List<Map<String,Object>> getFileInfo(HttpServletRequest request) throws Exception{
         MultipartHttpServletRequest multipartHttpServletRequest = (MultipartHttpServletRequest)request;

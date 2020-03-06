@@ -8,7 +8,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -54,6 +62,12 @@ public class TestController extends DefaultSMController {
 	
 	@Autowired(required = true)
 	private LottoDataService lottoDataService;
+	
+//	@Autowired(required = true)
+//	private MailService mailService;
+	
+//	@Autowired(required = true)
+//	private JavaMailSender mailSender;
 	
 	/**
 	 * 테스트 화면 호출
@@ -1797,7 +1811,7 @@ public class TestController extends DefaultSMController {
 				WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 				
-				int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 				
 				// 체크
@@ -1805,11 +1819,11 @@ public class TestController extends DefaultSMController {
 				int appearCnt = 0;
 				boolean isCheckAppear = false;
 				boolean isCheckMatch = false;
-				for (int i = 0; i < sourceNnumbers.length - 2; i++) {
+				for (int i = 0; i < sourceNumbers.length - 2; i++) {
 					isCheckAppear = false;
-					int num1 = sourceNnumbers[i];
-					int num2 = sourceNnumbers[i+1];
-					int num3 = sourceNnumbers[i+2];
+					int num1 = sourceNumbers[i];
+					int num2 = sourceNumbers[i+1];
+					int num3 = sourceNumbers[i+2];
 					
 					if (num3 - num1 == 10) {
 						log.info("[" + loginUserNo + "] " + (countIdx+1) + "회 " + num1 + ", " + num3 + " 존재");
@@ -1934,7 +1948,7 @@ public class TestController extends DefaultSMController {
 				WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 				
-				int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 				int[] sourceZeroCntRange = lottoDataService.getZeroCntRangeData(sourceWinDataDto);
 				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 				
@@ -1946,22 +1960,22 @@ public class TestController extends DefaultSMController {
 				// 단번대 멸 체크
 				
 				if (sourceZeroCntRange[0] == 0) {
-					for (int i = 0; i < sourceNnumbers.length; i++) {
+					for (int i = 0; i < sourceNumbers.length; i++) {
 						if (!"".equals(numbers)) {
 							numbers += ",";
 						}
-						numbers += sourceNnumbers[i];
+						numbers += sourceNumbers[i];
 					}
 					
 					// 첫번째 수가 10번대 체크
 //					if (11 <= targetNumbers[0] || targetNumbers[0] <= 20) {
-					if (10 <= sourceNnumbers[0] || sourceNnumbers[0] <= 19) {
+					if (10 <= sourceNumbers[0] || sourceNumbers[0] <= 19) {
 						allAppearCnt++;
 						
 						//지난 당첨번호 3수
-						int num4 = sourceNnumbers[3];
-						int num5 = sourceNnumbers[4];
-						int num6 = sourceNnumbers[5];
+						int num4 = sourceNumbers[3];
+						int num5 = sourceNumbers[4];
+						int num6 = sourceNumbers[5];
 						
 						//이월여부 체크
 						for (int i = 0; i < targetNumbers.length; i++) {
@@ -2071,7 +2085,7 @@ public class TestController extends DefaultSMController {
 				WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 				
-				int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 				
 				// 체크
@@ -2082,18 +2096,18 @@ public class TestController extends DefaultSMController {
 				int appear3RangeCnt = 0;
 				
 				String numbers = "";
-				for (int i = 0; i < sourceNnumbers.length; i++) {
-					if (20 <= sourceNnumbers[i] && sourceNnumbers[i] <= 29) {
+				for (int i = 0; i < sourceNumbers.length; i++) {
+					if (20 <= sourceNumbers[i] && sourceNumbers[i] <= 29) {
 						appear2RangeCnt++;
 					}
-					if (30 <= sourceNnumbers[i] && sourceNnumbers[i] <= 39) {
+					if (30 <= sourceNumbers[i] && sourceNumbers[i] <= 39) {
 						appear3RangeCnt++;
 					}
 					
 					if (!"".equals(numbers)) {
 						numbers += ",";
 					}
-					numbers += sourceNnumbers[i];
+					numbers += sourceNumbers[i];
 				}
 				
 				
@@ -2206,7 +2220,7 @@ public class TestController extends DefaultSMController {
 				WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 				
-				int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 				
 				// 체크
@@ -2216,12 +2230,12 @@ public class TestController extends DefaultSMController {
 				
 				int checkNumber = 0;
 				
-				for (int i = 0; i < sourceNnumbers.length; i++) {
-					if (sourceNnumbers[i] == 42) {
+				for (int i = 0; i < sourceNumbers.length; i++) {
+					if (sourceNumbers[i] == 42) {
 						isAppear42 = true;
 						if (i >= 2) {
 							// 앞 2번째 수 - 1
-							checkNumber = sourceNnumbers[i-2] - 1; 
+							checkNumber = sourceNumbers[i-2] - 1; 
 						}
 						break;
 					}
@@ -2333,7 +2347,7 @@ public class TestController extends DefaultSMController {
 				WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 				
-				int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 				
 				// 체크
@@ -2342,8 +2356,8 @@ public class TestController extends DefaultSMController {
 				
 				int checkNumber = 0;
 				
-				for (int i = 0; i < sourceNnumbers.length; i++) {
-					if (sourceNnumbers[i] == 28) {
+				for (int i = 0; i < sourceNumbers.length; i++) {
+					if (sourceNumbers[i] == 28) {
 						isAppear = true;
 						break;
 					}
@@ -2461,7 +2475,7 @@ public class TestController extends DefaultSMController {
 				WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 				
-				int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 				
 				// 체크
@@ -2470,8 +2484,8 @@ public class TestController extends DefaultSMController {
 				
 				int checkNumber = 0;
 				
-				for (int i = 0; i < sourceNnumbers.length; i++) {
-					if (sourceNnumbers[i] == 19) {
+				for (int i = 0; i < sourceNumbers.length; i++) {
+					if (sourceNumbers[i] == 19) {
 						isAppear = true;
 						break;
 					}
@@ -2482,8 +2496,8 @@ public class TestController extends DefaultSMController {
 				
 					boolean isAppear2 = false;	// 출현여부
 					// 0끝수 출현여부 체크
-					boolean is1Range3CNumbers = lottoDataService.check1Range3Numbers(sourceNnumbers);
-//					boolean is3ConsecutivelyNumbers = lottoDataService.check3ConsecutivelyNumbers(sourceNnumbers);
+					boolean is1Range3CNumbers = lottoDataService.check1Range3Numbers(sourceNumbers);
+//					boolean is3ConsecutivelyNumbers = lottoDataService.check3ConsecutivelyNumbers(sourceNumbers);
 					String msg = "";
 					if (is1Range3CNumbers) {
 						// 3연수 있음.
@@ -2608,7 +2622,7 @@ public class TestController extends DefaultSMController {
 				WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 				
-				int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 				
 				// 체크
@@ -2617,14 +2631,14 @@ public class TestController extends DefaultSMController {
 				
 				int checkNumber = 0;
 				
-				for (int i = 0; i < sourceNnumbers.length; i++) {
-					if (sourceNnumbers[i] == 11
-							|| sourceNnumbers[i] == 22
-							|| sourceNnumbers[i] == 33
-							|| sourceNnumbers[i] == 44
+				for (int i = 0; i < sourceNumbers.length; i++) {
+					if (sourceNumbers[i] == 11
+							|| sourceNumbers[i] == 22
+							|| sourceNumbers[i] == 33
+							|| sourceNumbers[i] == 44
 							) {
 						isAppear = true;
-						checkNumber = sourceNnumbers[i]; 
+						checkNumber = sourceNumbers[i]; 
 						break;
 					}
 				}
@@ -2736,7 +2750,7 @@ public class TestController extends DefaultSMController {
 				WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 				
-				int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 				
 				// 체크
@@ -2745,8 +2759,8 @@ public class TestController extends DefaultSMController {
 				
 				int checkNumber = 0;
 				
-				for (int i = 0; i < sourceNnumbers.length; i++) {
-					if (sourceNnumbers[i] == 8) {
+				for (int i = 0; i < sourceNumbers.length; i++) {
+					if (sourceNumbers[i] == 8) {
 						isAppear = true;
 						break;
 					}
@@ -2868,7 +2882,7 @@ public class TestController extends DefaultSMController {
 				WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 				
-				int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 				int[] targetZeroCntRange = lottoDataService.getZeroCntRangeData(targetWinDataDto);
 				
@@ -2879,25 +2893,25 @@ public class TestController extends DefaultSMController {
 				
 				int checkNumber = 0;
 				
-				for (int i = 0; i < sourceNnumbers.length - 2; i++) {
-					if (sourceNnumbers[i+1] - sourceNnumbers[i] == 1) {
-						consecutivelyNumbers += sourceNnumbers[i];
+				for (int i = 0; i < sourceNumbers.length - 2; i++) {
+					if (sourceNumbers[i+1] - sourceNumbers[i] == 1) {
+						consecutivelyNumbers += sourceNumbers[i];
 						
 						if (!"".equals(consecutivelyNumbers)) {
 							consecutivelyNumbers += ",";
 						}
-						consecutivelyNumbers += sourceNnumbers[i+1];
+						consecutivelyNumbers += sourceNumbers[i+1];
 						
 						// 끝수 존재여부 체크
-						if (i+2 < sourceNnumbers.length) {
-							if(sourceNnumbers[i+2] - sourceNnumbers[i+1] == 1) {
+						if (i+2 < sourceNumbers.length) {
+							if(sourceNumbers[i+2] - sourceNumbers[i+1] == 1) {
 								// 다음수가 3연속 확인
 								isAppear = true;
 								
 								if (!"".equals(consecutivelyNumbers)) {
 									consecutivelyNumbers += ",";
 								}
-								consecutivelyNumbers += sourceNnumbers[i+2];
+								consecutivelyNumbers += sourceNumbers[i+2];
 								
 								break;
 							}
@@ -3011,7 +3025,7 @@ public class TestController extends DefaultSMController {
 				WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 				
-				int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 				int[] sourceZeroCntRange = lottoDataService.getZeroCntRangeData(sourceWinDataDto);
 				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 				
@@ -3025,8 +3039,8 @@ public class TestController extends DefaultSMController {
 					
 					// 출현번호의 역번호 Map 설정 (출현여부 확인용)
 					Map<Integer, Integer> reverseNumberMap = new HashMap<Integer, Integer>(); 
-					for (int i = 0; i < sourceNnumbers.length; i++) {
-						int number = sourceNnumbers[i];
+					for (int i = 0; i < sourceNumbers.length; i++) {
+						int number = sourceNumbers[i];
 						// 2자리수만 확인
 						if (number >= 10) {
 							String strNumber = String.valueOf(number);
@@ -3067,6 +3081,638 @@ public class TestController extends DefaultSMController {
 				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
 			}
 			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
+	 * 나대길 가설11 검증
+	 * 
+	 * 가설11. 10구간 3수 출현하면, 마지막 수 합의 배수 출현(예: 18 -> 18, 27, 36, 45)
+	 * 
+	 * 2020.03.06 검증
+	 * 단번수 미포함
+	 * 1회부터 확인 : 전체출현횟수 = 86, 일치횟수 = 35, 정확도 41%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 1, 일치횟수 = 1, 정확도 100%
+	 * 
+	 * 단번수 포함
+	 * 1회부터 확인 : 전체출현횟수 = 86, 일치횟수 = 40, 정확도 47%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 1, 일치횟수 = 1, 정확도 100%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory11")
+	public void testTheory11(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 나대길 가설11 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+				
+				WinDataDto sourceWinDataDto = winDataList.get(countIdx);
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
+				
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+				
+				// 체크
+				boolean isAppear = false;	// 출현여부
+				String appearNumber = ""; 
+				
+				boolean isRange3Numbers = lottoDataService.checkRange3Numbers(sourceNumbers, 1);
+				// 10구간(10 ~ 19) 3수 출현 확인
+				if (isRange3Numbers) {
+					allAppearCnt++;
+					
+					int max10RangeNumber = 0; 
+					for (int i = 0; i < sourceNumbers.length; i++) {
+						int number = sourceNumbers[i];
+						// 10구간의 가장 큰 수 설정
+						if (10 <= number && number <= 19 ) {
+							if (max10RangeNumber < number) {
+								max10RangeNumber = number;
+							}
+						}
+					}
+					
+					String strNumber = String.valueOf(max10RangeNumber);
+					int sumNumber = Integer.parseInt(strNumber.substring(1, 2)) + Integer.parseInt(strNumber.substring(0, 1));
+					for (int i = 0; i < targetNumbers.length; i++) {
+						if (10 <= targetNumbers[i] && targetNumbers[i] % sumNumber == 0) {
+//						if (targetNumbers[i] % sumNumber == 0) {
+							isAppear = true;
+							break;
+						}
+					}
+					
+					if (isAppear) {
+						matchedCnt++;
+					}
+				}
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
+	 * 나대길 가설12 검증
+	 * 
+	 * 가설12. 38번이 출현하면, 26 또는 29가 출현한다.
+	 * 
+	 * 2020.03.06 검증
+	 * 1회부터 확인 : 전체출현횟수 = 118, 일치횟수 = 33, 정확도 28%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 4, 일치횟수 = 4, 정확도 100%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory12")
+	public void testTheory12(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 나대길 가설12 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+				
+				WinDataDto sourceWinDataDto = winDataList.get(countIdx);
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
+				
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+				
+				// 38번 출현 확인
+				boolean isAppear = false;
+				for (int i = 0; i < sourceNumbers.length; i++) {
+					if (sourceNumbers[i] == 38) {
+						allAppearCnt++;
+						isAppear = true;
+						break;
+					}
+				}
+					
+				if (isAppear) {
+					for (int i = 0; i < targetNumbers.length; i++) {
+						if (targetNumbers[i] == 26 || targetNumbers[i] == 29) {
+							matchedCnt++;
+							break;
+						}
+					}
+				}
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
+	 * 나대길 가설13 검증
+	 * 
+	 * 가설13. 4회차 전부터 1씩 감소하는 수가 4회 출현 후 다음 2 적은수가 출현하면, 다음 회차에서 빠진수가 출현한다.
+	 * 
+	 * 2020.03.06 검증
+	 * 1회부터 확인 : 전체출현횟수 = 2, 일치횟수 = 1, 정확도 50%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 1, 일치횟수 = 1, 정확도 100%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory13")
+	public void testTheory13(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 나대길 가설13 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 5; countIdx++) {
+				
+				WinDataDto source5WinDataDto = winDataList.get(countIdx);
+				WinDataDto source4WinDataDto = winDataList.get(countIdx+1);
+				WinDataDto source3WinDataDto = winDataList.get(countIdx+2);
+				WinDataDto source2WinDataDto = winDataList.get(countIdx+3);
+				WinDataDto source1WinDataDto = winDataList.get(countIdx+4);
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+5);
+				
+				int[] source5Numbers = LottoUtil.getNumbers(source5WinDataDto);
+				int[] source4Numbers = LottoUtil.getNumbers(source4WinDataDto);
+				int[] source3Numbers = LottoUtil.getNumbers(source3WinDataDto);
+				int[] source2Numbers = LottoUtil.getNumbers(source2WinDataDto);
+				int[] source1Numbers = LottoUtil.getNumbers(source1WinDataDto);
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+				
+				// 4회차 전부터 1씩 감소하고 다음 2 적은 수 출현여부 확인
+				// 시작회차의 첫번째수부터 차례대로 확인
+				boolean isAppear = false;
+				for (int h = 0; h < source5Numbers.length; h++) {
+					for (int i = 0; i < source4Numbers.length; i++) {
+						if (source5Numbers[h] - 1 == source4Numbers[i] || source5WinDataDto.getBonus_num() - 1 == source4Numbers[i]) {
+							for (int j = 0; j < source3Numbers.length; j++) {
+								if (source4Numbers[i] - 1 == source3Numbers[j]) {
+									for (int k = 0; k < source2Numbers.length; k++) {
+										if (source3Numbers[j] - 1 == source2Numbers[k]) {
+											for (int l = 0; l < source1Numbers.length; l++) {
+												// 2 적은 수 확인
+												if (source2Numbers[k] - 2 == source1Numbers[l]) {
+													allAppearCnt++;
+													
+													// 다음회차에서 빠진수가 출현
+													for (int m = 0; m < targetNumbers.length; m++) {
+														if (source2Numbers[k] - 1 == targetNumbers[m]) {
+															matchedCnt++;
+															break;
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
+	 * 나대길 가설14 검증
+	 * 
+	 * 가설14. 3회차 전부터 1씩 감소하는 수가 3회동안 출현하면, 다음 회차에서 8끝수가 출현한다.
+	 * 
+	 * 2020.03.07 검증
+	 * 1회부터 확인 : 전체출현횟수 = 200, 일치횟수 = 90, 정확도 45%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 30, 일치횟수 = 16, 정확도 53%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory14")
+	public void testTheory14(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 나대길 가설14 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 3; countIdx++) {
+				
+				WinDataDto source3WinDataDto = winDataList.get(countIdx);
+				WinDataDto source2WinDataDto = winDataList.get(countIdx+1);
+				WinDataDto source1WinDataDto = winDataList.get(countIdx+2);
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+3);
+				
+				int[] source3Numbers = LottoUtil.getNumbers(source3WinDataDto);
+				int[] source2Numbers = LottoUtil.getNumbers(source2WinDataDto);
+				int[] source1Numbers = LottoUtil.getNumbers(source1WinDataDto);
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+				
+				// 3회차 전부터 1씩 감소하는 수 출현여부 확인
+				// 시작회차의 첫번째수부터 차례대로 확인
+				boolean isAppear = false;
+				for (int j = 0; j < source3Numbers.length; j++) {
+					for (int k = 0; k < source2Numbers.length; k++) {
+						if (source3Numbers[j] - 1 == source2Numbers[k] || source3WinDataDto.getBonus_num() - 1 == source2Numbers[k]) {
+							for (int l = 0; l < source1Numbers.length; l++) {
+								if (source2Numbers[k] - 1 == source1Numbers[l]) {
+									allAppearCnt++;
+									
+									// 다음회차에서 8끝수가 출현
+									for (int m = 0; m < targetNumbers.length; m++) {
+										if (targetNumbers[m] % 10 == 8) {
+											matchedCnt++;
+											break;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	@RequestMapping("/test/sendEmail")
+	public void sendEmail(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 이메일 발송 테스트");
+			String accessip = request.getRemoteHost();
+			
+			// TEST1
+//			EmailVO vo = new EmailVO();
+//			vo.setTitle("메일발송테스트");
+//			vo.setContent("1,2,3,4,5,6,");
+//			vo.setSender("smlotto@naver.com");
+//			vo.setReceiver("cremazer@gmail.com");
+////			mailService.sendEmail(vo);		
+//			
+//			JavaMailSenderImpl sender = new JavaMailSenderImpl();
+//			sender.setHost("smtp.naver.com");
+//			sender.setPort(587);
+//			sender.setUsername("smlotto");
+//			sender.setPassword("Qudrkfl!813152");
+//			
+//			Properties prop = new Properties();
+//			prop.setProperty("mail.smtp.auth", "true");
+//			prop.setProperty("mail.smtp.starttls.enable", "true");
+//			prop.setProperty("mail.smtps.ssl.checkserveridentity", "true");
+//			prop.setProperty("mail.smtps.ssl.trust", "*");
+//			prop.setProperty("mail.debug", "true");
+//			prop.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+//			sender.setJavaMailProperties(prop);
+//			
+//			MimeMessage message = sender.createMimeMessage();
+//			MimeMessageHelper helper = new MimeMessageHelper(message);
+//			helper.setFrom(vo.getSender());
+//			helper.setTo(vo.getReceiver());
+//			helper.setText(vo.getContent());
+//			helper.setSubject(vo.getTitle());
+//			sender.send(message);
+			
+			
+			
+			// TEST2
+//			String host = "smtp.naver.com"; // 네이버일 경우 네이버 계정
+//			String user = "smlotto";
+//			String password = "Qudrkfl!813152";
+//			String to = "cremazer@gmail.com";
+//			
+//			// SMTP 서버 정보를 설정한다. 
+//			Properties props = new Properties(); 
+//			props.put("mail.smtp.host", host); 
+////			props.put("mail.smtp.port", 587); 
+//			props.put("mail.smtp.port", 465); 
+//			props.put("mail.smtp.auth", "true"); 
+//			props.put("mail.smtp.starttls.enable", "true");
+//			props.put("mail.smtp.ssl.enable", "true");
+////			props.put("mail.smtp.ssl.trust", host);
+//			props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory"); 
+//			
+//			Session session2 = Session.getDefaultInstance(props, new javax.mail.Authenticator() { 
+//				protected PasswordAuthentication getPasswordAuthentication() { 
+//					return new PasswordAuthentication(user, password); 
+//				} 
+//			}); 
+//			session2.setDebug(true);
+//			
+//			try { 
+//				MimeMessage message = new MimeMessage(session2); 
+//				message.setFrom(new InternetAddress(user)); 
+//				
+//				// 단건 보내기
+//				message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
+//				
+//				// 다중 메일보내기
+////				InternetAddress[] addArray = new InternetAddress[5];
+////				addArray[0] = new InternetAddress("ktko0@ktko0.com");
+////				addArray[1] = new InternetAddress("ktko1@ktko1.com"); 
+////				addArray[2] = new InternetAddress("ktko2@ktko2.com"); 
+////				addArray[3] = new InternetAddress("ktko3@ktko3.com"); 
+////				addArray[4] = new InternetAddress("ktko4@ktko4.com"); 
+////				message.addRecipients(Message.RecipientType.TO, addArray);
+//
+//				
+//				// 메일 제목 
+//				message.setSubject("KTKO SMTP TEST1111"); 
+//				
+//				// 메일 내용 
+//				message.setText("KTKO Success!!"); 
+//				
+//				// send the message 
+//				Transport.send(message); 
+//				System.out.println("Success Message Send"); 
+//			} catch (MessagingException e) { 
+//				e.printStackTrace(); 
+//			}
+			
+			
+			// TEST3
+			// 메일 관련 정보
+			String host = "smtp.naver.com";
+			final String username = "smlotto";
+			final String password = "Qudrkfl!813152";
+			int port = 465;
+//			int port = 587;
+			
+			// 메일 내용
+			String recipient = "cremazer@gmail.com";
+			String subject = "SM Lotto 메일테스트";
+			String body = "1,2,3,4,5,6";
+			
+			Properties props = System.getProperties();
+			props.put("mail.smtp.host", host);
+			props.put("mail.smtp.port", port);
+			props.put("mail.smtp.auth", "true");
+//			props.put("mail.smtp.starttls.enable", "true");
+			props.put("mail.smtp.ssl.enable", "true");
+			props.put("mail.smtp.ssl.trust", host);
+			
+			
+			Session session2 = Session.getDefaultInstance(props, new javax.mail.Authenticator() {
+				String un = username;
+				String pw = password;
+				protected PasswordAuthentication getPasswordAuthentication() { 
+					return new PasswordAuthentication(un, pw); 
+				} 
+			});
+			session2.setDebug(true);
+			
+			MimeMessage message = new MimeMessage(session2); 
+			message.setFrom(new InternetAddress("smlotto@naver.com")); 
+			
+			// 단건 보내기
+			message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+			
+			message.setSubject(subject); 
+			
+			// 메일 내용 
+			message.setText(body); 
+			
+			// send the message 
+			Transport.send(message); 
+				
+			jsonObj.put("status", "success");
 		} else {
 			jsonObj.put("status", "usernotfound");
 			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");

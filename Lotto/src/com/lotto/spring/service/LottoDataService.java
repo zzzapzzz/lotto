@@ -4930,19 +4930,19 @@ public class LottoDataService extends DefaultService {
 	 * 3연속 수 존재 확인
 	 * 2020.02.29
 	 * 
-	 * @param sourceNnumbers
+	 * @param sourceNumbers
 	 * @return
 	 */
-	public boolean check3ConsecutivelyNumbers(int[] sourceNnumbers) {
+	public boolean check3ConsecutivelyNumbers(int[] sourceNumbers) {
 		// 체크
 		boolean isAppear = false;	// 출현여부
 		
-		for (int i = 0; i < sourceNnumbers.length - 2; i++) {
-			if (sourceNnumbers[i+1] - sourceNnumbers[i] == 1) {
+		for (int i = 0; i < sourceNumbers.length - 2; i++) {
+			if (sourceNumbers[i+1] - sourceNumbers[i] == 1) {
 				
 				// 끝수 존재여부 체크
-				if (i+2 < sourceNnumbers.length) {
-					if(sourceNnumbers[i+2] - sourceNnumbers[i+1] == 1) {
+				if (i+2 < sourceNumbers.length) {
+					if(sourceNumbers[i+2] - sourceNumbers[i+1] == 1) {
 						// 다음수가 3연속 확인
 						isAppear = true;
 						
@@ -4958,21 +4958,21 @@ public class LottoDataService extends DefaultService {
 	 * 같은번호 3개 존재 확인
 	 * 2020.02.29
 	 * 
-	 * @param sourceNnumbers
+	 * @param sourceNumbers
 	 * @return
 	 */
-	public boolean check1Range3Numbers(int[] sourceNnumbers) {
+	public boolean check1Range3Numbers(int[] sourceNumbers) {
 		// 체크
 		boolean isAppear = false;	// 출현여부
 		int[] rangeCnt = {0,0,0,0,0};
-		for (int i = 0; i < sourceNnumbers.length; i++) {
-			if (sourceNnumbers[i] < 10 ) {
+		for (int i = 0; i < sourceNumbers.length; i++) {
+			if (sourceNumbers[i] < 10 ) {
 				rangeCnt[0] += 1; 
-			} else if (sourceNnumbers[i] < 20 ) {
+			} else if (sourceNumbers[i] < 20 ) {
 				rangeCnt[1] += 1;
-			} else if (sourceNnumbers[i] < 30 ) {
+			} else if (sourceNumbers[i] < 30 ) {
 				rangeCnt[2] += 1;
-			} else if (sourceNnumbers[i] < 40 ) {
+			} else if (sourceNumbers[i] < 40 ) {
 				rangeCnt[3] += 1;
 			} else {
 				rangeCnt[4] += 1;
@@ -4991,24 +4991,60 @@ public class LottoDataService extends DefaultService {
 	
 	/**
 	 * 같은번호 3개 존재 확인
+	 * 2020.02.29
+	 * 
+	 * @param sourceNumbers
+	 * @param range 특정구간
+	 * @return
+	 */
+	public boolean checkRange3Numbers(int[] sourceNumbers, int range) { 
+		// 체크
+		boolean isAppear = false;	// 출현여부
+		int[] rangeCnt = {0,0,0,0,0};
+		for (int i = 0; i < sourceNumbers.length; i++) {
+			if (sourceNumbers[i] < 10 ) {
+				rangeCnt[0] += 1; 
+			} else if (sourceNumbers[i] < 20 ) {
+				rangeCnt[1] += 1;
+			} else if (sourceNumbers[i] < 30 ) {
+				rangeCnt[2] += 1;
+			} else if (sourceNumbers[i] < 40 ) {
+				rangeCnt[3] += 1;
+			} else {
+				rangeCnt[4] += 1;
+			}
+		}
+		
+		for (int i = 0; i < rangeCnt.length; i++) {
+			if (rangeCnt[i] == 3 && i == range) {
+				isAppear = true;
+				break;
+			}
+		}
+		
+		return isAppear;
+	}
+	
+	/**
+	 * 같은번호 3개 존재 확인
 	 * checkNumber이 19일 때는 30,40 구간만 확인
 	 * 2020.02.29
 	 * 
-	 * @param sourceNnumbers
+	 * @param sourceNumbers
 	 * @return
 	 */
-	public boolean check1Range3Numbers(int[] sourceNnumbers, int checkNumber) {
+	public boolean check1Range3Numbers(int[] sourceNumbers, int checkNumber) {
 		// 체크
 		boolean isAppear = false;	// 출현여부
 		int[] rangeCnt = {0,0};
-		for (int i = 0; i < sourceNnumbers.length; i++) {
-			if (sourceNnumbers[i] < 10 ) {
+		for (int i = 0; i < sourceNumbers.length; i++) {
+			if (sourceNumbers[i] < 10 ) {
 				continue; 
-			} else if (sourceNnumbers[i] < 20 ) {
+			} else if (sourceNumbers[i] < 20 ) {
 				continue;
-			} else if (sourceNnumbers[i] < 30 ) {
+			} else if (sourceNumbers[i] < 30 ) {
 				continue;
-			} else if (sourceNnumbers[i] < 40 ) {
+			} else if (sourceNumbers[i] < 40 ) {
 				rangeCnt[0] += 1;
 			} else {
 				rangeCnt[1] += 1;
@@ -5055,9 +5091,259 @@ public class LottoDataService extends DefaultService {
 			matchedPer = getTheory9MatchedPer(winDataList, fromCount);
 		} else if (theoryNumber == 10) {
 			matchedPer = getTheory10MatchedPer(winDataList, fromCount);
+		} else if (theoryNumber == 11) {
+			matchedPer = getTheory11MatchedPer(winDataList, fromCount);
+		} else if (theoryNumber == 12) {
+			matchedPer = getTheory12MatchedPer(winDataList, fromCount);
+		} else if (theoryNumber == 13) {
+			matchedPer = getTheory13MatchedPer(winDataList, fromCount);
+		} else if (theoryNumber == 14) {
+			matchedPer = getTheory14MatchedPer(winDataList, fromCount);
 		}
 		
 		return aimMatchedPer > (int) matchedPer;
+	}
+	
+	/**
+	 * 가설14. 
+	 * 3회차 전부터 1씩 감소하는 수가 3회동안 출현하면, 다음 회차에서 8끝수가 출현한다.
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory14MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0;
+		
+		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 3; countIdx++) {
+			
+			WinDataDto source3WinDataDto = winDataList.get(countIdx);
+			WinDataDto source2WinDataDto = winDataList.get(countIdx+1);
+			WinDataDto source1WinDataDto = winDataList.get(countIdx+2);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+3);
+			
+			int[] source3Numbers = LottoUtil.getNumbers(source3WinDataDto);
+			int[] source2Numbers = LottoUtil.getNumbers(source2WinDataDto);
+			int[] source1Numbers = LottoUtil.getNumbers(source1WinDataDto);
+			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			
+			// 3회차 전부터 1씩 감소하는 수 출현여부 확인
+			// 시작회차의 첫번째수부터 차례대로 확인
+			boolean isAppear = false;
+			for (int j = 0; j < source3Numbers.length; j++) {
+				for (int k = 0; k < source2Numbers.length; k++) {
+					if (source3Numbers[j] - 1 == source2Numbers[k] || source3WinDataDto.getBonus_num() - 1 == source2Numbers[k]) {
+						for (int l = 0; l < source1Numbers.length; l++) {
+							if (source2Numbers[k] - 1 == source1Numbers[l]) {
+								allAppearCnt++;
+								
+								// 다음회차에서 8끝수가 출현
+								for (int m = 0; m < targetNumbers.length; m++) {
+									if (targetNumbers[m] % 10 == 8) {
+										matchedCnt++;
+										break;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+					
+		return matchedPer;
+	}
+	
+	/**
+	 * 가설13. 
+	 * 4회차 전부터 1씩 감소하는 수가 4회 출현 후 다음 2 적은수가 출현하면, 다음 회차에서 빠진수가 출현한다.
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory13MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0;
+		
+		// 마지막 회차의 전회차까지만 반복해야함.
+		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 5; countIdx++) {
+			
+			WinDataDto source5WinDataDto = winDataList.get(countIdx);
+			WinDataDto source4WinDataDto = winDataList.get(countIdx+1);
+			WinDataDto source3WinDataDto = winDataList.get(countIdx+2);
+			WinDataDto source2WinDataDto = winDataList.get(countIdx+3);
+			WinDataDto source1WinDataDto = winDataList.get(countIdx+4);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+5);
+			
+			int[] source5Numbers = LottoUtil.getNumbers(source5WinDataDto);
+			int[] source4Numbers = LottoUtil.getNumbers(source4WinDataDto);
+			int[] source3Numbers = LottoUtil.getNumbers(source3WinDataDto);
+			int[] source2Numbers = LottoUtil.getNumbers(source2WinDataDto);
+			int[] source1Numbers = LottoUtil.getNumbers(source1WinDataDto);
+			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			
+			// 4회차 전부터 1씩 감소하고 다음 2 적은 수 출현여부 확인
+			// 시작회차의 첫번째수부터 차례대로 확인
+			boolean isAppear = false;
+			for (int h = 0; h < source5Numbers.length; h++) {
+				for (int i = 0; i < source4Numbers.length; i++) {
+					if (source5Numbers[h] - 1 == source4Numbers[i] || source5WinDataDto.getBonus_num() - 1 == source4Numbers[i]) {
+						for (int j = 0; j < source3Numbers.length; j++) {
+							if (source4Numbers[i] - 1 == source3Numbers[j]) {
+								for (int k = 0; k < source2Numbers.length; k++) {
+									if (source3Numbers[j] - 1 == source2Numbers[k]) {
+										for (int l = 0; l < source1Numbers.length; l++) {
+											// 2 적은 수 확인
+											if (source2Numbers[k] - 2 == source1Numbers[l]) {
+												allAppearCnt++;
+												
+												// 다음회차에서 빠진수가 출현
+												for (int m = 0; m < targetNumbers.length; m++) {
+													if (source2Numbers[k] - 1 == targetNumbers[m]) {
+														matchedCnt++;
+														break;
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+		
+		return matchedPer;
+	}
+	
+	/**
+	 * 가설12. 
+	 * 38번이 출현하면, 26 또는 29가 출현한다.
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory12MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0;
+		
+		// 마지막 회차의 전회차까지만 반복해야함.
+		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+			
+			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
+			
+			int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			
+			// 38번 출현 확인
+			boolean isAppear = false;
+			for (int i = 0; i < sourceNumbers.length; i++) {
+				if (sourceNumbers[i] == 38) {
+					allAppearCnt++;
+					isAppear = true;
+					break;
+				}
+			}
+			
+			if (isAppear) {
+				for (int i = 0; i < targetNumbers.length; i++) {
+					if (targetNumbers[i] == 26 || targetNumbers[i] == 29) {
+						matchedCnt++;
+						break;
+					}
+				}
+			}
+			
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+		
+		return matchedPer;
+	}
+	
+	/**
+	 * 가설11. 
+	 * 10구간 3수 출현하면, 마지막 수 합의 배수 출현(예: 18 -> 18, 27, 36, 45)
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory11MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0;
+		
+		// 마지막 회차의 전회차까지만 반복해야함.
+		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+			
+			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
+			
+			int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			
+			// 체크
+			boolean isAppear = false;	// 출현여부
+			
+			boolean isRange3Numbers = this.checkRange3Numbers(sourceNumbers, 1);
+			// 10구간(10 ~ 19) 3수 출현 확인
+			if (isRange3Numbers) {
+				allAppearCnt++;
+				
+				int max10RangeNumber = 0; 
+				for (int i = 0; i < sourceNumbers.length; i++) {
+					int number = sourceNumbers[i];
+					// 10구간의 가장 큰 수 설정
+					if (10 <= number && number <= 19 ) {
+						if (max10RangeNumber < number) {
+							max10RangeNumber = number;
+						}
+					}
+				}
+				
+				String strNumber = String.valueOf(max10RangeNumber);
+				int sumNumber = Integer.parseInt(strNumber.substring(1, 2)) + Integer.parseInt(strNumber.substring(0, 1));
+				for (int i = 0; i < targetNumbers.length; i++) {
+					// 단번대 미포함
+					if (10 <= targetNumbers[i] && targetNumbers[i] % sumNumber == 0) {
+//					if (targetNumbers[i] % sumNumber == 0) {
+						isAppear = true;
+						break;
+					}
+				}
+				
+				if (isAppear) {
+					matchedCnt++;
+				}
+			}
+			
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+		
+		return matchedPer;
 	}
 
 	/**
@@ -5079,7 +5365,7 @@ public class LottoDataService extends DefaultService {
 			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 			
-			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 			int[] sourceZeroCntRange = this.getZeroCntRangeData(sourceWinDataDto);
 			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 			
@@ -5093,8 +5379,8 @@ public class LottoDataService extends DefaultService {
 				
 				// 출현번호의 역번호 Map 설정 (출현여부 확인용)
 				Map<Integer, Integer> reverseNumberMap = new HashMap<Integer, Integer>(); 
-				for (int i = 0; i < sourceNnumbers.length; i++) {
-					int number = sourceNnumbers[i];
+				for (int i = 0; i < sourceNumbers.length; i++) {
+					int number = sourceNumbers[i];
 					// 2자리수만 확인
 					if (number >= 10) {
 						String strNumber = String.valueOf(number);
@@ -5153,7 +5439,7 @@ public class LottoDataService extends DefaultService {
 			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 			
-			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 //			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 			int[] targetZeroCntRange = this.getZeroCntRangeData(targetWinDataDto);
 			
@@ -5162,25 +5448,25 @@ public class LottoDataService extends DefaultService {
 			String consecutivelyNumbers = ""; 
 //			String appearNumber = ""; 
 			
-			for (int i = 0; i < sourceNnumbers.length - 2; i++) {
-				if (sourceNnumbers[i+1] - sourceNnumbers[i] == 1) {
-					consecutivelyNumbers += sourceNnumbers[i];
+			for (int i = 0; i < sourceNumbers.length - 2; i++) {
+				if (sourceNumbers[i+1] - sourceNumbers[i] == 1) {
+					consecutivelyNumbers += sourceNumbers[i];
 					
 					if (!"".equals(consecutivelyNumbers)) {
 						consecutivelyNumbers += ",";
 					}
-					consecutivelyNumbers += sourceNnumbers[i+1];
+					consecutivelyNumbers += sourceNumbers[i+1];
 					
 					// 끝수 존재여부 체크
-					if (i+2 < sourceNnumbers.length) {
-						if(sourceNnumbers[i+2] - sourceNnumbers[i+1] == 1) {
+					if (i+2 < sourceNumbers.length) {
+						if(sourceNumbers[i+2] - sourceNumbers[i+1] == 1) {
 							// 다음수가 3연속 확인
 							isAppear = true;
 							
 							if (!"".equals(consecutivelyNumbers)) {
 								consecutivelyNumbers += ",";
 							}
-							consecutivelyNumbers += sourceNnumbers[i+2];
+							consecutivelyNumbers += sourceNumbers[i+2];
 							
 							break;
 						}
@@ -5237,15 +5523,15 @@ public class LottoDataService extends DefaultService {
 			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 			
-			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 			
 			// 체크
 			boolean isAppear = false;	// 출현여부
 			String appearNumber = ""; 
 			
-			for (int i = 0; i < sourceNnumbers.length; i++) {
-				if (sourceNnumbers[i] == 8) {
+			for (int i = 0; i < sourceNumbers.length; i++) {
+				if (sourceNumbers[i] == 8) {
 					isAppear = true;
 					break;
 				}
@@ -5310,7 +5596,7 @@ public class LottoDataService extends DefaultService {
 			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 			
-			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 			
 			// 체크
@@ -5319,14 +5605,14 @@ public class LottoDataService extends DefaultService {
 			
 			int checkNumber = 0;
 			
-			for (int i = 0; i < sourceNnumbers.length; i++) {
-				if (sourceNnumbers[i] == 11
-						|| sourceNnumbers[i] == 22
-						|| sourceNnumbers[i] == 33
-						|| sourceNnumbers[i] == 44
+			for (int i = 0; i < sourceNumbers.length; i++) {
+				if (sourceNumbers[i] == 11
+						|| sourceNumbers[i] == 22
+						|| sourceNumbers[i] == 33
+						|| sourceNumbers[i] == 44
 						) {
 					isAppear = true;
-					checkNumber = sourceNnumbers[i]; 
+					checkNumber = sourceNumbers[i]; 
 					break;
 				}
 			}
@@ -5381,15 +5667,15 @@ public class LottoDataService extends DefaultService {
 			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 			
-			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 			
 			// 체크
 			boolean isAppear = false;	// 출현여부
 			String appearNumber = ""; 
 			
-			for (int i = 0; i < sourceNnumbers.length; i++) {
-				if (sourceNnumbers[i] == 19) {
+			for (int i = 0; i < sourceNumbers.length; i++) {
+				if (sourceNumbers[i] == 19) {
 					isAppear = true;
 					break;
 				}
@@ -5400,7 +5686,7 @@ public class LottoDataService extends DefaultService {
 			
 				boolean isAppear2 = false;	// 출현여부
 				// 0끝수 출현여부 체크
-				boolean is1Range3CNumbers = this.check1Range3Numbers(sourceNnumbers);
+				boolean is1Range3CNumbers = this.check1Range3Numbers(sourceNumbers);
 				String msg = "";
 				if (is1Range3CNumbers) {
 					// 3연수 있음.
@@ -5468,7 +5754,7 @@ public class LottoDataService extends DefaultService {
 			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 			
-			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 			
 			// 체크
@@ -5477,8 +5763,8 @@ public class LottoDataService extends DefaultService {
 			
 			int checkNumber = 0;
 			
-			for (int i = 0; i < sourceNnumbers.length; i++) {
-				if (sourceNnumbers[i] == 28) {
+			for (int i = 0; i < sourceNumbers.length; i++) {
+				if (sourceNumbers[i] == 28) {
 					isAppear = true;
 					break;
 				}
@@ -5534,7 +5820,7 @@ public class LottoDataService extends DefaultService {
 			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 			
-			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 			
 			// 체크
@@ -5544,12 +5830,12 @@ public class LottoDataService extends DefaultService {
 			
 			int checkNumber = 0;
 			
-			for (int i = 0; i < sourceNnumbers.length; i++) {
-				if (sourceNnumbers[i] == 42) {
+			for (int i = 0; i < sourceNumbers.length; i++) {
+				if (sourceNumbers[i] == 42) {
 					isAppear42 = true;
 					if (i >= 2) {
 						// 앞 2번째 수 - 1
-						checkNumber = sourceNnumbers[i-2] - 1; 
+						checkNumber = sourceNumbers[i-2] - 1; 
 					}
 					break;
 				}
@@ -5604,7 +5890,7 @@ public class LottoDataService extends DefaultService {
 			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 			
-			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 			
 			// 체크
@@ -5615,18 +5901,18 @@ public class LottoDataService extends DefaultService {
 			int appear3RangeCnt = 0;
 			
 			String numbers = "";
-			for (int i = 0; i < sourceNnumbers.length; i++) {
-				if (20 <= sourceNnumbers[i] && sourceNnumbers[i] <= 29) {
+			for (int i = 0; i < sourceNumbers.length; i++) {
+				if (20 <= sourceNumbers[i] && sourceNumbers[i] <= 29) {
 					appear2RangeCnt++;
 				}
-				if (30 <= sourceNnumbers[i] && sourceNnumbers[i] <= 39) {
+				if (30 <= sourceNumbers[i] && sourceNumbers[i] <= 39) {
 					appear3RangeCnt++;
 				}
 				
 				if (!"".equals(numbers)) {
 					numbers += ",";
 				}
-				numbers += sourceNnumbers[i];
+				numbers += sourceNumbers[i];
 			}
 			
 			
@@ -5682,7 +5968,7 @@ public class LottoDataService extends DefaultService {
 			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 			
-			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 			int[] sourceZeroCntRange = this.getZeroCntRangeData(sourceWinDataDto);
 			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 			
@@ -5694,22 +5980,22 @@ public class LottoDataService extends DefaultService {
 			// 단번대 멸 체크
 			
 			if (sourceZeroCntRange[0] == 0) {
-				for (int i = 0; i < sourceNnumbers.length; i++) {
+				for (int i = 0; i < sourceNumbers.length; i++) {
 					if (!"".equals(numbers)) {
 						numbers += ",";
 					}
-					numbers += sourceNnumbers[i];
+					numbers += sourceNumbers[i];
 				}
 				
 				// 첫번째 수가 10번대 체크
 //							if (11 <= targetNumbers[0] || targetNumbers[0] <= 20) {
-				if (10 <= sourceNnumbers[0] || sourceNnumbers[0] <= 19) {
+				if (10 <= sourceNumbers[0] || sourceNumbers[0] <= 19) {
 					allAppearCnt++;
 					
 					//지난 당첨번호 3수
-					int num4 = sourceNnumbers[3];
-					int num5 = sourceNnumbers[4];
-					int num6 = sourceNnumbers[5];
+					int num4 = sourceNumbers[3];
+					int num5 = sourceNumbers[4];
+					int num6 = sourceNumbers[5];
 					
 					//이월여부 체크
 					for (int i = 0; i < targetNumbers.length; i++) {
@@ -5762,7 +6048,7 @@ public class LottoDataService extends DefaultService {
 			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
 			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
 			
-			int[] sourceNnumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
 			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
 			
 			// 체크
@@ -5770,11 +6056,11 @@ public class LottoDataService extends DefaultService {
 			int appearCnt = 0;
 			boolean isCheckAppear = false;
 			boolean isCheckMatch = false;
-			for (int i = 0; i < sourceNnumbers.length - 2; i++) {
+			for (int i = 0; i < sourceNumbers.length - 2; i++) {
 				isCheckAppear = false;
-				int num1 = sourceNnumbers[i];
-				int num2 = sourceNnumbers[i+1];
-				int num3 = sourceNnumbers[i+2];
+				int num1 = sourceNumbers[i];
+				int num2 = sourceNumbers[i+1];
+				int num3 = sourceNumbers[i+2];
 				
 				if (num3 - num1 == 10) {
 					log.info((countIdx+1) + "회 " + num1 + ", " + num3 + " 존재");
@@ -5827,17 +6113,17 @@ public class LottoDataService extends DefaultService {
 	 * 필터1.
 	 * 10차이나는 수 사이에 다른 숫자가 있으면, 다음회차에서 큰 수에서 중간수를 뺀 끝수가 출현한다.
 	 * 
-	 * @param sourceNnumbers
+	 * @param sourceNumbers
 	 * @param targetNumbers
 	 * @return
 	 */
-	public boolean isMatchedFilter1(int[] sourceNnumbers, int[] targetNumbers) {
+	public boolean isMatchedFilter1(int[] sourceNumbers, int[] targetNumbers) {
 		// 체크
 		boolean isMatched = false;
-		for (int i = 0; i < sourceNnumbers.length - 2; i++) {
-			int num1 = sourceNnumbers[i];
-			int num2 = sourceNnumbers[i+1];
-			int num3 = sourceNnumbers[i+2];
+		for (int i = 0; i < sourceNumbers.length - 2; i++) {
+			int num1 = sourceNumbers[i];
+			int num2 = sourceNumbers[i+1];
+			int num3 = sourceNumbers[i+2];
 			
 			if (num3 - num1 == 10) {
 				int difNum = num3 - num2;
@@ -5864,18 +6150,18 @@ public class LottoDataService extends DefaultService {
 	 * 필터2. 
 	 * 단번대 멸 & 첫수가 10번대 라면, 당첨숫자 4, 5, 6번째 중 1개가 이월된다.
 	 * 
-	 * @param sourceNnumbers
+	 * @param sourceNumbers
 	 * @param targetNumbers
 	 * @return
 	 */
-	public boolean isMatchedFilter2(int[] sourceNnumbers, int[] targetNumbers) {
+	public boolean isMatchedFilter2(int[] sourceNumbers, int[] targetNumbers) {
 		// 체크
 		boolean isMatched = false;
 		
 		//지난 당첨번호 3수
-		int num4 = sourceNnumbers[3];
-		int num5 = sourceNnumbers[4];
-		int num6 = sourceNnumbers[5];
+		int num4 = sourceNumbers[3];
+		int num5 = sourceNumbers[4];
+		int num6 = sourceNumbers[5];
 		
 		//이월여부 체크
 		for (int i = 0; i < targetNumbers.length; i++) {
@@ -5895,11 +6181,11 @@ public class LottoDataService extends DefaultService {
 	 * 필터3. 
 	 * 20번대(20~29) 2개 & 30번대(30~39) 2개가 나오면, 다음 회차에서는 0끝수가 1개 이상 출현한다.
 	 * 
-	 * @param sourceNnumbers
+	 * @param sourceNumbers
 	 * @param targetNumbers
 	 * @return
 	 */
-	public boolean isMatchedFilter3(int[] sourceNnumbers, int[] targetNumbers) {
+	public boolean isMatchedFilter3(int[] sourceNumbers, int[] targetNumbers) {
 		// 체크
 		boolean isMatched = false;
 		
@@ -5918,20 +6204,20 @@ public class LottoDataService extends DefaultService {
 	 * 필터4. 
 	 * 42번이 나오면 42의 앞 2번째 수 -1이 출현한다.
 	 * 
-	 * @param sourceNnumbers
+	 * @param sourceNumbers
 	 * @param targetNumbers
 	 * @return
 	 */
-	public boolean isMatchedFilter4(int[] sourceNnumbers, int[] targetNumbers) {
+	public boolean isMatchedFilter4(int[] sourceNumbers, int[] targetNumbers) {
 		// 체크
 		boolean isMatched = false;
 		int checkNumber = 0;
 		
-		for (int i = 0; i < sourceNnumbers.length; i++) {
-			if (sourceNnumbers[i] == 42) {
+		for (int i = 0; i < sourceNumbers.length; i++) {
+			if (sourceNumbers[i] == 42) {
 				if (i >= 2) {
 					// 앞 2번째 수 - 1
-					checkNumber = sourceNnumbers[i-2] - 1; 
+					checkNumber = sourceNumbers[i-2] - 1; 
 				}
 				break;
 			}
@@ -5952,11 +6238,11 @@ public class LottoDataService extends DefaultService {
 	 * 필터5. 
 	 * 28번이 출현하면, 4끝수가 출현한다.
 	 * 
-	 * @param sourceNnumbers
+	 * @param sourceNumbers
 	 * @param targetNumbers
 	 * @return
 	 */
-	public boolean isMatchedFilter5(int[] sourceNnumbers, int[] targetNumbers) {
+	public boolean isMatchedFilter5(int[] sourceNumbers, int[] targetNumbers) {
 		// 체크
 		boolean isMatched = false;
 		
@@ -5976,17 +6262,17 @@ public class LottoDataService extends DefaultService {
 	 * 19번호 이후 0끝 번호가 출현한다. 
 	 * 뒤에 (1구간 3수)가 나오면 뒤에는 0끝이 출현하지 않는다. (2020.02.29)
 	 * 
-	 * @param sourceNnumbers
+	 * @param sourceNumbers
 	 * @param targetNumbers
 	 * @return
 	 */
-	public boolean isMatchedFilter6(int[] sourceNnumbers, int[] targetNumbers) {
+	public boolean isMatchedFilter6(int[] sourceNumbers, int[] targetNumbers) {
 		// 체크
 		boolean isMatched = false;
 		
 		boolean isAppear2 = false;	// 출현여부
 		// 0끝수 출현여부 체크
-		boolean is1Range3CNumbers = this.check1Range3Numbers(sourceNnumbers);
+		boolean is1Range3CNumbers = this.check1Range3Numbers(sourceNumbers);
 		if (is1Range3CNumbers) {
 			// 3연수 있음.
 			int appearCnt = 0;
@@ -6017,24 +6303,24 @@ public class LottoDataService extends DefaultService {
 	 * 필터7. 
 	 * 쌍수(11,22,33,44)가 나오면, 자기번호나 가족번호(끝수가 같은)가 출현한다.
 	 * 
-	 * @param sourceNnumbers
+	 * @param sourceNumbers
 	 * @param targetNumbers
 	 * @return
 	 */
-	public boolean isMatchedFilter7(int[] sourceNnumbers, int[] targetNumbers) {
+	public boolean isMatchedFilter7(int[] sourceNumbers, int[] targetNumbers) {
 		// 체크
 		boolean isMatched = false;
 		
 		int[] checkNumber = {0,0,0,0};
 		
-		for (int i = 0; i < sourceNnumbers.length; i++) {
-			if (sourceNnumbers[i] == 11) {
+		for (int i = 0; i < sourceNumbers.length; i++) {
+			if (sourceNumbers[i] == 11) {
 				checkNumber[0] = 1;
-			} else if (sourceNnumbers[i] == 22) {
+			} else if (sourceNumbers[i] == 22) {
 				checkNumber[1] = 2;
-			} else if (sourceNnumbers[i] == 33) {
+			} else if (sourceNumbers[i] == 33) {
 				checkNumber[2] = 3;
-			} else if (sourceNnumbers[i] == 44) {
+			} else if (sourceNumbers[i] == 44) {
 				checkNumber[3] = 4;
 			}
 		}
@@ -6060,11 +6346,11 @@ public class LottoDataService extends DefaultService {
 	 * 필터8. 
 	 * 8번이 출현하면, 8배수가 출현한다.
 	 * 
-	 * @param sourceNnumbers
+	 * @param sourceNumbers
 	 * @param targetNumbers
 	 * @return
 	 */
-	public boolean isMatchedFilter8(int[] sourceNnumbers, int[] targetNumbers) {
+	public boolean isMatchedFilter8(int[] sourceNumbers, int[] targetNumbers) {
 		// 체크
 		boolean isMatched = false;
 		
@@ -6083,11 +6369,11 @@ public class LottoDataService extends DefaultService {
 	 * 필터9. 
 	 * 3연속수가 출현하면, 1구간 3수가 출현한다.
 	 * 
-	 * @param sourceNnumbers
+	 * @param sourceNumbers
 	 * @param targetNumbers
 	 * @return
 	 */
-	public boolean isMatchedFilter9(int[] sourceNnumbers, int[] targetNumbers) {
+	public boolean isMatchedFilter9(int[] sourceNumbers, int[] targetNumbers) {
 		// 체크
 		boolean isMatched = false;
 		
@@ -6124,18 +6410,18 @@ public class LottoDataService extends DefaultService {
 	 * 필터10. 
 	 * 40번대 멸 이면, 당첨번호의 앞뒤 바뀐수가 출현한다.(예: 21 <-> 12)
 	 * 
-	 * @param sourceNnumbers
+	 * @param sourceNumbers
 	 * @param targetNumbers
 	 * @return
 	 */
-	public boolean isMatchedFilter10(int[] sourceNnumbers, int[] targetNumbers) {
+	public boolean isMatchedFilter10(int[] sourceNumbers, int[] targetNumbers) {
 		// 체크
 		boolean isMatched = false;
 		
 		// 출현번호의 역번호 Map 설정 (출현여부 확인용)
 		Map<Integer, Integer> reverseNumberMap = new HashMap<Integer, Integer>(); 
-		for (int i = 0; i < sourceNnumbers.length; i++) {
-			int number = sourceNnumbers[i];
+		for (int i = 0; i < sourceNumbers.length; i++) {
+			int number = sourceNumbers[i];
 			// 2자리수만 확인
 			if (number >= 10) {
 				String strNumber = String.valueOf(number);
@@ -6157,5 +6443,225 @@ public class LottoDataService extends DefaultService {
 		return isMatched;
 	}
 	
+	/**
+	 * 필터11. 
+	 * 10구간 3수 출현하면, 마지막 수 합의 배수 출현(예: 18 -> 18, 27, 36, 45)
+	 * 
+	 * @param sourceNumbers
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter11(int[] sourceNumbers, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		
+		int max10RangeNumber = 0; 
+		for (int i = 0; i < sourceNumbers.length; i++) {
+			int number = sourceNumbers[i];
+			// 10구간의 가장 큰 수 설정
+			if (10 <= number && number <= 19 ) {
+				if (max10RangeNumber < number) {
+					max10RangeNumber = number;
+				}
+			}
+		}
+		
+		String strNumber = String.valueOf(max10RangeNumber);
+		int sumNumber = Integer.parseInt(strNumber.substring(1, 2)) + Integer.parseInt(strNumber.substring(0, 1));
+		for (int i = 0; i < targetNumbers.length; i++) {
+			// 단번대 미포함
+			if (10 <= targetNumbers[i] && targetNumbers[i] % sumNumber == 0) {
+				isMatched = true;
+				break;
+			}
+		}
+		
+		return isMatched;
+	}
 	
+	/**
+	 * 필터12. 
+	 * 38번이 출현하면, 26 또는 29가 출현한다.
+	 * 
+	 * @param sourceNumbers
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter12(int[] sourceNumbers, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		
+		for (int i = 0; i < targetNumbers.length; i++) {
+			if (targetNumbers[i] == 26 || targetNumbers[i] == 29) {
+				isMatched = true;
+				break;
+			}
+		}
+		
+		return isMatched;
+	}
+	
+	/**
+	 * 필터13. 
+	 * 4회차 전부터 1씩 감소하는 수가 4회 출현 후 다음 2 적은수가 출현하면, 다음 회차에서 빠진수가 출현한다.
+	 * 
+	 * @param winDataListForFilter
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter13(List<WinDataDto> winDataListForFilter, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		
+		WinDataDto source5WinDataDto = winDataListForFilter.get(winDataListForFilter.size()-5);
+		WinDataDto source4WinDataDto = winDataListForFilter.get(winDataListForFilter.size()-4);
+		WinDataDto source3WinDataDto = winDataListForFilter.get(winDataListForFilter.size()-3);
+		WinDataDto source2WinDataDto = winDataListForFilter.get(winDataListForFilter.size()-2);
+		WinDataDto source1WinDataDto = winDataListForFilter.get(winDataListForFilter.size()-1);
+		
+		int[] source5Numbers = LottoUtil.getNumbers(source5WinDataDto);
+		int[] source4Numbers = LottoUtil.getNumbers(source4WinDataDto);
+		int[] source3Numbers = LottoUtil.getNumbers(source3WinDataDto);
+		int[] source2Numbers = LottoUtil.getNumbers(source2WinDataDto);
+		int[] source1Numbers = LottoUtil.getNumbers(source1WinDataDto);
+		
+		// 4회차 전부터 1씩 감소하고 다음 2 적은 수 출현여부 확인
+		// 시작회차의 첫번째수부터 차례대로 확인
+		for (int h = 0; h < source5Numbers.length; h++) {
+			for (int i = 0; i < source4Numbers.length; i++) {
+				if (source5Numbers[h] - 1 == source4Numbers[i] || source5WinDataDto.getBonus_num() - 1 == source4Numbers[i]) {
+					for (int j = 0; j < source3Numbers.length; j++) {
+						if (source4Numbers[i] - 1 == source3Numbers[j]) {
+							for (int k = 0; k < source2Numbers.length; k++) {
+								if (source3Numbers[j] - 1 == source2Numbers[k]) {
+									for (int l = 0; l < source1Numbers.length; l++) {
+										// 2 적은 수 확인
+										if (source2Numbers[k] - 2 == source1Numbers[l]) {
+											
+											// 다음회차에서 빠진수가 출현
+											for (int m = 0; m < targetNumbers.length; m++) {
+												if (source2Numbers[k] - 1 == targetNumbers[m]) {
+													isMatched = true;
+													break;
+												}
+											}
+											
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return isMatched;
+	}
+	
+	/**
+	 * 필터14. 
+	 * 3회차 전부터 1씩 감소하는 수가 3회동안 출현하면, 다음 회차에서 8끝수가 출현한다.
+	 * 
+	 * @param winDataListForFilter
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter14(List<WinDataDto> winDataListForFilter, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		
+		// 다음회차에서 8끝수가 출현
+		for (int m = 0; m < targetNumbers.length; m++) {
+			if (targetNumbers[m] % 10 == 8) {
+				isMatched = true;
+				break;
+			}
+		}
+		
+		return isMatched;
+	}
+
+	/**
+	 * 최근 당첨번호에서 4회차 전부터 1씩 감소하는 수가 4회 출현 후 5회차에서 2 적은수가 출현 확인
+	 * 
+	 * @param winDataListForFilter
+	 * @return
+	 */
+	public boolean isCheckFilter13(List<WinDataDto> winDataListForFilter) {
+		boolean isCheck = false;
+		WinDataDto source5WinDataDto = winDataListForFilter.get(winDataListForFilter.size()-5);
+		WinDataDto source4WinDataDto = winDataListForFilter.get(winDataListForFilter.size()-4);
+		WinDataDto source3WinDataDto = winDataListForFilter.get(winDataListForFilter.size()-3);
+		WinDataDto source2WinDataDto = winDataListForFilter.get(winDataListForFilter.size()-2);
+		WinDataDto source1WinDataDto = winDataListForFilter.get(winDataListForFilter.size()-1);
+		
+		int[] source5Numbers = LottoUtil.getNumbers(source5WinDataDto);
+		int[] source4Numbers = LottoUtil.getNumbers(source4WinDataDto);
+		int[] source3Numbers = LottoUtil.getNumbers(source3WinDataDto);
+		int[] source2Numbers = LottoUtil.getNumbers(source2WinDataDto);
+		int[] source1Numbers = LottoUtil.getNumbers(source1WinDataDto);
+		
+		// 4회차 전부터 1씩 감소하고 다음 2 적은 수 출현여부 확인
+		// 시작회차의 첫번째수부터 차례대로 확인
+		for (int h = 0; h < source5Numbers.length; h++) {
+			for (int i = 0; i < source4Numbers.length; i++) {
+				if (source5Numbers[h] - 1 == source4Numbers[i] || source5WinDataDto.getBonus_num() - 1 == source4Numbers[i]) {
+					for (int j = 0; j < source3Numbers.length; j++) {
+						if (source4Numbers[i] - 1 == source3Numbers[j]) {
+							for (int k = 0; k < source2Numbers.length; k++) {
+								if (source3Numbers[j] - 1 == source2Numbers[k]) {
+									for (int l = 0; l < source1Numbers.length; l++) {
+										// 2 적은 수 확인
+										if (source2Numbers[k] - 2 == source1Numbers[l]) {
+											isCheck = true;
+											break;
+											
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return isCheck;
+	}
+
+	/**
+	 * 최근 당첨번호에서 3회차 전부터 1씩 감소하는 수가 3회동안 출현 확인
+	 * 
+	 * @param winDataListForFilter
+	 * @return
+	 */
+	public boolean isCheckFilter14(List<WinDataDto> winDataListForFilter) {
+		boolean isCheck = false;
+		
+		WinDataDto source4WinDataDto = winDataListForFilter.get(winDataListForFilter.size()-4);
+		WinDataDto source3WinDataDto = winDataListForFilter.get(winDataListForFilter.size()-3);
+		WinDataDto source2WinDataDto = winDataListForFilter.get(winDataListForFilter.size()-2);
+		WinDataDto source1WinDataDto = winDataListForFilter.get(winDataListForFilter.size()-1);
+		
+		int[] source3Numbers = LottoUtil.getNumbers(source3WinDataDto);
+		int[] source2Numbers = LottoUtil.getNumbers(source2WinDataDto);
+		int[] source1Numbers = LottoUtil.getNumbers(source1WinDataDto);
+		
+		// 3회차 전부터 1씩 감소하는 수 출현여부 확인
+		// 시작회차의 첫번째수부터 차례대로 확인
+		boolean isAppear = false;
+		for (int j = 0; j < source3Numbers.length; j++) {
+			for (int k = 0; k < source2Numbers.length; k++) {
+				if (source3Numbers[j] - 1 == source2Numbers[k] || source3WinDataDto.getBonus_num() - 1 == source2Numbers[k]) {
+					for (int l = 0; l < source1Numbers.length; l++) {
+						if (source2Numbers[k] - 1 == source1Numbers[l]) {
+							isCheck = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+		return isCheck;
+	}
 }

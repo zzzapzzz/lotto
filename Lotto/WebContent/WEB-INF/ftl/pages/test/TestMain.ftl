@@ -22,6 +22,7 @@
 							<span id="testNumbersRange" class="btn btn-info"><i class="fa fa-edit"></i> 번호간 범위 </span>
 							<span id="testZeroCntRange" class="btn btn-info"><i class="fa fa-edit"></i> 미출현구간 </span>
 							<span id="insertAllAcInfo" class="btn btn-success"><i class="fa fa-edit"></i> AC정보 등록</span>
+							<span id="sendEmailTest" class="btn btn-success"><i class="fa fa-edit"></i> email발송</span>
 						</div>
 						<div id="totalRange" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
 						</div>
@@ -51,6 +52,10 @@
 							<span id="testTheory8" class="btn btn-info" onclick="javascript:testTheory(8);"><i class="fa fa-bug"></i> 가설8</span>
 							<span id="testTheory9" class="btn btn-info" onclick="javascript:testTheory(9);"><i class="fa fa-bug"></i> 가설9</span>
 							<span id="testTheory10" class="btn btn-info" onclick="javascript:testTheory(10);"><i class="fa fa-bug"></i> 가설10</span>
+							<span id="testTheory11" class="btn btn-info" onclick="javascript:testTheory(11);"><i class="fa fa-bug"></i> 가설11</span>
+							<span id="testTheory12" class="btn btn-info" onclick="javascript:testTheory(12);"><i class="fa fa-bug"></i> 가설12</span>
+							<span id="testTheory13" class="btn btn-info" onclick="javascript:testTheory(13);"><i class="fa fa-bug"></i> 가설13</span>
+							<span id="testTheory14" class="btn btn-info" onclick="javascript:testTheory(14);"><i class="fa fa-bug"></i> 가설14</span>
 							<input type="text" style="width: 10%;" id="fromCheckCount" name="fromCheckCount" placeholder="확인할 전회차수" />
 							<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: left;">
 								<br />
@@ -66,6 +71,10 @@
 									<li>가설8. 8번이 출현하면, 8배수가 출현한다.</li>
 									<li>가설9. 3연속수가 출현하면, 1구간 3수가 출현한다.</li>
 									<li>가설10. 40번대 멸 이면, 당첨번호의 앞뒤 바뀐수가 출현한다.(예: 21 <-> 12)</li>
+									<li>가설11. 10구간 3수 출현하면, 마지막 수 합의 배수 출현(예: 18 -> 18, 27, 36, 45)</li>
+									<li>가설12. 38번이 출현하면, 26, 29가 출현한다.</li>
+									<li>가설13. 4회차 전부터 1씩 감소하는 수가 4회 출현 후 다음 2 적은수가 출현하면, 다음 회차에서 빠진수가 출현한다.</li>
+									<li>가설14. 3회차 전부터 1씩 감소하는 수가 3회동안 출현하면, 다음 회차에서 8끝수가 출현한다.</li>
 								</ol>
 							</div>
 						</div>
@@ -108,6 +117,22 @@
 						<div id="theoryResult10" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
 							가설10<br /> 
 							전체출현횟수 = <span id="theory10AllAppearCnt">100</span>, 일치횟수 = <span id="theory10MatchedCnt">100</span>, 정확도 <span id="theory10MatchedPer">100</span>%<br />
+						</div>
+						<div id="theoryResult11" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
+							가설11<br /> 
+							전체출현횟수 = <span id="theory11AllAppearCnt">100</span>, 일치횟수 = <span id="theory11MatchedCnt">100</span>, 정확도 <span id="theory11MatchedPer">100</span>%<br />
+						</div>
+						<div id="theoryResult12" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
+							가설12<br /> 
+							전체출현횟수 = <span id="theory12AllAppearCnt">100</span>, 일치횟수 = <span id="theory12MatchedCnt">100</span>, 정확도 <span id="theory12MatchedPer">100</span>%<br />
+						</div>
+						<div id="theoryResult13" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
+							가설13<br /> 
+							전체출현횟수 = <span id="theory13AllAppearCnt">100</span>, 일치횟수 = <span id="theory13MatchedCnt">100</span>, 정확도 <span id="theory13MatchedPer">100</span>%<br />
+						</div>
+						<div id="theoryResult14" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
+							가설14<br /> 
+							전체출현횟수 = <span id="theory14AllAppearCnt">100</span>, 일치횟수 = <span id="theory14MatchedCnt">100</span>, 정확도 <span id="theory14MatchedPer">100</span>%<br />
 						</div>
 					</div>
 					<!-- end row -->

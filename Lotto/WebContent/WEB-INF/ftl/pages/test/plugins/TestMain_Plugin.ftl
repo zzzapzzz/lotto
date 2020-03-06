@@ -28,6 +28,7 @@
 				$("#insertAllAcInfo").click(insertAllAcInfoGo);
 				$("#testExclude").click(excludeTest);
 				$("#testExcludeCount").click(excludeCountTest);
+				$("#sendEmailTest").click(sendEmailTest);
 				
 				/*
 				$("#testTheory1").click(function(){
@@ -299,6 +300,26 @@
 					type: "POST",
 					url: "/test/testExcludeCount.do",
 					data: param,
+					dataType: "json",
+					async: false,
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+			           		location.href = "/index.do"; 
+			        	}
+					}
+				});
+			}
+			
+			// 이메일 발송 테스트
+			function sendEmailTest() {
+				$.ajax({
+					type: "POST",
+					url: "/test/sendEmail.do",
 					dataType: "json",
 					async: false,
 					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
