@@ -107,21 +107,45 @@ function showBigBox (title, content, type) {
 	}
 }
 
-function showMessageBox (title, content, type, url) {
-	if (type == "C") {
+function showMessageBox (title, content, type, url, cancelUrl) {
+	if (type == "U") {
 		$.SmartMessageBox({
 			title : title,
 			content : content,
-			buttons : '[아니오][네]'
+			buttons : '[취소][확인]'
 		}, function(ButtonPressed) {
-			if (ButtonPressed === "Yes") {
+			if (ButtonPressed === "Yes" || ButtonPressed === "확인") {
 				showSmallBox($('#checkMsg').val());
 				window.location.href = url;
-			}
-			if (ButtonPressed === "No") {
+			} else if (ButtonPressed === "No" || ButtonPressed === "취소") {
 				$.smallBox({
-					title : "아니오",
-					content : "<i class='fa fa-clock-o'></i> <i>알겠습니다...</i>",
+					title : "취소",
+					content : "<i class='fa fa-clock-o'></i> <i>취소 되었습니다.</i>",
+					color : "#C46A69",
+					iconSmall : "fa fa-times fa-2x fadeInRight animated",
+					timeout : 4000
+				});
+				window.location.href = cancelUrl;
+			}
+
+		});
+	} else if (type == "F") {
+		$.SmartMessageBox({
+			title : title,
+			content : content,
+			buttons : '[취소][확인]'
+		}, function(ButtonPressed) {
+			if (ButtonPressed === "Yes" || ButtonPressed === "확인") {
+				showSmallBox($('#checkMsg').val());
+				
+				// callback
+				if (url == 'deleteMyData') {
+					deleteMyData();
+				}
+			} else if (ButtonPressed === "No" || ButtonPressed === "취소") {
+				$.smallBox({
+					title : "취소",
+					content : "<i class='fa fa-clock-o'></i> <i>취소 되었습니다.</i>",
 					color : "#C46A69",
 					iconSmall : "fa fa-times fa-2x fadeInRight animated",
 					timeout : 4000

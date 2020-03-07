@@ -82,7 +82,7 @@
 					colModel : [
 						  {name : 'ex_count', index : 'ex_count'}
 						, {name : 'user_no',	index : 'user_no', hidden:true}
-						, {name : 'seq',	index : 'seq'}
+						, {name : 'seq',	index : 'seq', hidden: true}
 						, {name : 'num1',	index : 'num1'}
 						, {name : 'num2',	index : 'num2'}
 						, {name : 'num3',	index : 'num3'}
@@ -275,14 +275,72 @@
 				});
 			}
 			
-			function autoAddibm1077() {
+			function filterAddGo() {
+				var url = "${APP_ROOT}/mylotto/filterAddajax.do?ex_count=" + thisExCount;
+				changeContent(url);
+			}
+			
+			function delGo() {
+				var idArray = $("#jqgrid").jqGrid('getDataIDs');		
+				var checkCnt = 0;
+				var ex_count = "";
+				var user_no = "";
+				var seqs = "";
+				
+				for(var i = 0 ; i < idArray.length ; i++){		
+					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ) {
+						var rowdata = $("#jqgrid").getRowData(idArray[i]);
+						ex_count = rowdata.ex_count;
+						user_no = rowdata.user_no;
+						
+						if (seqs != "") {
+							seqs += ",";
+						}
+						seqs += rowdata.seq;
+						checkCnt = checkCnt + 1;
+						
+					}
+				}
+			
+				if (checkCnt == 0) {
+					alert("선택 항목이 없습니다.");
+					return;			
+				}
+				
+				showMessageBox('MY로또 삭제', "[" + ex_count + "] 회차에서 선택한 조합을 삭제하시겠습니까?", 'F', 'deleteMyData');
+			}
+			
+			function deleteMyData() {
+				var idArray = $("#jqgrid").jqGrid('getDataIDs');		
+				var checkCnt = 0;
+				var ex_count = "";
+				var user_no = "";
+				var seqs = "";
+				
+				for(var i = 0 ; i < idArray.length ; i++){		
+					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ) {
+						var rowdata = $("#jqgrid").getRowData(idArray[i]);
+						ex_count = rowdata.ex_count;
+						user_no = rowdata.user_no;
+						
+						if (seqs != "") {
+							seqs += ",";
+						}
+						seqs += rowdata.seq;
+						checkCnt = checkCnt + 1;
+						
+					}
+				}
+				
 				var param = {
-					ex_count : Number($("#ex_count").val())
+					ex_count : Number(ex_count),
+					user_no : Number(user_no),
+					seqs : seqs
 				}
 				
 				$.ajax({
 					type: "POST",
-					url: "${APP_ROOT}/mylotto/autoAddibm1077.do",
+					url: "${APP_ROOT}/mylotto/deleteMyData.do",
 					data: param,
 					dataType: "json",
 					async: false,
@@ -306,70 +364,4 @@
 					}
 				});
 			}
-			
-			function filterAddGo() {
-				var url = "${APP_ROOT}/mylotto/filterAddajax.do?ex_count=" + thisExCount;
-				changeContent(url);
-			}
-			
-			function delGo() {
-				var idArray = $("#jqgrid").jqGrid('getDataIDs');		
-				var checkCnt = 0;
-				var ex_count = "";
-				var user_no = "";
-				var seq = "";
-				
-				for(var i = 0 ; i < idArray.length ; i++){		
-					if( $("input:checkbox[id='jqg_jqgrid_"+idArray[i]+"']").is(":checked") ) {
-						var rowdata = $("#jqgrid").getRowData(idArray[i]);
-						ex_count = rowdata.ex_count;
-						user_no = rowdata.user_no;
-						seq = rowdata.seq;
-						checkCnt = checkCnt + 1;
-					}
-				}
-			
-				if (checkCnt == 0) {
-					alert("선택 항목이 없습니다.");
-					return;			
-				} else if (checkCnt > 1) {
-					alert("하나만 선택하여야 합니다.");
-					return;
-				}
-		
-				if (confirm("[" + ex_count + "] 회차에 등록된 정보를 삭제하시겠습니까?")) {
-					var param = {
-						ex_count : Number(ex_count),
-						user_no : Number(user_no),
-						seq : Number(seq)
-					}
-					
-					$.ajax({
-						type: "POST",
-						url: "${APP_ROOT}/mylotto/deleteMyData.do",
-						data: param,
-						dataType: "json",
-						async: false,
-						contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-						error:function(xhr, textStatus, errorThrown){
-							alert(xhr.responseText);				
-						},
-						success: function(result){
-							// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
-							if (result.status == "usernotfound") {
-			               		location.href = "/index.do"; 
-			               		return;
-			            	}
-			            	
-		               		showSmallBox(result.msg);
-			            	
-							if (result.status == "success") {
-								searchGo();
-			            	}
-			            	
-						}
-					});
-				}
-			}
-
 		</script>

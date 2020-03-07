@@ -217,10 +217,11 @@ public class DefaultSMController extends DefaultController {
     	modelMap.addAttribute("SystemInfo",  systemInfo);
     	modelMap.addAttribute("GnbMenuList", userInfo.getGNBmenulist());
     	modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, strPageUri));
+    	modelMap.addAttribute("referer",  request.getHeader("referer"));
     	
     	// 로그인 체크, 권한체크
     	int loginUserId = userInfo.getUser_no();
-		modelMap.addAttribute("isLogin", userInfo.getIsLogin());
+		modelMap.addAttribute("isLogin", userInfo.getIsLogin()); 
 		if (!"Y".equals(userInfo.getIsLogin())) {
 			log.info("["+loginUserId+"]\t로그인이 필요합니다.");
 			modelMap.addAttribute("checkMsg", "로그인이 필요합니다.");

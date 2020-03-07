@@ -14,12 +14,13 @@
 				<!-- section -->
 				<section class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<form id="writestep1-form" name="writestep1-form" class="smart-form client-form" >
+						<input type="hidden" id="ex_count" name="ex_count" value="${ex_count?if_exists}" />
 						<fieldset>
 							<div class="row">
 								<div class="form-group col-xs-12 col-sm-6 col-md-6 col-lg-1 left-pull">
 									<label class="label">회차</label>
-									<label class="input">
-										<input type="text" id="ex_count" name="ex_count" value="${ex_count?if_exists}"/>
+									<label class="input state-disabled">
+										<input type="text" id="ex_count_view" name="ex_count_view" value="${ex_count?if_exists}" disabled="disabled" />
 									</label>
 								</div>
 								<div class="form-group col-xs-12 col-sm-6 col-md-6 col-lg-1 left-pull">

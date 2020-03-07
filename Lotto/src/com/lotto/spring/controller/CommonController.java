@@ -126,4 +126,49 @@ public class CommonController extends DefaultSMController {
 		writeJSON(response, jsonObj);
 	}
 	
+	/**
+	 * Email 보내기
+	 * 2020.03.04
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws SQLException
+	 */
+	@RequestMapping("/common/sendEmail")
+	public void sendEmail(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws SQLException {
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+//		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			// 로그인 아이디
+			int loginUserId = userInfo.getUser_no();
+			log.info("[" + loginUserId + "][C] Email 보내기");
+			
+			String logType       = WebUtil.replaceParam(request.getParameter("log_type"), "");
+			
+			Map map = new HashMap();
+			map.put("log_type", logType);
+			
+			CaseInsensitiveMap loginfo = commonService.getLastLog(map);
+			
+			if (loginfo != null) {
+				jsonObj.put("status", "success");	
+				jsonObj.put("data", loginfo);	
+			} else {
+				jsonObj.put("status", "fail");
+			}
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
 }

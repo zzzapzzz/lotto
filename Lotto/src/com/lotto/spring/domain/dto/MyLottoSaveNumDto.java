@@ -36,6 +36,9 @@ public class MyLottoSaveNumDto extends DefaultDto{
 	/** 수정일자 */
 	private String up_dt;
 	
+	/** 순번목록 */
+	private String seqs;
+	
 	public int getEx_count() {
 		return ex_count;
 	}
@@ -119,5 +122,11 @@ public class MyLottoSaveNumDto extends DefaultDto{
 	}
 	public void setUp_dt(String up_dt) {
 		this.up_dt = up_dt;
+	}
+	public String getSeqs() {
+		return seqs;
+	}
+	public void setSeqs(String seqs) {
+		this.seqs = seqs;
 	}
 }

@@ -4,6 +4,7 @@
 				<input type="hidden" id="isLogin" value="${isLogin?if_exists}" />
 				<input type="hidden" id="checkMsg" value="${checkMsg?if_exists}" />
 				<input type="hidden" id="status" value="${status?if_exists}" />
+				<input type="hidden" id="referer" value="${referer?if_exists}" />
 
 				<div class="row">
 					<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">

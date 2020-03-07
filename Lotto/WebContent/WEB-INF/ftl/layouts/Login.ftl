@@ -325,7 +325,7 @@
 									<section>
 										<label class="label">아이디</label>
 										<label class="input"> <i class="icon-append fa fa-envelope-o"></i>
-											<input type="text" id="join_email" name="join_email" placeholder="이메일">
+											<input type="text" class="input_en" id="join_email" name="join_email" placeholder="이메일">
 											<b class="tooltip tooltip-top-right"><i class="fa fa-envelope txt-color-teal"></i>이메일을 입력하세요.</b>
 										</label>
 									</section>
@@ -333,7 +333,7 @@
 									<section>
 										<label class="label">닉네임(별명)</label>
 										<label class="input"> <i class="icon-append fa fa-tag"></i>
-											<input type="text" class="kor" id="join_nickname" name="join_nickname" placeholder="닉네임(별명)">
+											<input type="text" class="input_kr" id="join_nickname" name="join_nickname" placeholder="닉네임(별명)">
 											<b class="tooltip tooltip-top-right"><i class="fa fa-tag txt-color-teal"></i> 닉네임(별명)을 입력하세요.</b> </label>
 										</label>
 									</section>
@@ -341,7 +341,7 @@
 									<section>
 										<label class="label">비밀번호</label>
 										<label class="input"> <i class="icon-append fa fa-lock"></i>
-											<input type="password" id="join_thwd" name="join_thwd" placeholder="비밀번호">	
+											<input type="password" class="input_en" id="join_thwd" name="join_thwd" placeholder="비밀번호">	
 											<b class="tooltip tooltip-top-right"><i class="fa fa-lock txt-color-teal"></i> 비밀번호를 입력하세요.</b> </label>										
 										</label>
 									</section>
@@ -349,7 +349,7 @@
 									<section>
 										<label class="label">비밀번호 확인</label>
 										<label class="input"> <i class="icon-append fa fa-lock"></i>
-											<input type="password" id="join_thwd_confirm" name="join_thwd_confirm" placeholder="비밀번호 확인">
+											<input type="password" class="input_en" id="join_thwd_confirm" name="join_thwd_confirm" placeholder="비밀번호 확인">
 											<b class="tooltip tooltip-top-right"><i class="fa fa-lock txt-color-teal"></i> 비밀번호를 다시 한 번 입력하세요.</b> </label>
 										</label>
 									</section>
@@ -415,7 +415,7 @@
 
 		<!-- MAIN APP JS FILE -->
 		<script src="${JS_ROOT}/app.min.js?v=0.01"></script>
-		<script src="${JS_ROOT}/common.min.js?v=0.02"></script>
+		<script src="${JS_ROOT}/common.min.js?v=0.05"></script>
 
 		<script type="text/javascript">
 			runAllForms();
@@ -940,6 +940,8 @@
 						if ("success" == result.status) {
 							showSmallBox(result.msg);
 					        $("#email").val(joinEmail);
+					        $("#thwd").val("");
+					        $("#thwd").focus();
 						}
 		            }
 		        });	
@@ -985,6 +987,13 @@
 				
 				$("#login-form").addClass("hide");
 		        $("#join-form").removeClass("hide");
+		        
+		        $("#join_email").val("");
+		        $("#join_nickname").val("");
+		        $("#join_thwd").val("");
+		        $("#join_thwd_confirm").val("");
+		        
+		        $("#join_email").focus();
 			}
 		</script>
 

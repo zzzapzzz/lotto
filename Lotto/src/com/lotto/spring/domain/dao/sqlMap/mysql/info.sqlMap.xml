@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">  
+  
+<mapper namespace="infoMapper">
+	<!-- 서비스 신청하기 -->
+ 	<insert id="applyService" parameterType="infoServiceDto">
+ 		/* info.applyService */	
+ 		<selectKey resultType="int" keyProperty="seq" order="BEFORE">
+	        SELECT COUNT(*)+1 as seq FROM TB_SERVICE_APPLY WHERE USER_NO = #{userNo}        
+	    </selectKey> 
+		INSERT INTO TB_SERVICE_APPLY
+		(user_no, seq, apply_type, svc_stat, apply_date, start_date, end_date)
+		VALUES
+		(#{userNo},#{seq},#{applyType}, 'apply', NOW(), NULL, NULL)		 
+	</insert>
+</mapper>

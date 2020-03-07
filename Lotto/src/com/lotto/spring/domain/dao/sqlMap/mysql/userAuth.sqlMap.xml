@@ -155,7 +155,7 @@
 		(
 			#{email}
 			, #{nickname}
-			, #{userKey}
+			, F_GETUSERKEY()
 			, 'N'
 			, 0
 			, 0

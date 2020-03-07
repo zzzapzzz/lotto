@@ -740,7 +740,8 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 			sessionStastus.setComplete();
 		}
 
-        return "redirect:/fhrmdlsapdls.do";	//로그인메인
+//        return "redirect:/fhrmdlsapdls.do";	//로그인메인
+        return "redirect:/";	//첫화면
 	} 
 	
 	/**

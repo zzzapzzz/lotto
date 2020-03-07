@@ -83,3 +83,9 @@ th {
 .tac {
 	text-align: center;
 }
+.input_en {
+	ime-mode:inactive
+}
+.input_ko {
+	ime-mode:active
+}

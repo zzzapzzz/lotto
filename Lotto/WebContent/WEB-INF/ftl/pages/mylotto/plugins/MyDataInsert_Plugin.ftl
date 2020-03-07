@@ -142,9 +142,11 @@
 			    });
 			    $("#num6").keydown(function (e) {
 			        if(e.keyCode == 13){
-			    		$("#bonus_num").focus();        
+			    		$('#writestep1-form').submit();      
 			        }
 			    });
+			    
+			    $("#num1").focus();
 			}
 			
 			function cancel() {

@@ -27,5 +27,6 @@
 		<typeAlias alias="exptPtrnAnlyDto" type="com.lotto.spring.domain.dto.ExptPtrnAnlyDto"/>
 		<typeAlias alias="ptrnInfoDto" type="com.lotto.spring.domain.dto.PtrnInfoDto"/>
 		<typeAlias alias="myLottoSaveNumDto" type="com.lotto.spring.domain.dto.MyLottoSaveNumDto"/>
+		<typeAlias alias="infoServiceDto" type="com.lotto.spring.domain.dto.InfoServiceDto"/>
 	</typeAliases> 
 </configuration>
