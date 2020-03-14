@@ -8,71 +8,69 @@
 		<script type="text/javascript">
 			// plugin 화면 초기화
 			function initPlugin() {
+				
 				dataLayer.push({
-				  'pageCategory': 'MyDataFilteredInsert',
+				  'pageCategory': 'ServiceInfoInsert',
 				  'visitorType': $("#authTask").val()
 				});
-				
-				$.validator.addMethod("lessThan", function(value, element, params){
-					// true : SUCCESS , false : FAIL 
-				    return !isNaN(value) && (Number(value) <= Number(params)); 
-				}, "Must be less than 45.");
 				
 				// Validation
 				$("#writestep1-form").validate({
 					// Rules for form validation
 					rules : {
-						num1 : {
+						svc_cd : {
 							required : true,
-							lessThan : 45
+							maxlength : 10
 						},
-						num2 : {
+						svc_nm : {
 							required : true,
-							lessThan : 45
+							maxlength : 50
 						},
-						num3 : {
-							required : true,
-							lessThan : 45
+						svc_type : {
+							required : true
 						},
-						num4 : {
-							required : true,
-							lessThan : 45
+						svc_base_type : {
+							required : true
 						},
-						num5 : {
+						svc_base_val : {
 							required : true,
-							lessThan : 45
+							digits : true
 						},
-						num6 : {
+						amount : {
 							required : true,
-							lessThan : 45
+							digits : true
+						},
+						use_yn : {
+							required : true
 						}
 					},
 
 					// Messages for form validation
 					messages : {
-						num1 : {
-							required: "번호1을 입력하세요.",
-							lessThan: "45이하의 숫자를 입력하세요."
+						svc_cd : {
+							required: "서비스코드를 입력하세요.",
+							maxlength: "10글자까지 입력하세요."
 						},
-						num2 : {
-							required: "번호2를 입력하세요.",
-							lessThan: "45이하의 숫자를 입력하세요."
+						svc_nm : {
+							required: "서비스명을 입력하세요.",
+							maxlength: "50글자까지 입력하세요."
 						},
-						num3 : {
-							required: "번호3을 입력하세요.",
-							lessThan: "45이하의 숫자를 입력하세요."
+						svc_type : {
+							required: "서비스구분을 선택하세요."
 						},
-						num4 : {
-							required: "번호4를 입력하세요.",
-							lessThan: "45이하의 숫자를 입력하세요."
+						svc_base_type : {
+							required: "서비스기분을 선택하세요."
 						},
-						num5 : {
-							required: "번호5를 입력하세요.",
-							lessThan: "45이하의 숫자를 입력하세요."
+						svc_base_val : {
+							required: "서비스기준값을 입력하세요.",
+							digits: "숫자만 입력하세요."
 						},
-						num6 : {
-							required: "번호6을 입력하세요.",
-							lessThan: "45이하의 숫자를 입력하세요."
+						amount : {
+							required: "금액을 입력하세요.",
+							digits: "숫자만 입력하세요."
+						},
+						use_yn : {
+							required: "사용여부를 선택하세요."
 						}
 					},
 					// Do not change code below
@@ -92,15 +90,17 @@
 			            	});
 			            	
 			            	showBigBox("필수 입력값 확인!",msg, "W");
+			            	
 			                //alert(validator.errorList[0].message);
 			                validator.errorList[0].element.focus();
+			                
 			            }
 			        }, 
 			        submitHandler: function (form) {
 			        
 			            $.ajax({
 							type: "POST",
-							url: "${APP_ROOT}/mylotto/insertMyData.do",
+							url: "${APP_ROOT}/sysmng/modifyServiceInfo.do",
 			                data: $(form).serialize(),
 							dataType: "json",
 							contentType: "application/x-www-form-urlencoded; charset=UTF-8",
@@ -114,9 +114,10 @@
 				               		return;
 				            	}
 								
-			            		showSmallBox(result.msg);
 			            		
 			            		if (result.status == "success") {
+			            			showSmallBox(result.msg);
+			            			
 									var cid = $("#currCid").val(); 
 									openContent(cid);
 		            			}
@@ -125,44 +126,38 @@
 			        }
 				});	
 
-				$("#num1").keydown(function (e) {
+			    $("#svc_cd").keydown(function (e) {
 			        if(e.keyCode == 13){
-			    		$("#num2").focus();        
+			    		$("#svc_nm").focus();        
 			        }
 			    });
-			    $("#num2").keydown(function (e) {
+			    $("#svc_nm").keydown(function (e) {
 			        if(e.keyCode == 13){
-			    		$("#num3").focus();        
+			    		$("#svc_base_type").focus();        
 			        }
 			    });
-			    $("#num3").keydown(function (e) {
+			    $("#svc_base_type").select(function (e) {
+		    		$("#svc_base_val").focus();        
+			    });
+			    $("#svc_base_val").keydown(function (e) {
 			        if(e.keyCode == 13){
-			    		$("#num4").focus();        
+			    		$("#amount").focus();        
 			        }
 			    });
-			    $("#num4").keydown(function (e) {
+			    $("#amount").keydown(function (e) {
 			        if(e.keyCode == 13){
-			    		$("#num5").focus();        
+			    		$("#prmt_cd").focus();        
 			        }
 			    });
-			    $("#num5").keydown(function (e) {
-			        if(e.keyCode == 13){
-			    		$("#num6").focus();        
-			        }
+			    $("#prmt_cd").select(function (e) {
+		    		$("#use_yn").focus();
 			    });
-			    $("#num6").keydown(function (e) {
-			        if(e.keyCode == 13){
-			    		$("#bonus_num").focus();        
-			        }
-			    });
+			    
+			    $("#svc_nm").focus();
 			}
 			
 			function cancel() {
 				var cid = $("#currCid").val(); 
 				openContent(cid);
-			}
-			
-			function save() {
-				$('#writestep1-form').submit();
 			}
 		</script>

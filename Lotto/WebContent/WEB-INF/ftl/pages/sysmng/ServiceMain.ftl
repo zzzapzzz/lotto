@@ -1,3 +1,4 @@
+			<!-- 서비스관리 -->
 			<!-- MAIN CONTENT -->
 			<div id="content">
 				<input type="hidden" id="isPlugin" value="Y" />
@@ -17,6 +18,10 @@
 					<div class="well">
 					</div>
 					
+					<span id="add" class="btn btn-success"><i class="fa fa-pencil"></i> 등록</span>
+					<span id="modify" class="btn btn-warning"><i class="fa fa-edit"></i> 수정</span>
+					<span id="del" class="btn btn-danger"><i class="fa fa-trash-o"></i> 삭제</span>
+					
 					<!-- row -->
 					<div class="row">
 
@@ -30,7 +35,6 @@
 						<!-- WIDGET END -->
 
 					</div>
-
 					<!-- end row -->
 
 				</section>

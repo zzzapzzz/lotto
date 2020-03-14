@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 
 import com.lotto.spring.core.DefaultSMController;
 import com.lotto.spring.domain.dao.UserSession;
-import com.lotto.spring.domain.dto.InfoServiceDto;
+import com.lotto.spring.domain.dto.ServiceApplyDto;
 import com.lotto.spring.service.InfoService;
 
 import net.sf.json.JSONObject;
@@ -149,7 +149,7 @@ public class InfoController extends DefaultSMController {
 	 * @throws IOException
 	 */
 	@RequestMapping("/info/applyService")
-	public void applyService(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute InfoServiceDto dto) throws IOException {
+	public void applyService(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute ServiceApplyDto dto) throws IOException {
 		
 		HttpSession session = request.getSession();
 	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");

@@ -5099,9 +5099,138 @@ public class LottoDataService extends DefaultService {
 			matchedPer = getTheory13MatchedPer(winDataList, fromCount);
 		} else if (theoryNumber == 14) {
 			matchedPer = getTheory14MatchedPer(winDataList, fromCount);
+		} else if (theoryNumber == 17) {
+			matchedPer = getTheory17MatchedPer(winDataList, fromCount);
+		} else if (theoryNumber == 18) {
+			matchedPer = getTheory18MatchedPer(winDataList, fromCount);
 		}
 		
 		return aimMatchedPer > (int) matchedPer;
+	}
+	
+	/**
+	 * 가설18. 
+	 * 5와 8끝수가 출현하면, 다음회 6끝수가 출현한다.
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory18MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0;
+		
+		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 3; countIdx++) {
+			
+			WinDataDto sourceWinDataDto = winDataList.get(countIdx);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+1);
+			
+			int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
+			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			
+			
+			// 5번과 8끝수 출현 확인
+			boolean isAppear = false;
+			boolean isAppear5 = false;
+			boolean isAppear8End = false;
+			
+			for (int i = 0; i < sourceNumbers.length; i++) {
+				if (sourceNumbers[i] == 5) {
+					isAppear5 = true;
+				}
+				if (sourceNumbers[i] % 10 == 8) {
+					isAppear8End = true;
+				}
+			}
+			
+			if (isAppear5 && isAppear8End) {
+				allAppearCnt++;
+				isAppear = true;
+			}
+			
+			if (isAppear) {
+				for (int i = 0; i < targetNumbers.length; i++) {
+					if (targetNumbers[i] % 10 == 6) {
+						matchedCnt++;
+						break;
+					}
+				}
+			}
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+					
+		return matchedPer;
+	}
+	
+	/**
+	 * 가설17. 
+	 * 단번대가 1개씩 3회연속 출현하면,4회째에 단번대의 배수가 출현한다.
+	 * 
+	 * @param winDataList
+	 * @param fromCount
+	 * @return
+	 */
+	private double getTheory17MatchedPer(List<WinDataDto> winDataList, int fromCount) {
+		int allAppearCnt = 0;
+		int matchedCnt = 0;
+		double matchedPer = 0.0;
+		
+		// 출현빈도가 낮아 전체를 대상으로 목표치 측정하도록 처리
+//		for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 3; countIdx++) {
+		for (int countIdx = 0 ; countIdx < winDataList.size() - 3; countIdx++) {
+			
+			WinDataDto sourceWinDataDto1 = winDataList.get(countIdx);
+			WinDataDto sourceWinDataDto2 = winDataList.get(countIdx+1);
+			WinDataDto sourceWinDataDto3 = winDataList.get(countIdx+2);
+			WinDataDto targetWinDataDto = winDataList.get(countIdx+3);
+			
+			int[] sourceNumbers1 = LottoUtil.getNumbers(sourceWinDataDto1);
+			int[] sourceNumbers2 = LottoUtil.getNumbers(sourceWinDataDto2);
+			int[] sourceNumbers3 = LottoUtil.getNumbers(sourceWinDataDto3);
+			int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+			
+			int[] sourceZeroCntRange1 = this.getZeroCntRangeData(sourceWinDataDto1);
+			int[] sourceZeroCntRange2 = this.getZeroCntRangeData(sourceWinDataDto2);
+			int[] sourceZeroCntRange3 = this.getZeroCntRangeData(sourceWinDataDto3);
+			
+			
+			// 단번대 1개씩 3회 출현 확인
+			boolean isAppear = false;
+			
+			if (sourceZeroCntRange1[0] == 1
+					&& sourceZeroCntRange2[0] == 1
+					&& sourceZeroCntRange3[0] == 1
+					) {
+				allAppearCnt++;
+				isAppear = true;
+			}
+			
+			if (isAppear) {
+				int num1 = sourceNumbers1[0];
+				int num2 = sourceNumbers2[0];
+				int num3 = sourceNumbers3[0];
+				
+				for (int i = 0; i < targetNumbers.length; i++) {
+					if (targetNumbers[i] % num1 == 0
+							|| targetNumbers[i] % num2 == 0
+							|| targetNumbers[i] % num3 == 0
+							) {
+						matchedCnt++;
+						break;
+					}
+				}
+			}
+		}
+		
+		if (allAppearCnt > 0) {
+			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+		}
+		
+		return matchedPer;
 	}
 	
 	/**
@@ -5156,7 +5285,7 @@ public class LottoDataService extends DefaultService {
 		if (allAppearCnt > 0) {
 			matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
 		}
-					
+		
 		return matchedPer;
 	}
 	
@@ -6581,6 +6710,94 @@ public class LottoDataService extends DefaultService {
 		
 		return isMatched;
 	}
+	
+	/**
+	 * 필터17. 
+	 * 단번대가 1개씩 3회연속 출현하면,4회째에 단번대의 배수가 출현한다.
+	 * 
+	 * @param winDataListForFilter
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter17(List<WinDataDto> winDataListForFilter, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		
+		// 다음회차에서 8끝수가 출현
+		WinDataDto sourceWinDataDto1 = winDataListForFilter.get(winDataListForFilter.size()-3);
+		WinDataDto sourceWinDataDto2 = winDataListForFilter.get(winDataListForFilter.size()-2);
+		WinDataDto sourceWinDataDto3 = winDataListForFilter.get(winDataListForFilter.size()-1);
+		
+		int[] sourceNumbers1 = LottoUtil.getNumbers(sourceWinDataDto1);
+		int[] sourceNumbers2 = LottoUtil.getNumbers(sourceWinDataDto2);
+		int[] sourceNumbers3 = LottoUtil.getNumbers(sourceWinDataDto3);
+		
+		int num1 = sourceNumbers1[0];
+		int num2 = sourceNumbers2[0];
+		int num3 = sourceNumbers3[0];
+		
+		for (int i = 0; i < targetNumbers.length; i++) {
+			if (targetNumbers[i] % num1 == 0
+					|| targetNumbers[i] % num2 == 0
+					|| targetNumbers[i] % num3 == 0
+					) {
+				isMatched = true;
+				break;
+			}
+		}
+		
+		return isMatched;
+	}
+	
+	/**
+	 * 필터18. 
+	 * 5와 8끝수가 출현하면, 다음회 6끝수가 출현한다.
+	 * 
+	 * @param winDataListForFilter
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter18(List<WinDataDto> winDataListForFilter, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		
+		for (int i = 0; i < targetNumbers.length; i++) {
+			if (targetNumbers[i] % 10 == 6) {
+				isMatched = true;
+				break;
+			}
+		}
+		
+		return isMatched;
+	}
+	
+	/**
+	 * 필터19. 
+	 * 6회귀 연속 3회 전멸하면, 6회귀수가 출현한다.
+	 * 
+	 * @param winDataListForFilter
+	 * @param targetNumbers
+	 * @return
+	 */
+	public boolean isMatchedFilter19(List<WinDataDto> winDataListForFilter, int[] targetNumbers) {
+		// 체크
+		boolean isMatched = false;
+		
+		WinDataDto sourceWinDataDtoBf6 = winDataListForFilter.get(winDataListForFilter.size()-6);
+		int[] sourceNumbersBf6 = LottoUtil.getNumbers(sourceWinDataDtoBf6);
+		
+		for (int i = 0; i < targetNumbers.length; i++) {
+			for (int j = 0; j < sourceNumbersBf6.length; j++) {
+				if (targetNumbers[i] == sourceNumbersBf6[i]) {
+					isMatched = true;
+					break;
+				}
+			}
+			
+		}
+		
+		return isMatched;
+	}
 
 	/**
 	 * 최근 당첨번호에서 4회차 전부터 1씩 감소하는 수가 4회 출현 후 5회차에서 2 적은수가 출현 확인
@@ -6662,6 +6879,126 @@ public class LottoDataService extends DefaultService {
 				}
 			}
 		}
+		return isCheck;
+	}
+	
+	/**
+	 * 단번대가 1개씩 3회연속 출현 확인
+	 * 
+	 * @param winDataListForFilter
+	 * @return
+	 */
+	public boolean isCheckFilter17(List<WinDataDto> winDataListForFilter) {
+		boolean isCheck = false;
+		
+		WinDataDto sourceWinDataDto1 = winDataListForFilter.get(winDataListForFilter.size()-3);
+		WinDataDto sourceWinDataDto2 = winDataListForFilter.get(winDataListForFilter.size()-2);
+		WinDataDto sourceWinDataDto3 = winDataListForFilter.get(winDataListForFilter.size()-1);
+		
+		int[] sourceZeroCntRange1 = this.getZeroCntRangeData(sourceWinDataDto1);
+		int[] sourceZeroCntRange2 = this.getZeroCntRangeData(sourceWinDataDto2);
+		int[] sourceZeroCntRange3 = this.getZeroCntRangeData(sourceWinDataDto3);
+		
+		
+		// 단번대 1개씩 3회 출현 확인
+		if (sourceZeroCntRange1[0] == 1
+				&& sourceZeroCntRange2[0] == 1
+				&& sourceZeroCntRange3[0] == 1
+				) {
+			isCheck = true;
+		}
+				
+		return isCheck;
+	}
+	
+	/**
+	 * 5와 8끝수 출현 확인
+	 * 
+	 * @param winDataListForFilter
+	 * @return
+	 */
+	public boolean isCheckFilter18(List<WinDataDto> winDataListForFilter) {
+		boolean isCheck = false;
+		
+		WinDataDto sourceWinDataDto = winDataListForFilter.get(winDataListForFilter.size()-1);
+		
+		int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
+		
+		// 5번과 8끝수 출현 확인
+		boolean isAppear5 = false;
+		boolean isAppear8End = false;
+		
+		for (int i = 0; i < sourceNumbers.length; i++) {
+			if (sourceNumbers[i] == 5) {
+				isAppear5 = true;
+			}
+			if (sourceNumbers[i] % 10 == 8) {
+				isAppear8End = true;
+			}
+		}
+		
+		if (isAppear5 && isAppear8End) {
+			isCheck = true;
+		}
+		
+		return isCheck;
+	}
+	
+	/**
+	 * 6회귀 연속 3회 전멸 확인
+	 * 
+	 * 6회귀 : 6회차 전 당첨번호가 1개라도 다시 출현한다는 의미
+	 * 
+	 * @param winDataListForFilter
+	 * @return
+	 */
+	public boolean isCheckFilter19(List<WinDataDto> winDataListForFilter) {
+		boolean isCheck = false;
+		
+		WinDataDto sourceWinDataDto3 = winDataListForFilter.get(winDataListForFilter.size()-3);
+		WinDataDto sourceWinDataDto2 = winDataListForFilter.get(winDataListForFilter.size()-2);
+		WinDataDto sourceWinDataDto1 = winDataListForFilter.get(winDataListForFilter.size()-1);
+		WinDataDto sourceWinDataDto3Bf6 = winDataListForFilter.get(winDataListForFilter.size()-3-6);
+		WinDataDto sourceWinDataDto2Bf6 = winDataListForFilter.get(winDataListForFilter.size()-2-6);
+		WinDataDto sourceWinDataDto1Bf6 = winDataListForFilter.get(winDataListForFilter.size()-1-6);
+		
+		int[] sourceNumbers1 = LottoUtil.getNumbers(sourceWinDataDto1);
+		int[] sourceNumbers2 = LottoUtil.getNumbers(sourceWinDataDto2);
+		int[] sourceNumbers3 = LottoUtil.getNumbers(sourceWinDataDto3);
+		int[] sourceNumbers1Bf6 = LottoUtil.getNumbers(sourceWinDataDto1Bf6);
+		int[] sourceNumbers2Bf6 = LottoUtil.getNumbers(sourceWinDataDto2Bf6);
+		int[] sourceNumbers3Bf6 = LottoUtil.getNumbers(sourceWinDataDto3Bf6);
+		
+		// 6회귀 연속 3회 전멸 확인
+		for (int i = 0; i < sourceNumbers1.length; i++) {
+			for (int j = 0; j < sourceNumbers1Bf6.length; j++) {
+				if (sourceNumbers1[i] == sourceNumbers1Bf6[j]) {
+					//6회귀 번호가 출현함.
+					return false;
+				}
+			}
+		}
+		
+		for (int i = 0; i < sourceNumbers2.length; i++) {
+			for (int j = 0; j < sourceNumbers2Bf6.length; j++) {
+				if (sourceNumbers2[i] == sourceNumbers2Bf6[j]) {
+					//6회귀 번호가 출현함.
+					return false;
+				}
+			}
+		}
+		
+		for (int i = 0; i < sourceNumbers3.length; i++) {
+			for (int j = 0; j < sourceNumbers3Bf6.length; j++) {
+				if (sourceNumbers3[i] == sourceNumbers3Bf6[j]) {
+					//6회귀 번호가 출현함.
+					return false;
+				}
+			}
+		}
+		
+		isCheck = true;
+		
 		return isCheck;
 	}
 }

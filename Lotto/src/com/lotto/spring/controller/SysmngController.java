@@ -42,6 +42,7 @@ import com.lotto.spring.domain.dto.LowHighDto;
 import com.lotto.spring.domain.dto.MCNumDto;
 import com.lotto.spring.domain.dto.MenuInfoDto;
 import com.lotto.spring.domain.dto.OddEvenDto;
+import com.lotto.spring.domain.dto.ServiceInfoDto;
 import com.lotto.spring.domain.dto.TaskInfoDto;
 import com.lotto.spring.domain.dto.TotalDto;
 import com.lotto.spring.domain.dto.UserInfoDto;
@@ -2072,6 +2073,335 @@ public class SysmngController extends DefaultSMController {
 	}
 	
 	/**
+	 * 서비스정보 목록 조회
+	 * 2020.03.14
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/sysmng/getServiceInfoList")
+	public void getServiceList(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute ServiceInfoDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		//2016.05.23 cremazer
+  		//ORACLE 인 경우 대문자 설정
+  		if ("ORACLE".equals(systemInfo.getDatabase())) {
+  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+  		}
+  		
+		// 로그인 아이디
+		int loginUserNo = userInfo.getUser_no();
+		log.info("[" + loginUserNo + "][C] 서비스정보 목록 조회");
+		String accessip = request.getRemoteHost();
+		
+		dto.setReg_user_no(loginUserNo);
+		dto.setAccess_ip(accessip);
+		
+		List<ServiceInfoDto> serviceInfoList = sysmngService.getServiceInfoList(dto);
+		int serviceInfoListCnt = sysmngService.getServiceInfoListCnt(dto);
+
+		int total_pages = 0;
+		if( serviceInfoListCnt > 0 ) {
+			total_pages = (int) Math.ceil((double)serviceInfoListCnt/Double.parseDouble(dto.getRows()));
+		} else { 
+			total_pages = 0; 
+		}  
+		
+        //토탈 값 구하기 끝
+        // Content Page - File which will included in tiles definition
+ 
+		JSONObject json = new JSONObject();
+  
+//		JSONArray jsonArr = JSONArray.fromObject(userList);
+		
+
+		json.put("cnt", serviceInfoList.size());
+		json.put("total", total_pages);
+		json.put("page", dto.getPage());
+		json.put("records", serviceInfoListCnt);
+		json.put("rows", serviceInfoList);		
+		json.put("status", "success");		
+		writeJSON(response, json); 
+	}
+	
+	/**
+	 * 서비스정보 등록 화면 호출(ajax)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/writeServiceInfoajax")
+	public String writeServiceInfoajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			long loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 서비스정보 등록 화면 호출(ajax)");
+			
+			setModelMapWithAuthCheck(modelMap, request);
+			
+			//CurrMenuInfo overwrite
+			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/servicemng"));
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ServiceInfoInsert");
+			modelMap.addAttribute("sub_menu_nm", "서비스정보 등록");
+			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
+			
+		} else {
+			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
+		}
+		return POPUP;
+	}
+	
+	/**
+	 * 서비스정보 등록 화면 호출(plugin)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/writeServiceInfoplugin")
+	public String writeServiceInfoplugin(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			long loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 서비스정보 등록 화면 호출(plugin)");
+			
+			setModelMapWithAuthCheck(modelMap, request);
+			
+			//CurrMenuInfo overwrite
+			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/servicemng"));
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/ServiceInfoInsert_Plugin");
+			
+			return POPUP;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";
+			
+		}
+	}
+	
+	/**
+	 * 서비스정보 등록
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/sysmng/insertServiceInfo")
+	public void insertServiceInfo(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute ServiceInfoDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 서비스정보 등록");
+			
+			// 서비스코드 중복체크
+			boolean isDup = sysmngService.dupCheckServiceCode(dto); 
+			if (isDup) {
+				// 중복
+				jsonObj.put("status", "isDuplicate");
+				jsonObj.put("msg", "이미 등록된 서비스코드입니다.");
+			} else {
+				// 중복없음
+				// 서비스정보 등록
+				sysmngService.insertServiceInfo(dto);
+				
+				jsonObj.put("status", "success");
+				jsonObj.put("msg", "등록 되었습니다.");
+			}
+			
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+        
+	}
+
+	/**
+	 * 서비스정보 수정 화면 호출(ajax)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/modifyServiceInfoajax")
+	public String modifyServiceInfoajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses, @ModelAttribute ServiceInfoDto dto) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			long loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 서비스정보 수정 화면 호출(ajax)");
+			
+			setModelMapWithAuthCheck(modelMap, request);
+			
+			//CurrMenuInfo overwrite
+			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/servicemng"));
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ServiceInfoModify");
+			modelMap.addAttribute("sub_menu_nm", "서비스정보 수정");
+			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
+			
+			//수정할 당첨번호 조회
+			ServiceInfoDto serviceInfo = sysmngService.getServiceInfo(dto);
+			modelMap.addAttribute("ServiceInfo", serviceInfo);
+			
+		} else {
+			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
+		}
+		return POPUP;
+	}
+	
+	/**
+	 * 서비스정보 수정 화면 호출(plugin)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/modifyServiceInfoplugin")
+	public String modifyServiceInfoplugin(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			long loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 서비스정보 수정 화면 호출(plugin)");
+			
+			setModelMapWithAuthCheck(modelMap, request);
+			
+			//CurrMenuInfo overwrite
+			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/servicemng"));
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/ServiceInfoModify_Plugin");
+			
+			return POPUP;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";
+			
+		}
+	}
+	
+	/**
+	 * 서비스정보 수정
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/sysmng/modifyServiceInfo")
+	public void modifyServiceInfo(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute ServiceInfoDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 서비스정보 수정");
+			
+			boolean result = sysmngService.modifyServiceInfo(dto);
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("msg", "수정했습니다.");
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+        
+	}
+	
+	/**
+	 * 서비스정보 삭제
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/sysmng/deleteServiceInfo")
+	public void deleteServiceInfo(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute ServiceInfoDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 서비스정보 삭제");
+			
+			boolean result = sysmngService.deleteServiceInfo(dto);
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("msg", "삭제했습니다.");
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+        
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/**
 	 * 프로모션관리 화면 호출
 	 * 
 	 * @param modelMap
@@ -3032,4 +3362,5 @@ public class SysmngController extends DefaultSMController {
 		writeJSON(response, jsonObj);
         
 	}
+	
 }

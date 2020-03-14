@@ -24,6 +24,7 @@ import com.lotto.spring.domain.dto.LowHighDto;
 import com.lotto.spring.domain.dto.MCNumDto;
 import com.lotto.spring.domain.dto.MenuInfoDto;
 import com.lotto.spring.domain.dto.OddEvenDto;
+import com.lotto.spring.domain.dto.ServiceInfoDto;
 import com.lotto.spring.domain.dto.TaskInfoDto;
 import com.lotto.spring.domain.dto.TotalDto;
 import com.lotto.spring.domain.dto.UserInfoDto;
@@ -1915,4 +1916,97 @@ public class SysmngService extends DefaultService {
 		return flag;
 	}
 	
+	/**
+	 * 서비스정보 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public ServiceInfoDto getServiceInfo(ServiceInfoDto dto) {
+		return (ServiceInfoDto) baseDao.getSingleRow("sysmngMapper.getServiceInfo", dto);
+	}
+	
+	/**
+	 * 서비스정보 목록 조회 (Dto)
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<ServiceInfoDto> getServiceInfoList(ServiceInfoDto dto) {
+		return (ArrayList<ServiceInfoDto>) baseDao.getList("sysmngMapper.getServiceInfoList", dto);
+	}
+	
+	/**
+	 * 서비스정보 목록 건수 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public int getServiceInfoListCnt(ServiceInfoDto dto) {
+		return (Integer) baseDao.getSingleRow("sysmngMapper.getServiceInfoListCnt", dto);
+	}
+
+	/**
+	 * 서비스코드 중복체크
+	 * 
+	 * @param dto
+	 * @return true : 중복, false : 중복없음.
+	 */
+	public boolean dupCheckServiceCode(ServiceInfoDto dto) {
+		boolean flag = false;
+		int i = (Integer) baseDao.getSingleRow("sysmngMapper.dupCheckServiceCode", dto);
+		if(i > 0) {
+			flag = true;
+		}
+		return flag;
+	}
+	
+	/**
+	 * 서비스정보 등록
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean insertServiceInfo(ServiceInfoDto dto) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.insert("sysmngMapper.insertServiceInfo", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * 서비스정보 수정
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean modifyServiceInfo(ServiceInfoDto dto) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.update("sysmngMapper.modifyServiceInfo", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * 서비스정보 삭제
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public boolean deleteServiceInfo(ServiceInfoDto dto) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.update("sysmngMapper.deleteServiceInfo", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
 }

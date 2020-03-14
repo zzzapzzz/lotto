@@ -82,7 +82,17 @@
 					invalidHandler: function (form, validator) {
 			            var errors = validator.numberOfInvalids();
 			            if (errors) {
-			                alert(validator.errorList[0].message);
+			            	// 커스텀 수정
+			                var msg = '';
+			            	$.each(validator.errorList, function(i){
+			            		if (i > 0) {
+			            			msg += '<br>';
+			            		}
+			            		msg += validator.errorList[i].message;
+			            	});
+			            	
+			            	showBigBox("필수 입력값 확인!",msg, "W");
+			                //alert(validator.errorList[0].message);
 			                validator.errorList[0].element.focus();
 			            }
 			        }, 

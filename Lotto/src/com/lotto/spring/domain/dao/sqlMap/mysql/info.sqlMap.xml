@@ -3,7 +3,7 @@
   
 <mapper namespace="infoMapper">
 	<!-- 서비스 신청하기 -->
- 	<insert id="applyService" parameterType="infoServiceDto">
+ 	<insert id="applyService" parameterType="serviceApplyDto">
  		/* info.applyService */	
  		<selectKey resultType="int" keyProperty="seq" order="BEFORE">
 	        SELECT COUNT(*)+1 as seq FROM TB_SERVICE_APPLY WHERE USER_NO = #{userNo}        

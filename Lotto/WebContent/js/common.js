@@ -139,8 +139,8 @@ function showMessageBox (title, content, type, url, cancelUrl) {
 				showSmallBox($('#checkMsg').val());
 				
 				// callback
-				if (url == 'deleteMyData') {
-					deleteMyData();
+				if (url == 'deleteProc') {
+					deleteProc();
 				}
 			} else if (ButtonPressed === "No" || ButtonPressed === "취소") {
 				$.smallBox({

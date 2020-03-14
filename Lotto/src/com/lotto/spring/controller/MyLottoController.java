@@ -1533,7 +1533,35 @@ public class MyLottoController extends DefaultSMController {
 			}
 			isCheck = false;	//체크여부 초기화
 			
+			// 필터15, 16은 확률이 낮아서 pass
 			
+			
+			// 필터17
+			boolean isFilter17 = false;
+			// 단번대가 1개씩 3회연속 출현 확인
+			isCheck = lottoDataService.isCheckFilter17(winDataListForFilter);
+			
+			if (isCheck) {
+				isFilter17 = lottoDataService.getMatchedPer(17, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
+			
+			
+			// 필터18
+			boolean isFilter18 = false;
+			// 5와 8끝수 출현 확인
+			isCheck = lottoDataService.isCheckFilter18(winDataListForFilter);
+			
+			if (isCheck) {
+				isFilter18 = lottoDataService.getMatchedPer(18, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
+			
+			
+			// 필터19
+			boolean isFilter19 = false;
+			// 6회귀 연속 3회 전멸 확인
+			isFilter19 = lottoDataService.isCheckFilter19(winDataListForFilter);
 			
 			
 			// 자동목록 조회, 예상패턴 비교, 등록
@@ -1862,6 +1890,39 @@ public class MyLottoController extends DefaultSMController {
 							continue;
 						} else {
 							log.info("\t추가 필터14 성공.");
+						}
+					}
+					
+					if (isFilter17) {
+						log.info("추가 필터17 체크합니다.");
+						result = lottoDataService.isMatchedFilter17(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터17 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터17 성공.");
+						}
+					}
+					
+					if (isFilter18) {
+						log.info("추가 필터18 체크합니다.");
+						result = lottoDataService.isMatchedFilter18(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터18 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터18 성공.");
+						}
+					}
+					
+					if (isFilter19) {
+						log.info("추가 필터19 체크합니다.(6회귀 존재확인)");
+						result = lottoDataService.isMatchedFilter19(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터19 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터19 성공.");
 						}
 					}
 					

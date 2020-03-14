@@ -89,7 +89,7 @@
 							} else if ($('#status').val() == 'need_paid') {
 								showMessageBox('유료회원 전용', '유료 회원만 사용할 수 있습니다. 이용안내 페이지로 이동하시겠습니까?', 'U', 'url', $("#referer").val());
 							} else {
-								showBigBox($('Wrong Access','#checkMsg').val(), 'W');
+								showBigBox('Wrong Access',$('#checkMsg').val(), 'W');
 							}
 						}
 						
@@ -133,7 +133,7 @@
 							} else if ($('#status').val() == 'need_paid') {
 								showMessageBox('유료회원 전용', '유료 회원만 사용할 수 있습니다. 이용안내 페이지로 이동하시겠습니까?', 'U', 'url', $("#referer").val());
 							} else {
-								showBigBox($('Wrong Access','#checkMsg').val(), 'W');
+								showBigBox('Wrong Access',$('#checkMsg').val(), 'W');
 							}
 						}
 					}

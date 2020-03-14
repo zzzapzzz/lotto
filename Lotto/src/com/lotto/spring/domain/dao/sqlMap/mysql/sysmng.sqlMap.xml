@@ -1082,4 +1082,132 @@
 		FROM TB_COUNT_SUM_INFO
 		WHERE WIN_COUNT = #{win_count}		
 	</select>
+	
+	<!-- 서비스정보 조회 -->
+	<select id="getServiceInfo" parameterType="serviceInfoDto" resultType="serviceInfoDto">
+		/* sysmng.getServiceInfo */		
+		SELECT 
+			  SVC_CD
+			, SVC_NM
+			, SVC_TYPE
+			, SVC_BASE_TYPE
+			, SVC_BASE_VAL
+			, AMOUNT
+			, PRMT_CD
+			, USE_YN
+			, DATE_FORMAT(CR_DT, '%Y%m%d%H%i%s') AS CR_DT
+			, DATE_FORMAT(UP_DT, '%Y%m%d%H%i%s') AS UP_DT
+		FROM TB_SERVICE_INFO		
+		WHERE SVC_CD = #{svc_cd}
+	</select>
+	
+	<!-- 서비스정보 목록 조회 -->
+	<select id="getServiceInfoList" parameterType="serviceInfoDto" resultType="serviceInfoDto">
+		/* sysmng.getServiceInfoList */		
+		SELECT *
+		FROM
+		(
+			SELECT 
+				  SVC_CD
+				, SVC_NM
+				, SVC_TYPE
+				, SVC_BASE_TYPE
+				, SVC_BASE_VAL
+				, AMOUNT
+				, PRMT_CD
+				, USE_YN
+				, DATE_FORMAT(CR_DT, '%Y%m%d%H%i%s') AS CR_DT
+				, DATE_FORMAT(UP_DT, '%Y%m%d%H%i%s') AS UP_DT
+				, @rownum := @rownum+1 AS row_num
+			FROM TB_SERVICE_INFO, (SELECT @rownum :=0) AS R		
+			WHERE 1=1
+			<if test='svc_cd != null and svc_cd != ""'>
+			AND SVC_CD = #{svc_cd}
+			</if>			
+			<if test='svc_nm != null and svc_nm != ""'>
+			AND SVC_NM like '%'+#{svc_nm}+'%'
+			</if>			
+			ORDER BY 
+			<choose>
+    			<when test='sidx!=null and sidx != ""'>
+    				${sidx} 
+			    </when>
+			    <otherwise>
+			    	SVC_NM 
+			    </otherwise>
+  			</choose>
+			<choose>
+    			<when test='sord != null and sord != ""'>
+    				${sord} 
+			    </when>
+			    <otherwise>
+			    	ASC 
+			    </otherwise>
+  			</choose>
+		) AA
+		<if test='startNum!="" and endNum!=""'>
+		WHERE row_num BETWEEN #{startNum} AND #{endNum}
+		</if>
+	</select>
+	
+	<!-- 서비스정보 목록 건수 조회 -->
+	<select id="getServiceInfoListCnt" parameterType="serviceInfoDto" resultType="Integer">
+		/* sysmng.getServiceInfoListCnt */
+		SELECT COUNT(*)				
+		FROM TB_SERVICE_INFO
+		WHERE 1=1
+		<if test='svc_cd != null and svc_cd != ""'>
+		AND SVC_CD = #{svc_cd}
+		</if>			
+		<if test='svc_nm != null and svc_nm != ""'>
+		AND SVC_NM like '%'+#{svc_nm}+'%'
+		</if>
+	</select>
+	
+	<!-- 서비스코드 중복체크 -->
+	<select id="dupCheckServiceCode" parameterType="serviceInfoDto" resultType="int">		
+		/* sysmng.dupCheckServiceCode */
+		SELECT 
+			  COUNT(*)
+		FROM TB_SERVICE_INFO
+		WHERE SVC_CD = #{svc_cd}			
+	</select>
+	
+	<!-- 서비스정보 등록 -->
+	<insert id="insertServiceInfo" parameterType="serviceInfoDto">
+		/* sysmng.insertServiceInfo */
+		INSERT INTO TB_SERVICE_INFO
+		(
+			SVC_CD,SVC_NM,SVC_TYPE,SVC_BASE_TYPE,SVC_BASE_VAL,AMOUNT,PRMT_CD,USE_YN,CR_DT
+		)
+		VALUES 
+		(
+			#{svc_cd},#{svc_nm},#{svc_type},#{svc_base_type},#{svc_base_val},#{amount},#{prmt_cd},#{use_yn},NOW()
+		)
+	</insert>
+	
+	<!-- 서비스정보 수정 -->
+	<update id="modifyServiceInfo" parameterType="serviceInfoDto">		
+		/* sysmng.modifyServiceInfo */
+		UPDATE TB_SERVICE_INFO
+		SET   SVC_CD = #{svc_cd}
+			, SVC_NM = #{svc_nm}
+			, SVC_TYPE = #{svc_type}
+			, SVC_BASE_TYPE = #{svc_base_type}
+			, SVC_BASE_VAL = #{svc_base_val}
+			, AMOUNT = #{amount}
+			, PRMT_CD = #{prmt_cd}
+			, USE_YN = #{use_yn}
+			, UP_DT = NOW()
+		WHERE SVC_CD = #{svc_cd}
+	</update>
+	
+	<!-- 서비스정보 삭제 -->
+	<update id="deleteServiceInfo" parameterType="serviceInfoDto">		
+		/* sysmng.deleteServiceInfo */
+		UPDATE TB_SERVICE_INFO
+		SET USE_YN = 'N'
+			, UP_DT = NOW()
+		WHERE SVC_CD = #{svc_cd}
+	</update>
 </mapper>

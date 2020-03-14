@@ -307,10 +307,10 @@
 					return;			
 				}
 				
-				showMessageBox('MY로또 삭제', "[" + ex_count + "] 회차에서 선택한 조합을 삭제하시겠습니까?", 'F', 'deleteMyData');
+				showMessageBox('MY로또 삭제', "[" + ex_count + "] 회차에서 선택한 조합을 삭제하시겠습니까?", 'F', 'deleteProc');
 			}
 			
-			function deleteMyData() {
+			function deleteProc() {
 				var idArray = $("#jqgrid").jqGrid('getDataIDs');		
 				var checkCnt = 0;
 				var ex_count = "";

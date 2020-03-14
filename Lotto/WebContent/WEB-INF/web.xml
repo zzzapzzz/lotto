@@ -7,7 +7,7 @@
 	<session-config>
 		<session-timeout>60</session-timeout>
 	</session-config>
-	<display-name>loccitane-ios-web</display-name>
+	<display-name>smlotto-web</display-name>
 	<context-param>
 		<description>Spring ContextConfig</description>
 		<param-name>contextConfigLocation</param-name>
@@ -28,8 +28,8 @@
 		</listener-class>
 	</listener>
 	<servlet>
-		<description>loccitane-ios</description>
-		<servlet-name>ios</servlet-name>
+		<description>smlotto</description>
+		<servlet-name>smlotto</servlet-name>
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet
 		</servlet-class>
 		<init-param>
@@ -43,7 +43,7 @@
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet-mapping>
-		<servlet-name>ios</servlet-name>
+		<servlet-name>smlotto</servlet-name>
 		<url-pattern>*.do</url-pattern>
 	</servlet-mapping>
 	<servlet>
