@@ -17,9 +17,8 @@
 			});
 			
 			function apply(type) {
-				console.log('type=',type);
 				var param = {
-					applyType : type
+					apply_type : type
 				};
 				
 				$.ajax({

@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
-import org.apache.ibatis.parsing.GenericTokenParser;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -33,8 +32,10 @@ import com.lotto.spring.domain.dto.ExDataDto;
 import com.lotto.spring.domain.dto.ExcludeDto;
 import com.lotto.spring.domain.dto.ExptPtrnAnlyDto;
 import com.lotto.spring.domain.dto.MyLottoSaveNumDto;
+import com.lotto.spring.domain.dto.ServiceApplyDto;
 import com.lotto.spring.domain.dto.WinDataAnlyDto;
 import com.lotto.spring.domain.dto.WinDataDto;
+import com.lotto.spring.service.InfoService;
 import com.lotto.spring.service.LottoDataService;
 import com.lotto.spring.service.MyLottoService;
 import com.lotto.spring.service.PatternAnalysisService;
@@ -59,6 +60,9 @@ public class MyLottoController extends DefaultSMController {
 	
 	@Autowired
 	private PatternAnalysisService patternAnalysisService;
+	
+	@Autowired
+	private InfoService infoService;
 	
 	private MyLottoController() {
 		super();
@@ -2323,6 +2327,12 @@ public class MyLottoController extends DefaultSMController {
 			
 			modelMap.addAttribute(CONTENT_PAGE, "mylotto/ServiceMain");
 			modelMap.addAttribute("isAjax", "Y");
+			
+			// 서비스정보 조회
+			ServiceApplyDto serviceApplyDto = new ServiceApplyDto();
+			serviceApplyDto.setUser_no(loginUserId);
+			serviceApplyDto =  infoService.getServiceApply(serviceApplyDto);
+			modelMap.addAttribute("ServiceApply", serviceApplyDto);
 			
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");

@@ -175,6 +175,7 @@
 									<br>
 									<h1 class="text-center text-success"><strong><i class="fa fa-check fa-lg"></i> 신청 완료!</strong></h1>
 									<br>
+									<br>
 									
 									<div class="text-align-center">
 										<img src="${IMG_ROOT}/info/account.png" alt="무통장입금" />
@@ -183,9 +184,22 @@
 									<br>
 									<br>
 									<div class="text-align-center">
-									위의 계좌로 9,900원을 입금하시면, 확인 후 서비스를 이용할 수 있습니다.
+										<h2>
+										입금하실 금액은 <strong>9,000원</strong>입니다.<br />
+										(유료회원 1개월)<br />
+										<br />
+										입금방법은 현재<br />
+										무통장입금으로만 이용가능합니다.<br />
+										<br />
+										입금이 확인되면<br />
+										서비스를 이용할 수 있습니다.
+										</h2>
 									</div>
 									<br>
+									<br>
+									<div class="text-align-center">
+										<a href="/mylotto/service.do" class="btn btn-success btn-block" role="button"> 내 서비스정보 보기<span> </span></a>
+									</div>
 								</div>
 							</div>
 						</div>

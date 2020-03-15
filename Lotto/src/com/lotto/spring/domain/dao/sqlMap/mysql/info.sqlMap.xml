@@ -6,11 +6,94 @@
  	<insert id="applyService" parameterType="serviceApplyDto">
  		/* info.applyService */	
  		<selectKey resultType="int" keyProperty="seq" order="BEFORE">
-	        SELECT COUNT(*)+1 as seq FROM TB_SERVICE_APPLY WHERE USER_NO = #{userNo}        
+	        SELECT COUNT(*)+1 as seq FROM TB_SERVICE_APPLY WHERE USER_NO = #{user_no}        
 	    </selectKey> 
 		INSERT INTO TB_SERVICE_APPLY
-		(user_no, seq, apply_type, svc_stat, apply_date, start_date, end_date)
+		(user_no, svc_cd, seq, apply_type, svc_stat, apply_date)
 		VALUES
-		(#{userNo},#{seq},#{applyType}, 'apply', NOW(), NULL, NULL)		 
+		(#{user_no},#{svc_cd},#{seq},#{apply_type}, 'apply', NOW())
 	</insert>
+	
+	<!-- 서비스 신청정보 조회 -->
+	<select id="getServiceApply" parameterType="serviceApplyDto" resultType="serviceApplyDto">
+		/* info.getServiceApply */		
+		SELECT 
+			  USER_NO
+			, SVC_CD
+			, F_GETCODENAME('SERVICE_INFO',SVC_CD) AS SVC_NM
+			, SEQ
+			, F_GETCODENAME('APPLY_TYPE',CAST(APPLY_TYPE as CHAR(10))) AS APPLY_TYPE_NM
+			, APPLY_TYPE 
+			, F_GETCODENAME('SVC_STAT',SVC_STAT) AS SVC_STAT_NM
+			, SVC_STAT
+			, DATE_FORMAT(APPLY_DATE, '%Y%m%d%H%i%s') AS APPLY_DATE
+			, DATE_FORMAT(START_DATE, '%Y%m%d%H%i%s') AS START_DATE
+			, DATE_FORMAT(END_DATE, '%Y%m%d%H%i%s') AS END_DATE
+		FROM TB_SERVICE_APPLY		
+		WHERE USER_NO = #{user_no}
+		AND SVC_STAT = 'approved' 
+		<if test='svc_cd != null and svc_cd != ""'>
+		AND SVC_CD = #{svc_cd}
+		</if>
+		ORDER BY START_DATE DESC
+		LIMIT 1
+	</select>
+	
+	<!-- 서비스정보 목록 조회 -->
+	<select id="getServiceApplyList" parameterType="serviceApplyDto" resultType="serviceApplyDto">
+		/* info.getServiceApplyList */		
+		SELECT *
+		FROM
+		(
+			SELECT 
+				  USER_NO
+				, SVC_CD
+				, F_GETCODENAME('SERVICE_INFO',SVC_CD) AS SVC_NM
+				, SEQ
+				, F_GETCODENAME('APPLY_TYPE',CAST(APPLY_TYPE as CHAR(10))) AS APPLY_TYPE_NM
+				, APPLY_TYPE
+				, F_GETCODENAME('SVC_STAT',SVC_STAT) AS SVC_STAT_NM
+				, SVC_STAT 
+				, DATE_FORMAT(APPLY_DATE, '%Y%m%d%H%i%s') AS APPLY_DATE
+				, DATE_FORMAT(START_DATE, '%Y%m%d%H%i%s') AS START_DATE
+				, DATE_FORMAT(END_DATE, '%Y%m%d%H%i%s') AS END_DATE
+				, @rownum := @rownum+1 AS row_num
+			FROM TB_SERVICE_APPLY, (SELECT @rownum :=0) AS R		
+			WHERE USER_NO = #{user_no}
+			<if test='svc_cd != null and svc_cd != ""'>
+			AND SVC_CD = #{svc_cd}
+			</if>
+			ORDER BY 
+			<choose>
+    			<when test='sidx!=null and sidx != ""'>
+    				${sidx} 
+			    </when>
+			    <otherwise>
+			    	START_DATE 
+			    </otherwise>
+  			</choose>
+			<choose>
+    			<when test='sord != null and sord != ""'>
+    				${sord} 
+			    </when>
+			    <otherwise>
+			    	DESC 
+			    </otherwise>
+  			</choose>
+		) AA
+		<if test='startNum!="" and endNum!=""'>
+		WHERE row_num BETWEEN #{startNum} AND #{endNum}
+		</if>
+	</select>
+	
+	<!-- 서비스정보 목록 건수 조회 -->
+	<select id="getServiceApplyListCnt" parameterType="serviceApplyDto" resultType="Integer">
+		/* info.getServiceApplyListCnt */
+		SELECT COUNT(*)				
+		FROM TB_SERVICE_APPLY
+		WHERE USER_NO = #{user_no}
+		<if test='svc_cd != null and svc_cd != ""'>
+		AND SVC_CD = #{svc_cd}
+		</if>
+	</select>
 </mapper>

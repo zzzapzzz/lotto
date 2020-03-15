@@ -140,12 +140,14 @@
 										</div>
 									</section>
 
+									<!--									
 									<section>
 										<label class="checkbox">
 											<input type="checkbox" name="remember" checked="">
 											<i></i>로그인 유지
 										</label>
 									</section>
+									-->
 								</fieldset>
 								<footer>
 									<button type="submit" class="btn btn-primary">
