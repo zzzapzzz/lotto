@@ -33,6 +33,7 @@ import com.lotto.spring.domain.dto.ExcludeDto;
 import com.lotto.spring.domain.dto.ExptPtrnAnlyDto;
 import com.lotto.spring.domain.dto.MyLottoSaveNumDto;
 import com.lotto.spring.domain.dto.ServiceApplyDto;
+import com.lotto.spring.domain.dto.UserInfoDto;
 import com.lotto.spring.domain.dto.WinDataAnlyDto;
 import com.lotto.spring.domain.dto.WinDataDto;
 import com.lotto.spring.service.InfoService;
@@ -1180,6 +1181,10 @@ public class MyLottoController extends DefaultSMController {
 			myLottoService.deleteMyData(dto);
 			
 			int maxSaveCnt = 10; 	// 기본값 설정
+			if (dto.getMaxSaveCnt() > 0) {
+				maxSaveCnt = dto.getMaxSaveCnt(); 
+			}
+			
 			/* 
 			 * TODO 
 			 * 사용자의 랜덤 저장개수 확인
@@ -1309,6 +1314,15 @@ public class MyLottoController extends DefaultSMController {
 			WinDataDto lastWinDataDto = winDataListForFilter.get(winDataListForFilter.size()-1);
 			int[] lastWinNnumbers = LottoUtil.getNumbers(lastWinDataDto);
 			
+			// 필터0
+			boolean isFilter0 = false;
+			// 1회차 전에서의 10번대, 20번대 번호가 최근 회차에서 연번으로 출현 확인
+			isCheck = lottoDataService.isCheckFilter0(winDataListForFilter);
+			if (isCheck) {
+				isFilter0 = lottoDataService.getMatchedPer(0, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
+						
 			// 필터1
 			boolean isFilter1 = false;
 			// 최근 당첨번호 중 10차이나는 수 사이에 다른 숫자가 있는지 확인
@@ -1562,10 +1576,116 @@ public class MyLottoController extends DefaultSMController {
 			isCheck = false;	//체크여부 초기화
 			
 			
+			// 필터 6회귀
+			boolean isFilter6Regression = false;
+			// 6회귀 연속 3회 전멸 확인
+			isFilter6Regression = lottoDataService.isCheckFilter6Regression(winDataListForFilter);
+			
+			
 			// 필터19
 			boolean isFilter19 = false;
-			// 6회귀 연속 3회 전멸 확인
-			isFilter19 = lottoDataService.isCheckFilter19(winDataListForFilter);
+			// 마지막 회차의 2회전 단번대 출현, 최근 회차에서 단번대 출현 확인
+			isCheck = lottoDataService.isCheckFilter19(winDataListForFilter);
+			if (isCheck) {
+				isFilter19 = lottoDataService.getMatchedPer(19, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
+			
+			
+			// 필터20
+			boolean isFilter20 = false;
+			// 1회차 전에서의 10번대, 20번대 번호가 최근 회차에서 연번으로 출현 확인
+			isCheck = lottoDataService.isCheckFilter20(winDataListForFilter);
+			if (isCheck) {
+				isFilter20 = lottoDataService.getMatchedPer(20, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
+			
+			
+			// 필터21
+			boolean isFilter21 = false;
+			// 1회차 전에서의 10번대, 20번대 번호가 최근 회차에서 연번으로 출현 확인
+			isCheck = lottoDataService.isCheckFilter21(winDataListForFilter);
+			if (isCheck) {
+				isFilter21 = lottoDataService.getMatchedPer(21, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
+			
+			
+			// 필터22
+			boolean isFilter22 = false;
+			// 필터23
+			boolean isFilter23 = false;
+			// 3끝수가 4회연속 출현 확인
+			isCheck = lottoDataService.isCheckFilter22(winDataListForFilter);
+			if (isCheck) {
+				isFilter22 = lottoDataService.getMatchedPer(22, winDataListForFilter, fromCount, aimMatchedPer);
+				isFilter23 = lottoDataService.getMatchedPer(23, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
+			
+			
+			// 필터24~26
+			boolean isFilter24 = false;
+			boolean isFilter25 = false;
+			boolean isFilter26 = false;
+			/*
+			 * 같은번호 3개 존재 확인
+			 * 특정구간 (range) 
+			 * 0: 1~9
+			 * 1: 10~19
+			 * 2: 20~29
+			 * 3: 30~39
+			 * 4: 40~45
+			 */
+			int range = 2;	// 20번대(20~29) 3구간 출현 확인
+			boolean isRange3Numbers = lottoDataService.checkRange3Numbers(lastWinNnumbers, range); 
+			if (isRange3Numbers) {
+				isFilter24 = lottoDataService.getMatchedPer(24, winDataListForFilter, fromCount, aimMatchedPer);
+				isFilter25 = lottoDataService.getMatchedPer(25, winDataListForFilter, fromCount, aimMatchedPer);
+				isFilter26 = lottoDataService.getMatchedPer(26, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
+			
+			
+			// 필터27
+			boolean isFilter27 = false;
+			// 10번대 연번이 출현 확인
+			isCheck = lottoDataService.isCheckFilter27(winDataListForFilter);
+			if (isCheck) {
+				isFilter27 = lottoDataService.getMatchedPer(27, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
+			
+			
+			// 필터28
+			boolean isFilter28 = false;
+			// 15번 출현 확인
+			isCheck = lottoDataService.isCheckFilter28(winDataListForFilter);
+			if (isCheck) {
+				isFilter28 = lottoDataService.getMatchedPer(28, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
+			
+			
+			// 필터29
+			boolean isFilter29 = false;
+			// 28번이 출현 확인
+			isCheck = lottoDataService.isCheckFilter29(winDataListForFilter);
+			if (isCheck) {
+				isFilter29 = lottoDataService.getMatchedPer(29, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
+			
+			
+			// 필터30
+			boolean isFilter30 = false;
+			// 보너스번호가 40번대(40~45) 출현 확인
+			isCheck = lottoDataService.isCheckFilter30(winDataListForFilter);
+			if (isCheck) {
+				isFilter30 = lottoDataService.getMatchedPer(30, winDataListForFilter, fromCount, aimMatchedPer);
+			}
+			isCheck = false;	//체크여부 초기화
 			
 			
 			// 자동목록 조회, 예상패턴 비교, 등록
@@ -1660,89 +1780,18 @@ public class MyLottoController extends DefaultSMController {
 				
 				boolean result = lottoDataService.compareExptPtrn(exData, winDataList, exptPtrnAnlyInfo, totalGroupCntMap, endnumGroupCntMap);
 				if (result) {
-					
-					// 최근회차에서 전체 구간 출현시 단번대 번호 수 체크 (2개 출)
-					int[] containGroupCnt = lottoDataService.getZeroCntRangeData(winDataList.get(winDataList.size()-1));
-					int isAllCnt = 0;
-					for (int i = 0; i < containGroupCnt.length; i++) {
-						if (containGroupCnt[i] > 0) {
-							isAllCnt++;
-						}
-					}
-					if (isAllCnt == 5) {
-						log.info("이전 회차의 전체구간 출현. 단번대 번호 수 체크 : 2개 출현 확인");
-						int[] containGroupCntExData = lottoDataService.getZeroCntRangeData(exData);
-//						if (containGroupCntExData[0] > 2 || containGroupCntExData[0] == 0) {
-						if (containGroupCntExData[0] != 2 ) {
-							log.info("단번대 번호 수 불충족 : " + containGroupCntExData[0]);
-							continue;
-						}
-					}
-					
-					// 전회차 연번 출현시 다음회차 최소 1개 출현 체크
-					boolean bfIsConsecutively = false;	// 전회차 연번 포함여부
-					String consecutivelyNumbers = "";
-					List<Integer> consecutivelyNumberList = new ArrayList<Integer>();
-					WinDataAnlyDto lastWinData = winDataList.get(winDataList.size()-1);
-					int[] lastWinDataNumbers = LottoUtil.getNumbers(lastWinData);
-					for (int i = 0; i < lastWinDataNumbers.length-1; i++) {
-						if (lastWinDataNumbers[i+1] - lastWinDataNumbers[i] == 1) {
-							// 끝수 존재여부 체크
-							if (i+2 < lastWinDataNumbers.length) {
-								if(lastWinDataNumbers[i+2] - lastWinDataNumbers[i+1] == 1) {
-									// 다음수가 3연속은 규칙 제외
-									break;
-								}
-							} else if (i-1 >= 0) {
-								if(lastWinDataNumbers[i] - lastWinDataNumbers[i-1] == 1) {
-									// 이전수가 3연속은 규칙 제외
-									break;
-								}
-							}
-							
-							
-							// 연번
-							consecutivelyNumberList.add(lastWinDataNumbers[i]);
-							consecutivelyNumbers += lastWinDataNumbers[i];
-							consecutivelyNumberList.add(lastWinDataNumbers[i+1]);
-							consecutivelyNumbers += ",";
-							consecutivelyNumbers += lastWinDataNumbers[i+1];
-							
-							bfIsConsecutively = true;
-						}
-					}
-					
-					if (bfIsConsecutively) {
-						log.info("전회차 연번 출현시 다음회차 규칙 수 최소 1개 출현 체크");
-						log.info("다음회차 규칙 수 : " + consecutivelyNumbers);
-						boolean isContainConsecutivelyNumber = false;
-						for (int j = 0; j < consecutivelyNumberList.size(); j++) {
-							int consecutivelyNumber = consecutivelyNumberList.get(j);
-							
-							for (int k = 0; k < numberList.size(); k++) {
-								int num = numberList.get(k);
-								if (consecutivelyNumber + 2 == num
-										|| consecutivelyNumber - 2 == num
-										) {
-									isContainConsecutivelyNumber = true;
-									break;
-								}
-							}
-							
-							if (isContainConsecutivelyNumber) {
-								break;
-							}
-						}
-						
-						if (!isContainConsecutivelyNumber) {
-							// 연번 출현규칙이 없으면 다음번호 조합
-							log.info("연번 출현규칙 불일치 -> continue ");
-							continue;
-						}
-					}
-					
-					
 					// 추가 필터 체크여부 확인
+					if (isFilter0) {
+						log.info("추가 필터0 체크합니다.");
+						result = lottoDataService.isMatchedFilter0(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터0 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터0 성공.");
+						}
+					}
+					
 					if (isFilter1) {
 						log.info("추가 필터1 체크합니다.");
 						result = lottoDataService.isMatchedFilter1(lastWinNnumbers, exData.getNumbers());
@@ -1919,8 +1968,19 @@ public class MyLottoController extends DefaultSMController {
 						}
 					}
 					
+					if (isFilter6Regression) {
+						log.info("추가 필터 6회귀 체크합니다.(6회귀 존재확인)");
+						result = lottoDataService.isMatchedFilter6Regression(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터 6회귀 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터 6회귀 성공.");
+						}
+					}
+					
 					if (isFilter19) {
-						log.info("추가 필터19 체크합니다.(6회귀 존재확인)");
+						log.info("추가 필터19 체크합니다.");
 						result = lottoDataService.isMatchedFilter19(winDataListForFilter, exData.getNumbers());
 						if (!result) {
 							log.info("\t추가 필터19 실패.");
@@ -1930,6 +1990,126 @@ public class MyLottoController extends DefaultSMController {
 						}
 					}
 					
+					if (isFilter20) {
+						log.info("추가 필터20 체크합니다.");
+						result = lottoDataService.isMatchedFilter20(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터20 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터20 성공.");
+						}
+					}
+					
+					if (isFilter21) {
+						log.info("추가 필터21 체크합니다.");
+						result = lottoDataService.isMatchedFilter21(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터21 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터21 성공.");
+						}
+					}
+					
+					if (isFilter22) {
+						log.info("추가 필터22 체크합니다.");
+						result = lottoDataService.isMatchedFilter22(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터22 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터22 성공.");
+						}
+					}
+					
+					if (isFilter23) {
+						log.info("추가 필터23 체크합니다.");
+						result = lottoDataService.isMatchedFilter23(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터23 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터23 성공.");
+						}
+					}
+					
+					if (isFilter24) {
+						log.info("추가 필터24 체크합니다.");
+						result = lottoDataService.isMatchedFilter24(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터24 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터24 성공.");
+						}
+					}
+					
+					if (isFilter25) {
+						log.info("추가 필터25 체크합니다.");
+						result = lottoDataService.isMatchedFilter25(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터25 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터25 성공.");
+						}
+					}
+					
+					if (isFilter26) {
+						log.info("추가 필터26 체크합니다.");
+						result = lottoDataService.isMatchedFilter26(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터26 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터26 성공.");
+						}
+					}
+					
+					if (isFilter27) {
+						log.info("추가 필터27 체크합니다.");
+						result = lottoDataService.isMatchedFilter27(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터27 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터27 성공.");
+						}
+					}
+					
+					if (isFilter28) {
+						log.info("추가 필터28 체크합니다.");
+						result = lottoDataService.isMatchedFilter28(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터28 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터28 성공.");
+						}
+					}
+					
+					if (isFilter29) {
+						log.info("추가 필터29 체크합니다.");
+						result = lottoDataService.isMatchedFilter29(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터29 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터29 성공.");
+						}
+					}
+					
+					if (isFilter30) {
+						log.info("추가 필터30 체크합니다.");
+						result = lottoDataService.isMatchedFilter30(winDataListForFilter, exData.getNumbers());
+						if (!result) {
+							log.info("\t추가 필터30 실패.");
+							continue;
+						} else {
+							log.info("\t추가 필터30 성공.");
+						}
+					}
 					
 					// 제외번호 포함여부 확인 2020.02.01
 					if (this.checkExcludeNum(exData, allExcludeNumList, excludeNumOfMcNum)) {
@@ -2227,6 +2407,11 @@ public class MyLottoController extends DefaultSMController {
 			modelMap.addAttribute(CONTENT_PAGE, "mylotto/ProfileMain");
 			modelMap.addAttribute("isAjax", "Y");
 			
+			// 사용자정보 조회
+			UserInfoDto userInfoDto = new UserInfoDto();
+			userInfoDto.setUser_no(loginUserId);
+			userInfoDto =  sysmngService.getUserInfo(userInfoDto);
+			modelMap.addAttribute("MyProfile", userInfoDto);
 		} else {
 			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
 		}

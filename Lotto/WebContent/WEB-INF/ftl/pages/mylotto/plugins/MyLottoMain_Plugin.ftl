@@ -245,7 +245,8 @@
 			
 			function autoAddGo() {
 				var param = {
-					ex_count : Number($("#ex_count").val())
+					ex_count : Number($("#ex_count").val()),
+					maxSaveCnt : Number($("#maxSaveCnt").val())
 				}
 				
 				$.ajax({

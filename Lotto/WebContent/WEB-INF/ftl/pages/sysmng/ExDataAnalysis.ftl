@@ -228,7 +228,7 @@
 							<br>
 							이번 주의 예상 제외수입니다.<br>
 							<br>
-							<div id="excludeNumberList">
+							<div id="excludeNumberListNormal">
 							</div>
 							<br>
 							<!--							
@@ -238,9 +238,9 @@
 							<br>
 							
 							<br>
-							위의 제외 6수 이외에<br>
+							위의 제외 <span id="excludeNumberListNormalCnt"></span>수 이외에<br>
 							추가로 예상되는 제외수는<br>
-							1,2,3,4,8,10,14,20,24,26,27,29,30,34,44<br>
+							<span id="modiExcludeNum"></span><br>
 ​							<br>
 							추가 제외수는<br>
 							분석하고 계시는 번호와 맞춰<br>

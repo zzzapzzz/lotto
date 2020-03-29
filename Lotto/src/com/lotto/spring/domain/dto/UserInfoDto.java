@@ -13,6 +13,8 @@ public class UserInfoDto extends DefaultDto{
 	private String email;
 	/** 닉네임 */
 	private String nickname;
+	/** 회원고유키 */
+	private String user_key;
 	/** 등급 */
 	private String grade;
 	/** 포인트 */
@@ -67,6 +69,12 @@ public class UserInfoDto extends DefaultDto{
 	}
 	public void setNickname(String nickname) {
 		this.nickname = nickname;
+	}
+	public String getUser_key() {
+		return user_key;
+	}
+	public void setUser_key(String user_key) {
+		this.user_key = user_key;
 	}
 	public String getGrade() {
 		return grade;

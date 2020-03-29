@@ -30,25 +30,25 @@
 				$("#testExcludeCount").click(excludeCountTest);
 				$("#sendEmailTest").click(sendEmailTest);
 				
-				/*
-				$("#testTheory1").click(function(){
-					testTheory(1);
-				});
-				$("#testTheory2").click(testTheory(2));
-				$("#testTheory3").click(testTheory(3));
-				$("#testTheory4").click(testTheory(4));
-				$("#testTheory5").click(testTheory(5));
-				$("#testTheory6").click(testTheory(6));
-				$("#testTheory7").click(testTheory(7));
-				$("#testTheory8").click(testTheory(8));
-				$("#testTheory9").click(testTheory(9));
-				$("#testTheory10").click(testTheory(10));
-				*/
-				
 				// 총합 테스트
 				totalTest();
 				
 				$("#totalTestResult").hide();
+				
+				
+				$("#testTheoryCount").focus();
+				
+				$("#testTheoryCount").keydown(function (e) {
+			        if(e.keyCode == 13){
+			    		testTheory();        
+			        }
+			    });
+			    
+				$("#fromCheckCount").keydown(function (e) {
+			        if(e.keyCode == 13){
+			    		testTheory();        
+			        }
+			    });
 			}
 			
 			//총합
@@ -336,15 +336,17 @@
 			}
 			
 			// 나대길 검증
-			function testTheory(num) {
+			function testTheory() {
+				var testTheoryCount = $("#testTheoryCount").val();
+				if (testTheoryCount == "") {
+					testTheoryCount = "1";
+				}
 				var param = {
+					testTheoryCount : testTheoryCount,
 					fromCheckCount : $("#fromCheckCount").val()
 				};
 					
-				var url = "/test/testTheory" + num + ".do";
-				var allAppearCnt = "theory" + num + "AllAppearCnt"; 
-				var matchedCnt = "theory" + num + "MatchedCnt"; 
-				var matchedPer = "theory" + num + "MatchedPer"; 
+				var url = "/test/testTheory" + testTheoryCount + ".do";
 				
 				$.ajax({
 					type: "POST",
@@ -362,9 +364,9 @@
 			           		location.href = "/index.do"; 
 			        	}
 			        	
-			        	$("#"+allAppearCnt).text(result.allAppearCnt);
-			        	$("#"+matchedCnt).text(result.matchedCnt);
-			        	$("#"+matchedPer).text(result.matchedPer);
+			        	$("#theoryAllAppearCnt").text(result.allAppearCnt);
+			        	$("#theoryMatchedCnt").text(result.matchedCnt);
+			        	$("#theoryMatchedPer").text(result.matchedPer);
 					}
 				});
 			}

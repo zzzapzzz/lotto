@@ -366,18 +366,23 @@
 		            	}
 
 						if (result.status == "success") {
-							if (result.excludeNumberList.length > 0) {
-								$("#excludeNumberList").html("");
+							if (result.excludeNumberListNormal.length > 0) {
+								$("#excludeNumberListNormal").html("");
 								
-								for (var i = 0 ; i < result.excludeNumberList.length ; i++) {
+								for (var i = 0 ; i < result.excludeNumberListNormal.length ; i++) {
 									if (i > 0) {
-							        	$("#excludeNumberList").append('&nbsp;');
+							        	$("#excludeNumberListNormal").append('&nbsp;');
 									}
-									$("#excludeNumberList").append('<img src="${IMG_ROOT}/ballnumber/ball_' + result.excludeNumberList[i] +'.png" alt="' + result.excludeNumberList[i] + '"/>');
+									$("#excludeNumberListNormal").append('<img src="${IMG_ROOT}/ballnumber/ball_' + result.excludeNumberListNormal[i] +'.png" alt="' + result.excludeNumberListNormal[i] + '"/>');
 								}
 							} else {
-								$("#excludeNumberList").html("제외수 목록이 없습니다.");
+								$("#excludeNumberListNormal").html("제외수 목록이 없습니다.");
 							}
+			    			
+			    			// 제외수 설정
+			    			$("#excludeNumberListNormalCnt").html(result.excludeNumberListNormalCnt);
+			    			// 개선된 제외수 목록
+			    			$("#modiExcludeNum").html(result.modiExcludeNum);
 			    			
 		            	} else {
 		            		alert(result.msg);

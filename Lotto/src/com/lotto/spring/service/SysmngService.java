@@ -44,6 +44,16 @@ public class SysmngService extends DefaultService {
     private LottoDataService lottoDataService;
 	
 	/**
+	 * 사용자 정보 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public UserInfoDto getUserInfo(UserInfoDto dto) {
+		return (UserInfoDto) baseDao.getSingleRow("sysmngMapper.getUserInfo", dto);
+	}
+	
+	/**
 	 * 사용자 목록 조회
 	 * 
 	 * @param map

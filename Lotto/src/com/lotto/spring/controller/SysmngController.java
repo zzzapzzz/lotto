@@ -1889,6 +1889,7 @@ public class SysmngController extends DefaultSMController {
 	 * @param response
 	 * @throws IOException
 	 */
+	@SuppressWarnings("unchecked")
 	@RequestMapping("/sysmng/getExcludeNumberList")
 	public void getExcludeNumberList(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute ExDataDto dto) throws IOException {
 		
@@ -1901,22 +1902,434 @@ public class SysmngController extends DefaultSMController {
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 제외수 목록 조회");
 			
-			List<Integer> excludeNumberList = new ArrayList<Integer>(); 
+			List<Integer> excludeNumberListNormal = new ArrayList<Integer>(); 
+			int excludeNumberListNormalCnt = 0;
 			
-			ExcludeDto excludeDto = sysmngService.getExcludeInfo(dto);
-			String excludeNum = excludeDto.getExclude_num();
-			excludeNum = excludeNum.replaceAll(" ", "");
-			String[] arrExcludeNum = excludeNum.split(",");
-			int[] iArrExcludeNum = new int[arrExcludeNum.length];
-			for (int i = 0; i < arrExcludeNum.length; i++) {
-				iArrExcludeNum[i] = Integer.parseInt(arrExcludeNum[i]);
+			ExcludeDto excludeDtoNormal = sysmngService.getExcludeInfo(dto);
+			String strExcludeNum = excludeDtoNormal.getExclude_num();
+			strExcludeNum = strExcludeNum.replaceAll(" ", "");
+			String[] excludeNumbersNormal = strExcludeNum.split(",");
+			int[] iArrExcludeNum = new int[excludeNumbersNormal.length];
+			for (int i = 0; i < excludeNumbersNormal.length; i++) {
+				iArrExcludeNum[i] = Integer.parseInt(excludeNumbersNormal[i]);
 			}
 			iArrExcludeNum = (int[]) LottoUtil.dataSort(iArrExcludeNum);
 			
+			// 일반 제외수 목록 설정
 			for (int i = 0; i < iArrExcludeNum.length; i++) {
-				excludeNumberList.add(iArrExcludeNum[i]);
+				excludeNumberListNormal.add(iArrExcludeNum[i]);
 			}
-			jsonObj.put("excludeNumberList", excludeNumberList);
+			
+			excludeNumberListNormalCnt = excludeNumberListNormal.size();
+			
+			
+			/**********************************************************
+			 *  개선된 제외수 목록 설정 2020.03.29
+			 **********************************************************/
+			// 당첨번호 전체 목록 조회
+			log.info("[" + loginUserNo + "]\t 당첨번호 전체 목록 조회 (오름차순)");
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			// 최근회차 조회 
+			WinDataDto lastWinData = winDataList.get(winDataList.size()-1);
+			log.info("[" + loginUserNo + "]\t 최근회차 조회 : " + lastWinData.getWin_count());
+						
+			// 궁합수 조회 (최근회차)
+			log.info("[" + loginUserNo + "]\t 궁합수 조회 (최근회차)");
+			WinDataDto dtoForMC = new WinDataDto();
+			dtoForMC.setWin_count(lastWinData.getWin_count());
+			List<MCNumDto> mcNumList = sysmngService.getMcNumList(dtoForMC);
+			
+			int exCount = lastWinData.getWin_count() + 1;
+			
+			// 미출궁합수 중복제크 Map, List
+			Map checkMcListOfNotContMap = new HashMap();
+			List<Integer> mcListOfNotContList = new ArrayList<Integer>();
+			
+			// 제외수 중복제크 Map, List
+			Map checkExcludeNumber = new HashMap();
+			List<Integer> excludeNumberList = new ArrayList<Integer>();
+			
+			// 미출궁합수에 없는 미출수목록1
+			List<Integer> excludeList1 = new ArrayList<Integer>();
+			
+			// 미출수목록1의 궁합수 중복제크 Map, List
+			Map excludeList2Map = new HashMap();
+			List<Integer> excludeList2 = new ArrayList<Integer>();
+			
+			// 제외수 궁합수 중 미출수
+			int excludeNumOfMcNum = 0;
+			int maxCount = 0;
+			
+			// 제외수 궁합수 중 포함할 미출수
+			Map excludeList3Map = new HashMap();
+			List<Integer> excludeList3 = new ArrayList<Integer>();
+			
+			// 전체제외수 중복제크 Map, List
+			Map checkAllExcludeNumMap = new HashMap();
+			List<Integer> allExcludeNumList = new ArrayList<Integer>();
+			
+			
+			WinDataDto wdd = winDataList.get(winDataList.size()-1);
+			
+			/*****************************************************
+			 * 1. 최근 10회동안 미출한 번호들의 궁합수 목록을 구함
+			 *****************************************************/
+			// 10회차 포함번호 목록 조회
+			List<Integer> contain10List = lottoDataService.getContain10List(winDataList, winDataList.size()-1);
+			// 10회차 미포함번호 목록 조회
+			List<Integer> notContain10List = lottoDataService.getNotContain10List(contain10List);
+			
+			for (int j = 0; j < notContain10List.size(); j++) {
+				int notContainNum = notContain10List.get(j);
+				
+				for (int k = 0; k < mcNumList.size(); k++) {
+					MCNumDto mCNumDto = mcNumList.get(k);
+					int mcNum = mCNumDto.getNum();
+					if (notContainNum == mcNum) {
+						// 궁합수 문자열을 int 배열로 변환
+						int[] mcNumbers = LottoUtil.getNumbers(mCNumDto.getMc_num().replaceAll(" ", ""));
+						
+						for (int l = 0; l < mcNumbers.length; l++) {
+							int mcNumOfexcludeNum = mcNumbers[l];
+							
+							// 미출수의 궁합수를 미출궁합수 목록에 등록
+							if (!checkMcListOfNotContMap.containsKey(mcNumOfexcludeNum)) {
+								checkMcListOfNotContMap.put(mcNumOfexcludeNum, mcNumOfexcludeNum);
+								mcListOfNotContList.add(mcNumOfexcludeNum);
+							}
+						}
+						
+						// 현재 제외수의 궁합수 반복 중단처리
+						break;
+					}
+				}
+			}
+			mcListOfNotContList = (List<Integer>) LottoUtil.dataSort(mcListOfNotContList);
+			
+			/*****************************************************
+			 * 2. 1번 중 미출수에 없는 번호 선별
+			 *****************************************************/
+			for (int j = 0; j < notContain10List.size(); j++) {
+				boolean exist = false;
+				int notContainNum = notContain10List.get(j);
+				
+				for (int k = 0; k < mcListOfNotContList.size(); k++) {
+					int mcNum = mcListOfNotContList.get(k);
+					
+					if (notContainNum == mcNum) {
+						exist = true;
+						break;
+					}
+				}
+				
+				if (!exist) {
+					excludeList1.add(notContainNum);
+				}
+			}
+			
+			/*****************************************************
+			 * 3. 미출수의 궁합수 중 2번째까지만 선별
+			 *****************************************************/
+			for (int j = 0; j < excludeList1.size(); j++) {
+				int excludeNum = excludeList1.get(j);
+				
+				for (int k = 0; k < mcNumList.size(); k++) {
+					MCNumDto mCNumDto = mcNumList.get(k);
+					int mcNum = mCNumDto.getNum();
+					if (excludeNum == mcNum) {
+						// 궁합수 문자열을 int 배열로 변환
+						int[] mcNumbers = LottoUtil.getNumbers(mCNumDto.getMc_num().replaceAll(" ", ""));
+						
+						// 2번째까지만 설정
+						for (int l = 0; l < (mcNumbers.length > 2 ? 2 : mcNumbers.length); l++) {
+							int mcNumOfexcludeNum = mcNumbers[l];
+							
+							// 미출수목록1의 궁합수를 미출수목록2에 등록
+							if (!excludeList2Map.containsKey(mcNumOfexcludeNum)) {
+								excludeList2Map.put(mcNumOfexcludeNum, mcNumOfexcludeNum);
+								excludeList2.add(mcNumOfexcludeNum);
+							}
+						}
+						
+						// 현재 제외수의 궁합수 반복 중단처리
+						break;
+					}
+				}
+			}
+			
+			/*****************************************************
+			 * 4. 제외수의 궁합수 목록을 구함.
+			 *****************************************************/
+			// 제외수 조회
+			ExDataDto exDataDto = new ExDataDto();
+			exDataDto.setEx_count(exCount);
+			ExcludeDto excludeDto = sysmngService.getExcludeInfo(exDataDto);
+			
+			// 제외수 문자열을 int 배열로 변환
+			int[] excludeNumbers = LottoUtil.getNumbers(excludeDto.getExclude_num().replaceAll(" ", ""));
+			
+			// 제외수의 궁합수 목록을 추출
+			for (int j = 0; j < excludeNumbers.length; j++) {
+				int excludeNum = excludeNumbers[j];
+				
+				if (!checkExcludeNumber.containsKey(excludeNum)) {
+					checkExcludeNumber.put(excludeNum, excludeNum);
+					excludeNumberList.add(excludeNum);
+				}
+				
+				for (int k = 0; k < mcNumList.size(); k++) {
+					MCNumDto mCNumDto = mcNumList.get(k);
+					int mcNum = mCNumDto.getNum();
+					if (excludeNum == mcNum) {
+						// 궁합수 문자열을 int 배열로 변환
+						int[] mcNumbers = LottoUtil.getNumbers(mCNumDto.getMc_num().replaceAll(" ", ""));
+						
+						for (int l = 0; l < mcNumbers.length; l++) {
+							int mcNumOfexcludeNum = mcNumbers[l];
+							
+							// 제외수의 궁합수를 목록에 등록
+							if (!checkExcludeNumber.containsKey(mcNumOfexcludeNum)) {
+								checkExcludeNumber.put(mcNumOfexcludeNum, mcNumOfexcludeNum);
+								excludeNumberList.add(mcNumOfexcludeNum);
+							}
+						}
+						
+						// 현재 제외수의 궁합수 반복 중단처리
+						break;
+					}
+				}
+				
+			} // end 제외수 목록 반복
+			
+			/*****************************************************
+			 * 5. 제외수 궁합수 목록에서 미출수에 포함된 번호 중 가장 오래된 번호는 제외
+			 * 6. 5번의 나머지 번호중 미출수에 있는 번호는 추가
+			 *****************************************************/
+			for (int j = 0; j < excludeNumberList.size(); j++) {
+				int excludeNum = excludeNumberList.get(j);
+				
+				for (int k = 0; k < notContain10List.size(); k++) {
+					int notContainNum = notContain10List.get(k);
+					
+					if (excludeNum == notContainNum) {
+						
+						// 제외수의 궁합수 중 미포함수는 미출수목록3에 등록
+						if (!excludeList3Map.containsKey(notContainNum)) {
+							excludeList3Map.put(notContainNum, notContainNum);
+							excludeList3.add(notContainNum);
+						}
+						
+						int checkCount = 0;
+						
+						// 이전 출현회수 비교하여 가장 오래된 미출수 선별
+						for (int l = (winDataList.size() - 1) - 1; l >= 0; l--) {
+							checkCount++;
+							
+							WinDataDto bfWinData = winDataList.get(l);
+							
+							if (notContainNum == bfWinData.getNum1()
+									|| notContainNum == bfWinData.getNum2()
+									|| notContainNum == bfWinData.getNum3()
+									|| notContainNum == bfWinData.getNum4()
+									|| notContainNum == bfWinData.getNum5()
+									|| notContainNum == bfWinData.getNum6()
+									) {
+								break;
+							}
+						}
+						
+						if (excludeNumOfMcNum == 0) {
+							excludeNumOfMcNum = notContainNum;
+							maxCount = checkCount;
+						} else {
+							// 기존과 비교 (가장 오래된 미출수 선별)
+							if (maxCount < checkCount) {
+								excludeNumOfMcNum = notContainNum;
+								maxCount = checkCount;
+							}
+						}
+						
+						break;
+					}
+				}
+			}
+			
+			/*****************************************************
+			 * 7. 전체 제외수 목록을 구함.
+			 *    (미출수 & 미출수 궁합수 + 제외수)
+			 *****************************************************/
+			for (int j = 0; j < excludeList1.size(); j++) {
+				int excludeNum = excludeList1.get(j);
+				
+				// 제외수의 궁합수 중 미포함수는 미출수목록3에 등록
+				if (!checkAllExcludeNumMap.containsKey(excludeNum)) {
+					checkAllExcludeNumMap.put(excludeNum, excludeNum);
+					allExcludeNumList.add(excludeNum);
+				}
+			}
+			
+			for (int j = 0; j < excludeList2.size(); j++) {
+				int excludeNum = excludeList2.get(j);
+				
+				// 제외수의 궁합수 중 미포함수는 미출수목록3에 등록
+				if (!checkAllExcludeNumMap.containsKey(excludeNum)) {
+					checkAllExcludeNumMap.put(excludeNum, excludeNum);
+					allExcludeNumList.add(excludeNum);
+				}
+			}
+			
+			for (int j = 0; j < excludeList3.size(); j++) {
+				int excludeNum = excludeList3.get(j);
+				
+				// 제외수의 궁합수 중 미포함수는 미출수목록3에 등록
+				if (!checkAllExcludeNumMap.containsKey(excludeNum)) {
+					checkAllExcludeNumMap.put(excludeNum, excludeNum);
+					allExcludeNumList.add(excludeNum);
+				}
+			}
+			
+			for (int j = 0; j < excludeNumbers.length; j++) {
+				int excludeNum = excludeNumbers[j]; 
+				
+				// 제외수의 궁합수 중 미포함수는 미출수목록3에 등록
+				if (!checkAllExcludeNumMap.containsKey(excludeNum)) {
+					checkAllExcludeNumMap.put(excludeNum, excludeNum);
+					allExcludeNumList.add(excludeNum);
+				}
+			}
+			
+			allExcludeNumList = (List<Integer>) LottoUtil.dataSort(allExcludeNumList);
+			
+			// 존재하면, 제외수 궁합수 중 포함할 미출수 목록에서 제거 
+			if (excludeNumOfMcNum > 0) {
+				for (int k = 0; k < allExcludeNumList.size(); k++) {
+					int excludeNum = allExcludeNumList.get(k);
+					if (excludeNumOfMcNum == excludeNum) {
+						allExcludeNumList.remove(k);
+						break;
+					}
+				}
+				log.info("[" + loginUserNo + "]\t\t " + exCount + "회차 장기 미출수는 제외수에서 미포함 : " + excludeNumOfMcNum);
+			}
+			
+			/*****************************************************
+			 * 8. 연번 규칙 적용
+			 *    (연번 출현 시 다음회차의 +2, -2 번호 1개는 출현)
+			 *****************************************************/
+			int[] numbers = LottoUtil.getNumbers(lastWinData);
+			for (int i = 0; i < numbers.length-1; i++) {
+				if (numbers[i+1] - numbers[i] == 1) {
+					// 끝수 존재여부 체크
+					if (i+2 < numbers.length) {
+						if(numbers[i+2] - numbers[i+1] == 1) {
+							// 다음수가 3연속은 규칙 제외
+							continue;
+						}
+					} else if (i-1 >= 0) {
+						if(numbers[i] - numbers[i-1] == 1) {
+							// 이전수가 3연속은 규칙 제외
+							continue;
+						}
+					}
+					
+					// 연번
+					List<Integer> list = new ArrayList<Integer>();
+					list.add(numbers[i] - 2);
+					list.add(numbers[i] + 2);
+					list.add(numbers[i+1] - 2);
+					list.add(numbers[i+1] + 2);
+					
+					for (int j = 0; j < list.size(); j++) {
+						int consecutivelyNumber = list.get(j);
+						
+						for (int k = 0; k < allExcludeNumList.size(); k++) {
+							int excludeNum = allExcludeNumList.get(k);
+							if (consecutivelyNumber == excludeNum) {
+								allExcludeNumList.remove(k);
+								break;
+							}
+						}
+					}
+				}
+			}
+			
+			/*****************************************************
+			 * 9. 2회 전회차의 1구간 3개수 규칙 적용
+			 *    (연번 출현 시 다음회차의 +2, -2 번호 1개는 출현)
+			 *****************************************************/
+			WinDataDto checkDto = winDataList.get(winDataList.size()-2);
+			int[] containGroupCnt = lottoDataService.getZeroCntRangeData(checkDto);
+			boolean isCheck = false;
+			int checkRangeCnt = 0;
+			for (int i = 0; i < containGroupCnt.length; i++) {
+				if (containGroupCnt[i] == 3) {
+					isCheck = true;
+					checkRangeCnt = i;
+					break;
+				}
+			}
+
+			if (isCheck) {
+				int[] bf2CountNumbers = LottoUtil.getNumbers(checkDto);
+				int[] compareNumbers = new int[3];
+				int cnt = 0;
+				
+				int startIdx = 10 * checkRangeCnt;
+				if (checkRangeCnt < 4) {
+					int endIdx = 10 * (checkRangeCnt+1);
+					
+					for (int i = 0; i < bf2CountNumbers.length; i++) {
+						if (startIdx < bf2CountNumbers[i] 
+								&& bf2CountNumbers[i] <= endIdx) {
+							compareNumbers[cnt++] = bf2CountNumbers[i];
+						}
+					}
+				} else {
+					int endIdx = 10 * checkRangeCnt + 5;
+					for (int i = 0; i < bf2CountNumbers.length; i++) {
+						if (startIdx < bf2CountNumbers[i] 
+								&& bf2CountNumbers[i] <= endIdx) {
+							compareNumbers[cnt++] = bf2CountNumbers[i];
+						}
+					}
+				}
+				
+				// 3연속 수의 차이수
+				List<Integer> list = new ArrayList<Integer>();
+				list.add(compareNumbers[2] - compareNumbers[1]);
+				list.add(compareNumbers[1] - compareNumbers[0]);
+				
+				for (int j = 0; j < list.size(); j++) {
+					int difNumber = list.get(j);
+					
+					for (int k = 0; k < allExcludeNumList.size(); k++) {
+						int excludeNum = allExcludeNumList.get(k);
+						if (difNumber == excludeNum) {
+							allExcludeNumList.remove(k);
+							break;
+						}
+					}
+				}
+			}
+			
+			// 결과 확인
+			String modiExcludeNum = "";
+			for (int j = 0; j < allExcludeNumList.size(); j++) {
+				int excludeNum = allExcludeNumList.get(j);
+				if (!"".equals(modiExcludeNum)) {
+					modiExcludeNum += ",";
+				}
+				modiExcludeNum = "" + modiExcludeNum + excludeNum;
+			}
+			log.info("[" + loginUserNo + "]\t\t " + wdd.getWin_count() + "회차 개선된 제외수 : " + modiExcludeNum);
+				
+			jsonObj.put("excludeNumberListNormal", excludeNumberListNormal);
+			jsonObj.put("excludeNumberListNormalCnt", excludeNumberListNormalCnt);
+			jsonObj.put("modiExcludeNum", modiExcludeNum);
 			jsonObj.put("status", "success");
 			
 		} else {

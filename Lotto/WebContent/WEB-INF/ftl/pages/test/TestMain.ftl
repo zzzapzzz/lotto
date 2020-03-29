@@ -40,26 +40,10 @@
 					<div class="row well">
 						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 							<h1 id="win_data_title" class="txt-color-blueDark" style="text-align: center;">
-								899회 나대길 가설 검증
+								나대길 가설 검증
 							</h1>
-							<span id="testTheory1" class="btn btn-info" onclick="javascript:testTheory(1);"><i class="fa fa-bug"></i> 가설1</span>
-							<span id="testTheory2" class="btn btn-info" onclick="javascript:testTheory(2);"><i class="fa fa-bug"></i> 가설2</span>
-							<span id="testTheory3" class="btn btn-info" onclick="javascript:testTheory(3);"><i class="fa fa-bug"></i> 가설3</span>
-							<span id="testTheory4" class="btn btn-info" onclick="javascript:testTheory(4);"><i class="fa fa-bug"></i> 가설4</span>
-							<span id="testTheory5" class="btn btn-info" onclick="javascript:testTheory(5);"><i class="fa fa-bug"></i> 가설5</span>
-							<span id="testTheory6" class="btn btn-info" onclick="javascript:testTheory(6);"><i class="fa fa-bug"></i> 가설6</span>
-							<span id="testTheory7" class="btn btn-info" onclick="javascript:testTheory(7);"><i class="fa fa-bug"></i> 가설7</span>
-							<span id="testTheory8" class="btn btn-info" onclick="javascript:testTheory(8);"><i class="fa fa-bug"></i> 가설8</span>
-							<span id="testTheory9" class="btn btn-info" onclick="javascript:testTheory(9);"><i class="fa fa-bug"></i> 가설9</span>
-							<span id="testTheory10" class="btn btn-info" onclick="javascript:testTheory(10);"><i class="fa fa-bug"></i> 가설10</span>
-							<span id="testTheory11" class="btn btn-info" onclick="javascript:testTheory(11);"><i class="fa fa-bug"></i> 가설11</span>
-							<span id="testTheory12" class="btn btn-info" onclick="javascript:testTheory(12);"><i class="fa fa-bug"></i> 가설12</span>
-							<span id="testTheory13" class="btn btn-info" onclick="javascript:testTheory(13);"><i class="fa fa-bug"></i> 가설13</span>
-							<span id="testTheory14" class="btn btn-info" onclick="javascript:testTheory(14);"><i class="fa fa-bug"></i> 가설14</span>
-							<span id="testTheory15" class="btn btn-info" onclick="javascript:testTheory(15);"><i class="fa fa-bug"></i> 가설15</span>
-							<span id="testTheory16" class="btn btn-info" onclick="javascript:testTheory(16);"><i class="fa fa-bug"></i> 가설16</span>
-							<span id="testTheory17" class="btn btn-info" onclick="javascript:testTheory(17);"><i class="fa fa-bug"></i> 가설17</span>
-							<span id="testTheory18" class="btn btn-info" onclick="javascript:testTheory(18);"><i class="fa fa-bug"></i> 가설18</span>
+							<span id="testTheory" class="btn btn-info" onclick="javascript:testTheory();"><i class="fa fa-bug"></i> 가설</span>
+							<input type="text" style="width: 10%;" id="testTheoryCount" name="testTheoryCount" placeholder="검증 가설번호" />
 							<input type="text" style="width: 10%;" id="fromCheckCount" name="fromCheckCount" placeholder="확인할 전회차수" />
 							<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: left;">
 								<br />
@@ -83,80 +67,23 @@
 									<li>가설16. 28, 42가 출현하면 40번대가 3회연속 출현하지 않음. 보너스 볼까지도 안나옴.4번째 쌍수가 출현한다.</li>
 									<li>가설17. 단번대가 1개씩 3회연속 출현하면,4회째에 단번대의 배수가 출현한다.</li>
 									<li>가설18. 5와 8끝수가 출현하면, 다음회 6끝수가 출현한다.</li>
+									<li>가설19. 마지막 회차의 2회전 단번대 출현, 최근 회차에서 단번대 출현하면, 3끝수가 출현한다.</li>
+									<li>가설20. 1회차 전에서의 10번대, 20번대 번호가 최근 회차에서 연번으로 출현하면, 1회차 전의 번호 중 1개가 다시 출현한다.</li>
+									<li>가설21. 24번호 출현시(보너스 포함), 2,8,7 끝수가 출현한다.</li>
+									<!-- 22,23은 다른 가설로 사용 -->
+									<li>가설24. 20구간 3개 출현시, 8,2,4 끝수가 출현한다.</li>
+									<li>가설25. 20구간 3개 출현하고 8,2,4 끝수가 출현하면 다음회차에 8,2,4끝수가 출현하지 않는다.</li>
+									<li>가설26. 20구간 3개 출현하면, 단번대(1~9)가 출현하지 않는다.</li>
+									<li>가설27. 10번대 연번이 출현하면, 1끝수가 출현한다.</li>
+									<li>가설28. 15번이 출현하면, 19번이 출현한다.</li>
+									<li>가설29. 28번이 출현하면, 28번이 이월되지 않는다.</li>
+									<li>가설30. 40번대(40~45) 보너스가 출현하면, 구간수 3개가 출현한다.</li>
 								</ol>
 							</div>
 						</div>
-						<div id="theoryResult1" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설1<br /> 
-							전체출현횟수 = <span id="theory1AllAppearCnt">100</span>, 일치횟수 = <span id="theory1MatchedCnt">100</span>, 정확도 <span id="theory1MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult2" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설2<br /> 
-							전체출현횟수 = <span id="theory2AllAppearCnt">100</span>, 일치횟수 = <span id="theory2MatchedCnt">100</span>, 정확도 <span id="theory2MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult3" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설3<br /> 
-							전체출현횟수 = <span id="theory3AllAppearCnt">100</span>, 일치횟수 = <span id="theory3MatchedCnt">100</span>, 정확도 <span id="theory3MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult4" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설4<br /> 
-							전체출현횟수 = <span id="theory4AllAppearCnt">100</span>, 일치횟수 = <span id="theory4MatchedCnt">100</span>, 정확도 <span id="theory4MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult5" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설5<br /> 
-							전체출현횟수 = <span id="theory5AllAppearCnt">100</span>, 일치횟수 = <span id="theory5MatchedCnt">100</span>, 정확도 <span id="theory5MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult6" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설6<br /> 
-							전체출현횟수 = <span id="theory6AllAppearCnt">100</span>, 일치횟수 = <span id="theory6MatchedCnt">100</span>, 정확도 <span id="theory6MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult7" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설7<br /> 
-							전체출현횟수 = <span id="theory7AllAppearCnt">100</span>, 일치횟수 = <span id="theory7MatchedCnt">100</span>, 정확도 <span id="theory7MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult8" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설8<br /> 
-							전체출현횟수 = <span id="theory8AllAppearCnt">100</span>, 일치횟수 = <span id="theory8MatchedCnt">100</span>, 정확도 <span id="theory8MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult9" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설9<br /> 
-							전체출현횟수 = <span id="theory9AllAppearCnt">100</span>, 일치횟수 = <span id="theory9MatchedCnt">100</span>, 정확도 <span id="theory9MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult10" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설10<br /> 
-							전체출현횟수 = <span id="theory10AllAppearCnt">100</span>, 일치횟수 = <span id="theory10MatchedCnt">100</span>, 정확도 <span id="theory10MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult11" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설11<br /> 
-							전체출현횟수 = <span id="theory11AllAppearCnt">100</span>, 일치횟수 = <span id="theory11MatchedCnt">100</span>, 정확도 <span id="theory11MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult12" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설12<br /> 
-							전체출현횟수 = <span id="theory12AllAppearCnt">100</span>, 일치횟수 = <span id="theory12MatchedCnt">100</span>, 정확도 <span id="theory12MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult13" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설13<br /> 
-							전체출현횟수 = <span id="theory13AllAppearCnt">100</span>, 일치횟수 = <span id="theory13MatchedCnt">100</span>, 정확도 <span id="theory13MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult14" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설14<br /> 
-							전체출현횟수 = <span id="theory14AllAppearCnt">100</span>, 일치횟수 = <span id="theory14MatchedCnt">100</span>, 정확도 <span id="theory14MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult15" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설15<br /> 
-							전체출현횟수 = <span id="theory15AllAppearCnt">100</span>, 일치횟수 = <span id="theory15MatchedCnt">100</span>, 정확도 <span id="theory15MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult16" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설16<br /> 
-							전체출현횟수 = <span id="theory16AllAppearCnt">100</span>, 일치횟수 = <span id="theory16MatchedCnt">100</span>, 정확도 <span id="theory16MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult17" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설17<br /> 
-							전체출현횟수 = <span id="theory17AllAppearCnt">100</span>, 일치횟수 = <span id="theory17MatchedCnt">100</span>, 정확도 <span id="theory17MatchedPer">100</span>%<br />
-						</div>
-						<div id="theoryResult18" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
-							가설18<br /> 
-							전체출현횟수 = <span id="theory18AllAppearCnt">100</span>, 일치횟수 = <span id="theory18MatchedCnt">100</span>, 정확도 <span id="theory18MatchedPer">100</span>%<br />
+						<div id="theoryResult" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="text-align: center;">
+							가설<br /> 
+							전체출현횟수 = <span id="theoryAllAppearCnt">100</span>, 일치횟수 = <span id="theoryMatchedCnt">100</span>, 정확도 <span id="theoryMatchedPer">100</span>%<br />
 						</div>
 					</div>
 					<!-- end row -->

@@ -25,6 +25,7 @@
 					
 					<span id="add" class="btn btn-success" onclick="javascript:addGo();"><i class="fa fa-pencil"></i> 일반등록</span>
 					<span id="autoAdd" class="btn btn-warning" onclick="javascript:autoAddCheckGo();"><i class="fa fa-edit"></i> 자동등록</span>
+					<input type="text" id="maxSaveCnt" name="maxSaveCnt" />
 					<span id="filterAdd" class="btn btn-info" onclick="javascript:filterAddGo();"><i class="fa fa-edit"></i> 필터조합등록</span>
 					<span id="del" class="btn btn-danger" onclick="javascript:delGo();"><i class="fa fa-trash-o"></i> 삭제</span>
 					

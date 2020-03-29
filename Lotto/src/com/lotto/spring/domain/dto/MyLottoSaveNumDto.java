@@ -38,6 +38,8 @@ public class MyLottoSaveNumDto extends DefaultDto{
 	
 	/** 순번목록 */
 	private String seqs;
+	/** 등록개수 */
+	private int maxSaveCnt;
 	
 	public int getEx_count() {
 		return ex_count;
@@ -128,5 +130,11 @@ public class MyLottoSaveNumDto extends DefaultDto{
 	}
 	public void setSeqs(String seqs) {
 		this.seqs = seqs;
+	}
+	public int getMaxSaveCnt() {
+		return maxSaveCnt;
+	}
+	public void setMaxSaveCnt(int maxSaveCnt) {
+		this.maxSaveCnt = maxSaveCnt;
 	}
 }

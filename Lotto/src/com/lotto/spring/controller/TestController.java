@@ -1746,6 +1746,186 @@ public class TestController extends DefaultSMController {
 	}
 	
 	/**
+	 * 가설0 검증
+	 * 
+	 * 가설0. 최근회차에서 전체 구간에서 출현하고 단번대가 2개 출현하고 연번도 출현하면, 다음회차에서 연번의 +2, -2 숫자가 출현한다.  
+	 * 
+	 * 2020.03.22 검증
+	 * 1회부터 확인 : 전체출현횟수 = 5, 일치횟수 = 4, 정확도 80%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 0, 일치횟수 = 0, 정확도 0%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory0")
+	public void testTheory0(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+	  		//ORACLE 인 경우 대문자 설정
+	  		if ("ORACLE".equals(systemInfo.getDatabase())) {
+	  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+	  		}
+	  		
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 가설0 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+				
+				WinDataDto sourceWinDataDto = winDataList.get(countIdx);	// 최근회차
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);	// 다음회차
+				
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+				
+				// 체크
+				// 최근회차에서 전체 구간 출현 확인
+				int[] containGroupCnt = lottoDataService.getZeroCntRangeData(sourceWinDataDto);
+				int isAllCnt = 0;
+				for (int i = 0; i < containGroupCnt.length; i++) {
+					if (containGroupCnt[i] > 0) {
+						isAllCnt++;
+					}
+				}
+				
+				// 최근회차에서 단번대 2개 출현 확인
+				if (isAllCnt == 5) {
+//					log.info("이전 회차의 전체구간 출현. 단번대 번호 수 체크 : 2개 출현 확인");
+					containGroupCnt = lottoDataService.getZeroCntRangeData(sourceWinDataDto);
+//					if (containGroupCntExData[0] > 2 || containGroupCntExData[0] == 0) {
+					if (containGroupCnt[0] != 2 ) {
+//						log.info("단번대 번호 수 불충족 : " + containGroupCnt[0]);
+						continue;
+					}
+				} else {
+					continue;
+				}
+				
+				// 최근회차에서 연번 출현 확인
+				boolean bfIsConsecutively = false;	// 전회차 연번 포함여부
+				String consecutivelyNumbers = "";
+				List<Integer> consecutivelyNumberList = new ArrayList<Integer>();
+				for (int i = 0; i < sourceNumbers.length-1; i++) {
+					if (sourceNumbers[i+1] - sourceNumbers[i] == 1) {
+						// 끝수 존재여부 체크
+						if (i+2 < sourceNumbers.length) {
+							if(sourceNumbers[i+2] - sourceNumbers[i+1] == 1) {
+								// 다음수가 3연속은 규칙 제외
+								bfIsConsecutively = false;
+								consecutivelyNumbers = "";
+								consecutivelyNumberList = new ArrayList<Integer>();
+								break;
+							}
+						} else if (i-1 >= 0) {
+							if(sourceNumbers[i] - sourceNumbers[i-1] == 1) {
+								// 이전수가 3연속은 규칙 제외
+								bfIsConsecutively = false;
+								consecutivelyNumbers = "";
+								consecutivelyNumberList = new ArrayList<Integer>();
+								break;
+							}
+						}
+						
+						
+						// 연번
+						consecutivelyNumberList.add(sourceNumbers[i]);
+						consecutivelyNumbers += sourceNumbers[i];
+						consecutivelyNumberList.add(sourceNumbers[i+1]);
+						consecutivelyNumbers += ",";
+						consecutivelyNumbers += sourceNumbers[i+1];
+						
+						bfIsConsecutively = true;
+						log.info("[" + loginUserNo + "] " + sourceWinDataDto.getWin_count() + "회 전회차 연번 출현!!! (" + consecutivelyNumbers + ")");
+					}
+				}
+				
+				if (bfIsConsecutively) {
+					allAppearCnt++;
+					
+					boolean isContainConsecutivelyNumber = false;
+					for (int j = 0; j < consecutivelyNumberList.size(); j++) {
+						int consecutivelyNumber = consecutivelyNumberList.get(j);
+						
+						for (int k = 0; k < targetNumbers.length; k++) {
+							int num = targetNumbers[k];
+							if (consecutivelyNumber + 2 == num
+									|| consecutivelyNumber - 2 == num
+									) {
+								isContainConsecutivelyNumber = true;
+								break;
+							}
+						}
+						
+						if (isContainConsecutivelyNumber) {
+							break;
+						}
+					}
+					
+					if (!isContainConsecutivelyNumber) {
+						// 연번 출현규칙이 없으면 다음번호 조합
+						continue;
+					} else {
+						matchedCnt++;
+						log.info("[" + loginUserNo + "] " + targetWinDataDto.getWin_count() + "회 전회차 연번 +2 or -2 수 출현!!!");
+					}
+				}
+				
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
 	 * 나대길 가설1 검증
 	 * 
 	 * 가설1. 10차이나는 수 사이에 다른 숫자가 있으면, 다음회차에서 큰 수에서 중간수를 뺀 끝수가 출현한다. 
@@ -1763,7 +1943,7 @@ public class TestController extends DefaultSMController {
 	@RequestMapping("/test/testTheory1")
 	public void testTheory1(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
 		HttpSession session = request.getSession();
-	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
 		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
 		JSONObject jsonObj = new JSONObject();
@@ -1773,11 +1953,11 @@ public class TestController extends DefaultSMController {
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
 			//2016.05.23 cremazer
-	  		//ORACLE 인 경우 대문자 설정
-	  		if ("ORACLE".equals(systemInfo.getDatabase())) {
-	  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-	  		}
-	  		
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설1 검증");
@@ -4054,6 +4234,1469 @@ public class TestController extends DefaultSMController {
 							log.info("[" + loginUserNo + "]\t\t>" + targetWinDataDto.getWin_count() + "회 6끝수 출현!!!");
 							matchedCnt++;
 							break;
+						}
+					}
+				}
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
+	 * 나대길 가설19 검증
+	 * 
+	 * 가설19. 마지막 회차의 2회전 단번대 출현, 최근 회차에서 단번대 출현하면, 3끝수가 출현한다.
+	 * 
+	 * 2020.03.21 검증
+	 * 1회부터 확인 : 전체출현횟수 = 540, 일치횟수 = 293, 정확도 54%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 15, 일치횟수 = 11, 정확도 73%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory19")
+	public void testTheory19(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 나대길 가설19 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 3; countIdx++) {
+				
+				WinDataDto sourceWinDataDto1 = winDataList.get(countIdx);	// 2회차 전
+				WinDataDto sourceWinDataDto2 = winDataList.get(countIdx+2);	// 최근회차
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+3);	// 다음회차
+				
+				int[] sourceZeroCntRange1 = lottoDataService.getZeroCntRangeData(sourceWinDataDto1);
+				int[] sourceZeroCntRange2 = lottoDataService.getZeroCntRangeData(sourceWinDataDto2);
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+				
+				
+				// 마지막 회차의 2회전 단번대 출현, 최근 회차에서 단번대 출현 확인
+				boolean isAppear = false;
+				
+				// 단번대 출현 체크
+				if (sourceZeroCntRange1[0] >= 1
+						&& sourceZeroCntRange2[0] >= 1) {
+					allAppearCnt++;
+					isAppear = true;
+					log.info("[" + loginUserNo + "]\t마지막 회차의 2회전 단번대 출현, 최근 회차에서 단번대 출현 확인");
+				}
+				
+				if (isAppear) {
+					for (int i = 0; i < targetNumbers.length; i++) {
+						if (targetNumbers[i] % 10 == 3) {
+							matchedCnt++;
+							log.info("[" + loginUserNo + "]\t\t>" + targetWinDataDto.getWin_count() + "회 3끝수 출현!!!");
+							break;
+						}
+					}
+				}
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
+	 * 나대길 가설20 검증
+	 * 
+	 * 가설20. 1회차 전에서의 10번대, 20번대 번호가 최근 회차에서 연번으로 출현하면, 1회차 전의 번호 중 1개가 다시 출현한다.
+	 * 
+	 * 2020.03.21 검증
+	 * 1회부터 확인 : 전체출현횟수 = 전체출현횟수 = 14, 일치횟수 = 4, 정확도 29%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 1, 일치횟수 = 1, 정확도 100%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory20")
+	public void testTheory20(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 나대길 가설20 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 2; countIdx++) {
+				
+				WinDataDto sourceWinDataDto1 = winDataList.get(countIdx);	// 1회차 전
+				WinDataDto sourceWinDataDto2 = winDataList.get(countIdx+1);	// 최근회차
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+2);	// 다음회차
+				
+				int[] sourceZeroCntRange1 = lottoDataService.getZeroCntRangeData(sourceWinDataDto1);
+				int[] sourceZeroCntRange2 = lottoDataService.getZeroCntRangeData(sourceWinDataDto2);
+				int[] sourceNumbers1 = LottoUtil.getNumbers(sourceWinDataDto1);
+				int[] sourceNumbers2 = LottoUtil.getNumbers(sourceWinDataDto2);
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+				
+				// 1회차 전 10번대, 20번대 번호 설정
+				int[] bf10Num = new int[sourceZeroCntRange1[1]];					
+				int[] bf20Num = new int[sourceZeroCntRange1[2]];
+				
+				// 1회차 전에서의 10번대, 20번대 번호가 최근 회차에서 연번으로 출현 확인
+				boolean isAppear = false;
+				boolean isAppear10ConsecutivelyNumber = false;
+				boolean isAppear20ConsecutivelyNumber = false;
+				
+				// 10번대 20번대 출현여부 체크
+				if (sourceZeroCntRange1[1] >= 1 && sourceZeroCntRange1[2] >= 1
+						&& sourceZeroCntRange2[1] >= 1 && sourceZeroCntRange2[2] >= 1
+						) {
+					int bf10Index = 0;
+					int bf20Index = 0;
+					for (int i = 0; i < sourceNumbers1.length; i++) {
+						if (10 < sourceNumbers1[i] && sourceNumbers1[i] <= 20) {
+							bf10Num[bf10Index++] = sourceNumbers1[i]; 
+						} else if (20 < sourceNumbers1[i] && sourceNumbers1[i] <= 30) {
+							bf20Num[bf20Index++] = sourceNumbers1[i]; 
+						}
+					}
+					
+					// 최근회차에서 연번으로 출현여부 체크
+					for (int i = 0; i < sourceNumbers2.length; i++) {
+						if (10 < sourceNumbers2[i] && sourceNumbers2[i] <= 20) {
+							// 10번대 연번 출현 확인
+							for (int j = 0; j < bf10Num.length; j++) {
+								if (sourceNumbers2[i] == (bf10Num[j] + 1)) {
+									isAppear10ConsecutivelyNumber = true;									
+								}
+							} 
+						} else if (20 < sourceNumbers2[i] && sourceNumbers2[i] <= 30) {
+							// 20번대 연번 출현 확인
+							for (int j = 0; j < bf20Num.length; j++) {
+								if (sourceNumbers2[i] == (bf20Num[j] + 1)) {
+									isAppear20ConsecutivelyNumber = true;									
+								}
+							}
+						}
+					}
+					
+					if (isAppear10ConsecutivelyNumber
+							&& isAppear20ConsecutivelyNumber) {
+						allAppearCnt++;
+						isAppear = true;
+						log.info("[" + loginUserNo + "]\t1회차 전에서의 10번대, 20번대 번호가 최근 회차에서 연번으로 출현 확인");
+					}
+				}
+				
+				if (isAppear) {
+					for (int i = 0; i < targetNumbers.length; i++) {
+						boolean isAppear2 = false;
+						
+						// 10번대 번호 재출현 여부 체크
+						for (int j = 0; j < bf10Num.length; j++) {
+							if (targetNumbers[i] == bf10Num[j]) {
+								matchedCnt++;
+								isAppear2 = true;
+								break;
+							}
+						}
+						
+						if (isAppear2) {
+							log.info("[" + loginUserNo + "]\t\t>" + targetWinDataDto.getWin_count() + "회 2회차 전의 번호 중 1개가 다시 출현!!!");
+							break;
+						} else {
+							// 20번대 번호 재출현 여부 체크
+							for (int j = 0; j < bf20Num.length; j++) {
+								if (targetNumbers[i] == bf20Num[j]) {
+									matchedCnt++;
+									isAppear2 = true;
+									break;
+								}
+							}
+							
+							if (isAppear2) {
+								log.info("[" + loginUserNo + "]\t\t>" + targetWinDataDto.getWin_count() + "회 2회차 전의 번호 중 1개가 다시 출현!!!");
+								break;
+							}
+						}
+					}
+				}
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
+	 * 나대길 가설21 검증
+	 * 
+	 * 가설21. 24번호 출현시(보너스 포함), 2,8,7 끝수가 출현한다.
+	 * 
+	 * 2020.03.21 검증
+	 * 1회부터 확인 : 전체출현횟수 = 141, 일치횟수 = 14, 정확도 10%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 3, 일치횟수 = 3, 정확도 100%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory21")
+	public void testTheory21(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 나대길 가설21 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+				
+				WinDataDto sourceWinDataDto = winDataList.get(countIdx);	// 최근회차
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);	// 다음회차
+				
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+				
+				// 최근회차 24 출현 확인
+				boolean isAppear = false;
+				
+				for (int i = 0; i < sourceNumbers.length; i++) {
+					if (sourceNumbers[i] == 24) {
+						allAppearCnt++;
+						isAppear = true;
+						log.info("[" + loginUserNo + "]\t" + sourceWinDataDto.getWin_count() + "회차 24 출현 확인");
+					}
+				}
+				
+				if (!isAppear) {
+					if (sourceWinDataDto.getBonus_num() == 24) {
+						allAppearCnt++;
+						isAppear = true;
+						log.info("[" + loginUserNo + "]\t" + sourceWinDataDto.getWin_count() + "회차 24 출현 확인(보너스번호)");
+					}
+				}
+					
+				if (isAppear) {
+					boolean isAppearEndNum2 = false;
+					boolean isAppearEndNum7 = false;
+					boolean isAppearEndNum8 = false;
+					for (int i = 0; i < targetNumbers.length; i++) {
+						if (targetNumbers[i] % 10 == 2) {
+							isAppearEndNum2 = true;
+						}
+						if (targetNumbers[i] % 10 == 7) {
+							isAppearEndNum7 = true;
+						}
+						if (targetNumbers[i] % 10 == 8) {
+							isAppearEndNum8 = true;
+						}
+					}
+					
+					if (isAppearEndNum2 && isAppearEndNum7 && isAppearEndNum8) {
+						matchedCnt++;
+						log.info("[" + loginUserNo + "]\t\t>" + targetWinDataDto.getWin_count() + "회 2,8,7 끝수가 출현!!!");
+					}
+				}
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
+	 * 가설 3끝수가 4회연속 출현하면? 
+	 * 다음회차 번호 확인
+	 * 
+	 * 가설22. 4회째 출현번호 중 1개가 다시 출현한다?
+	 * 2020.03.21 검증
+	 * 1회부터 확인 : 전체출현횟수 = 70, 일치횟수 = 53, 정확도 76%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 2, 일치횟수 = 2, 정확도 100%
+	 * 
+	 * 가설23. 동일한 끝수(가족수)가 2개이상 출현한다?
+	 * 2020.03.21 검증
+	 * 1회부터 확인 : 전체출현횟수 = 70, 일치횟수 = 57, 정확도 81%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 2, 일치횟수 = 1, 정확도 50%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory22")
+	public void testTheory22(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 나대길 가설22 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 4; countIdx++) {
+				
+				WinDataDto sourceWinDataDto1 = winDataList.get(countIdx);	// 3회차 전
+				WinDataDto sourceWinDataDto2 = winDataList.get(countIdx+1);	// 2회차 전
+				WinDataDto sourceWinDataDto3 = winDataList.get(countIdx+2);	// 1회차 전
+				WinDataDto sourceWinDataDto4 = winDataList.get(countIdx+3);	// 최근회차
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+4);	// 다음회차
+				
+				int[] sourceNumbers1 = LottoUtil.getNumbers(sourceWinDataDto1);
+				int[] sourceNumbers2 = LottoUtil.getNumbers(sourceWinDataDto2);
+				int[] sourceNumbers3 = LottoUtil.getNumbers(sourceWinDataDto3);
+				int[] sourceNumbers4 = LottoUtil.getNumbers(sourceWinDataDto4);
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+				
+				// 3끝수 연속 4회 출현 확인
+				boolean isAppear = false;
+				boolean isAppear1EndNum3 = false;
+				boolean isAppear2EndNum3 = false;
+				boolean isAppear3EndNum3 = false;
+				boolean isAppear4EndNum3 = false;
+				
+				for (int i = 0; i < sourceNumbers1.length; i++) {
+					if (sourceNumbers1[i] % 10 == 3) {
+						isAppear1EndNum3 = true;
+						break;
+					}
+				}
+				for (int i = 0; i < sourceNumbers2.length; i++) {
+					if (sourceNumbers2[i] % 10 == 3) {
+						isAppear2EndNum3 = true;
+						break;
+					}
+				}
+				for (int i = 0; i < sourceNumbers3.length; i++) {
+					if (sourceNumbers3[i] % 10 == 3) {
+						isAppear3EndNum3 = true;
+						break;
+					}
+				}
+				for (int i = 0; i < sourceNumbers4.length; i++) {
+					if (sourceNumbers4[i] % 10 == 3) {
+						isAppear4EndNum3 = true;
+						break;
+					}
+				}
+				
+				if (isAppear1EndNum3 && isAppear2EndNum3 && isAppear3EndNum3 && isAppear4EndNum3) {
+					allAppearCnt++;
+					isAppear = true;
+					log.info("[" + loginUserNo + "]\t" + sourceWinDataDto4.getWin_count() + "회차 4회째 연속 3끝수 출현 확인");
+				}
+				
+				if (isAppear) {
+					String numbers = "";
+					for (int i = 0; i < targetNumbers.length; i++) {
+						if (i > 0) {
+							numbers += ",";
+						}
+						numbers += targetNumbers[i];
+					}
+					log.info("[" + loginUserNo + "]\t\t>" + targetWinDataDto.getWin_count() + "회 " + numbers+ " 출현!!!");
+					
+					int appearCnt = 0;
+					// 가설검증1
+//					for (int i = 0; i < targetNumbers.length; i++) {
+//						for (int j = 0; j < sourceNumbers4.length; j++) {
+//							if (targetNumbers[i] == sourceNumbers4[j]) {
+//								isAppear4EndNum3 = true;
+//								appearCnt++;
+//								break;
+//							}
+//						}	
+//					}
+//					if (appearCnt > 0) {
+//						matchedCnt++;
+//					}
+//					log.info("[" + loginUserNo + "]\t\t>" + sourceWinDataDto4.getWin_count() + "회 가족수 출현!!! (" + appearCnt + "개)");
+					
+					// 가설검증2
+					Map<Integer, Integer> endNumMap = new HashMap<Integer, Integer>();
+					for (int i = 0; i < targetNumbers.length; i++) {
+						int endNum = targetNumbers[i] % 10;
+						if (endNumMap.containsKey(endNum)) {
+							// 가족수 존재함
+							appearCnt = endNumMap.get(endNum) + 1;
+						} else {
+							endNumMap.put(endNum, 1);
+						}
+					}
+					
+					if (appearCnt > 1) {
+						matchedCnt++;
+						log.info("[" + loginUserNo + "]\t\t>" + sourceWinDataDto4.getWin_count() + "회 가족수 출현!!! (" + appearCnt + "개)");
+					}
+				}
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+
+	/**
+	 * 나대길 가설24 검증
+	 * 
+	 * 가설24. 20구간 3개 출현시, 8,2,4 끝수가 출현한다.
+	 * 
+	 * 2020.03.28 검증
+	 * 1회부터 확인 : 전체출현횟수 = 82, 일치횟수 = 6, 정확도 7%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 1, 일치횟수 = 0, 정확도 0%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory24")
+	public void testTheory24(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 나대길 가설24 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+				
+				WinDataDto sourceWinDataDto = winDataList.get(countIdx);	// 최근회차
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);	// 다음회차
+				
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+
+				boolean isAppear = false;
+				/*
+				 * 같은번호 3개 존재 확인
+				 * 특정구간 (range) 
+				 * 0: 1~9
+				 * 1: 10~19
+				 * 2: 20~29
+				 * 3: 30~39
+				 * 4: 40~45
+				 */
+				int range = 2;
+				boolean isRange3Numbers = lottoDataService.checkRange3Numbers(sourceNumbers, range);
+				// 20구간(20 ~ 29) 3수 출현 확인
+				if (isRange3Numbers) {
+					allAppearCnt++;
+					isAppear = true;
+					log.info("[" + loginUserNo + "] " + sourceWinDataDto.getWin_count() + "회 20구간(20 ~ 29) 3수 출현!!!");
+				}
+				
+				if (isAppear) {
+					boolean isAppearEndNum8 = false;
+					boolean isAppearEndNum2 = false;
+					boolean isAppearEndNum4 = false;
+					for (int i = 0; i < targetNumbers.length; i++) {
+						if (targetNumbers[i] % 10 == 2) {
+							isAppearEndNum2 = true;
+						}
+						if (targetNumbers[i] % 10 == 4) {
+							isAppearEndNum4 = true;
+						}
+						if (targetNumbers[i] % 10 == 8) {
+							isAppearEndNum8 = true;
+						}
+					}
+					
+					if (isAppearEndNum2 && isAppearEndNum4 && isAppearEndNum8) {
+						matchedCnt++;
+						log.info("[" + loginUserNo + "]\t\t>" + targetWinDataDto.getWin_count() + "회 2,8,4 끝수가 출현!!!");
+					}
+				}
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
+	 * 나대길 가설25 검증
+	 * 
+	 * 가설25. 20구간 3개 출현하고 8,2,4 끝수가 출현하면 다음회차에 8,2,4끝수가 출현하지 않는다.
+	 * 
+	 * 2020.03.28 검증
+	 * 1회부터 확인 : 전체출현횟수 = 10, 일치횟수 = 1, 정확도 10%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 1, 일치횟수 = 0, 정확도 0%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory25")
+	public void testTheory25(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 나대길 가설25 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+				
+				WinDataDto sourceWinDataDto = winDataList.get(countIdx);	// 최근회차
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);	// 다음회차
+				
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+				
+				boolean isAppear = false;
+				/*
+				 * 같은번호 3개 존재 확인
+				 * 특정구간 (range) 
+				 * 0: 1~9
+				 * 1: 10~19
+				 * 2: 20~29
+				 * 3: 30~39
+				 * 4: 40~45
+				 */
+				int range = 2;
+				boolean isRange3Numbers = lottoDataService.checkRange3Numbers(sourceNumbers, range);
+				// 20구간(20 ~ 29) 3수 출현 확인
+				if (isRange3Numbers) {
+					log.info("[" + loginUserNo + "] " + sourceWinDataDto.getWin_count() + "회 20구간(20 ~ 29) 3수 출현!!!");
+					// 최근회차 출현 확인
+					boolean isAppearEndNum8 = false;
+					boolean isAppearEndNum2 = false;
+					boolean isAppearEndNum4 = false;
+					for (int i = 0; i < sourceNumbers.length; i++) {
+						if (sourceNumbers[i] % 10 == 2) {
+							isAppearEndNum2 = true;
+						}
+						if (sourceNumbers[i] % 10 == 4) {
+							isAppearEndNum4 = true;
+						}
+						if (sourceNumbers[i] % 10 == 8) {
+							isAppearEndNum8 = true;
+						}
+					}
+					
+					if (isAppearEndNum2 && isAppearEndNum4 && isAppearEndNum8) {
+						allAppearCnt++;
+						isAppear = true;
+						log.info("[" + loginUserNo + "]\t" + sourceWinDataDto.getWin_count() + "회 2,8,4 끝수 출현!!!");
+					}
+				}
+				
+				if (isAppear) {
+					boolean isAppearEndNum8 = false;
+					boolean isAppearEndNum2 = false;
+					boolean isAppearEndNum4 = false;
+					for (int i = 0; i < targetNumbers.length; i++) {
+						if (targetNumbers[i] % 10 == 2) {
+							isAppearEndNum2 = true;
+						}
+						if (targetNumbers[i] % 10 == 4) {
+							isAppearEndNum4 = true;
+						}
+						if (targetNumbers[i] % 10 == 8) {
+							isAppearEndNum8 = true;
+						}
+					}
+					
+					if (!isAppearEndNum2 && !isAppearEndNum4 && !isAppearEndNum8) {
+						matchedCnt++;
+						log.info("[" + loginUserNo + "]\t\t>" + targetWinDataDto.getWin_count() + "회 2,8,4 끝수가 출현하지 않음!!!");
+					}
+				}
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
+	 * 나대길 가설26 검증
+	 * 
+	 * 가설26. 20구간 3개 출현하면, 단번대(1~9)가 출현하지 않는다.
+	 * 
+	 * 2020.03.28 검증
+	 * 1회부터 확인 : 전체출현횟수 = 82, 일치횟수 = 24, 정확도 29% 
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 1, 일치횟수 = 1, 정확도 100%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory26")
+	public void testTheory26(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 나대길 가설26 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+				
+				WinDataDto sourceWinDataDto = winDataList.get(countIdx);	// 최근회차
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);	// 다음회차
+				
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+				
+				boolean isAppear = false;
+				/*
+				 * 같은번호 3개 존재 확인
+				 * 특정구간 (range) 
+				 * 0: 1~9
+				 * 1: 10~19
+				 * 2: 20~29
+				 * 3: 30~39
+				 * 4: 40~45
+				 */
+				int range = 2;
+				boolean isRange3Numbers = lottoDataService.checkRange3Numbers(sourceNumbers, range);
+				// 20구간(20 ~ 29) 3수 출현 확인
+				if (isRange3Numbers) {
+					allAppearCnt++;
+					isAppear = true;
+					log.info("[" + loginUserNo + "] " + sourceWinDataDto.getWin_count() + "회 20구간(20 ~ 29) 3수 출현!!!");
+				}
+				
+				if (isAppear) {
+					// 구간별 출현회수 목록 조회
+					int[] rangeCnt = lottoDataService.getRange3Numbers(targetNumbers);
+					// 단번대(1~9) 미출 체크
+					if (rangeCnt[0] == 0) {
+						matchedCnt++;
+						log.info("[" + loginUserNo + "]\t\t>" + targetWinDataDto.getWin_count() + "회 2,8,4 끝수가 출현하지 않음!!!");
+					}
+				}
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
+	 * 나대길 가설27 검증
+	 * 
+	 * 가설27. 10번대 연번이 출현하면, 1끝수가 출현한다.
+	 * 
+	 * 2020.03.28 검증
+	 * 1회부터 확인 : 전체출현횟수 = 109, 일치횟수 = 54, 정확도 50%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 3, 일치횟수 = 2, 정확도 67%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory27")
+	public void testTheory27(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 나대길 가설27 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+				
+				WinDataDto sourceWinDataDto = winDataList.get(countIdx);	// 최근회차
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);	// 다음회차
+				
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+				
+				boolean isAppear = false;
+
+
+				// 최근회차에서 10번대 연번 출현 확인
+				boolean isConsecutively = false;	// 전회차 연번 포함여부
+				String consecutivelyNumbers = "";
+				List<Integer> consecutivelyNumberList = new ArrayList<Integer>();
+				for (int i = 0; i < sourceNumbers.length-1; i++) {
+					if (sourceNumbers[i+1] - sourceNumbers[i] == 1) {
+						// 끝수 존재여부 체크
+						if (i+2 < sourceNumbers.length) {
+							if(sourceNumbers[i+2] - sourceNumbers[i+1] == 1) {
+								// 다음수가 3연속은 규칙 제외
+								isConsecutively = false;
+								consecutivelyNumbers = "";
+								consecutivelyNumberList = new ArrayList<Integer>();
+								break;
+							}
+						} else if (i-1 >= 0) {
+							if(sourceNumbers[i] - sourceNumbers[i-1] == 1) {
+								// 이전수가 3연속은 규칙 제외
+								isConsecutively = false;
+								consecutivelyNumbers = "";
+								consecutivelyNumberList = new ArrayList<Integer>();
+								break;
+							}
+						}
+						
+						
+						// 연번
+						consecutivelyNumberList.add(sourceNumbers[i]);
+						consecutivelyNumbers += sourceNumbers[i];
+						consecutivelyNumberList.add(sourceNumbers[i+1]);
+						consecutivelyNumbers += ",";
+						consecutivelyNumbers += sourceNumbers[i+1];
+						
+						// 10번대 연번 체크
+						if ((10 <= sourceNumbers[i] && sourceNumbers[i] < 20) 
+								&& (10 <= sourceNumbers[i+1] && sourceNumbers[i+1] < 20)) {
+							allAppearCnt++;
+							isConsecutively = true;
+							log.info("[" + loginUserNo + "] " + sourceWinDataDto.getWin_count() + "회 연번 출현!!! (" + consecutivelyNumbers + ")");
+							break;
+						}
+						
+						
+						
+					}
+				}
+				
+				if (isConsecutively) {
+					for (int i = 0; i < targetNumbers.length; i++) {
+						if (targetNumbers[i] % 10 == 1) {
+							matchedCnt++;
+							log.info("[" + loginUserNo + "]\t" + targetWinDataDto.getWin_count() + "회 1끝수 출현!!!");
+							break;
+						}
+					}
+				}
+				
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
+	 * 나대길 가설28 검증
+	 * 
+	 * 가설28. 15번이 출현하면, 19번이 출현한다.
+	 * 
+	 * 2020.03.28 검증
+	 * 1회부터 확인 : 전체출현횟수 = 121, 일치횟수 = 22, 정확도 18%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 3, 일치횟수 = 3, 정확도 100%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory28")
+	public void testTheory28(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 나대길 가설28 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+				
+				WinDataDto sourceWinDataDto = winDataList.get(countIdx);	// 최근회차
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);	// 다음회차
+				
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+				
+				boolean isAppear = false;
+
+				// 최근회차에서 15번 출현 확인
+				for (int i = 0; i < sourceNumbers.length-1; i++) {
+					if (sourceNumbers[i] == 15) {
+						allAppearCnt++;
+						isAppear = true;
+						log.info("[" + loginUserNo + "] " + sourceWinDataDto.getWin_count() + "회 15번 출현!!!");
+						break;
+					}
+				}
+				
+				if (isAppear) {
+					for (int i = 0; i < targetNumbers.length; i++) {
+						if (targetNumbers[i] == 19) {
+							matchedCnt++;
+							log.info("[" + loginUserNo + "]\t" + targetWinDataDto.getWin_count() + "회 19번 출현!!!");
+							break;
+						}
+					}
+				}
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
+	 * 나대길 가설29 검증
+	 * 
+	 * 가설29. 28번이 출현하면, 28번이 이월되지 않는다.
+	 * 
+	 * 2020.03.28 검증
+	 * 1회부터 확인 : 전체출현횟수 = 103, 일치횟수 = 87, 정확도 84%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 5, 일치횟수 = 5, 정확도 100%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory29")
+	public void testTheory29(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 나대길 가설29 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+				
+				WinDataDto sourceWinDataDto = winDataList.get(countIdx);	// 최근회차
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);	// 다음회차
+				
+				int[] sourceNumbers = LottoUtil.getNumbers(sourceWinDataDto);
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+				
+				boolean isAppear = false;
+
+				// 최근회차에서 28번 출현 확인
+				for (int i = 0; i < sourceNumbers.length-1; i++) {
+					if (sourceNumbers[i] == 28) {
+						allAppearCnt++;
+						isAppear = true;
+						log.info("[" + loginUserNo + "] " + sourceWinDataDto.getWin_count() + "회 28번 출현!!!");
+						break;
+					}
+				}
+				
+				if (isAppear) {
+					boolean isAppear28 = false;
+					for (int i = 0; i < targetNumbers.length; i++) {
+						if (targetNumbers[i] == 28) {
+							isAppear28 = true;
+							break;
+						}
+					}
+					
+					if (!isAppear28) {
+						matchedCnt++;
+						log.info("[" + loginUserNo + "]\t" + targetWinDataDto.getWin_count() + "회 28번 출현 없음!!!");
+					}
+				}
+			}
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("allAppearCnt", allAppearCnt);
+			jsonObj.put("matchedCnt", matchedCnt);
+			
+			if (allAppearCnt > 0) {
+				matchedPer = Math.round(matchedCnt * 1.0 / allAppearCnt * 100);
+			}
+			jsonObj.put("matchedPer", matchedPer);
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
+	 * 나대길 가설30 검증
+	 * 
+	 * 가설30. 40번대(40~45) 보너스가 출현하면, 구간수 3개가 출현한다.
+	 * 
+	 * 2020.03.28 검증
+	 * 1회부터 확인 : 전체출현횟수 = 112, 일치횟수 = 48, 정확도 43%
+	 * 최근 30회 전부터 확인 : 전체출현횟수 = 1, 일치횟수 = 1, 정확도 100%
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param dto
+	 * @throws SQLException
+	 */
+	@RequestMapping("/test/testTheory30")
+	public void testTheory30(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			
+			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
+			
+			//2016.05.23 cremazer
+			//ORACLE 인 경우 대문자 설정
+			if ("ORACLE".equals(systemInfo.getDatabase())) {
+				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+			}
+			
+			// 로그인 아이디
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 나대길 가설30 검증");
+			String accessip = request.getRemoteHost();
+			
+			dto.setReg_user_no(loginUserNo);
+			dto.setAccess_ip(accessip);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			int allAppearCnt = 0;
+			int matchedCnt = 0;
+			double matchedPer = 0.0; 
+			int fromCount = 0;
+			if (!"".equals(fromCheckCount)) {
+				try {
+					fromCount = winDataList.size() - Integer.parseInt(fromCheckCount);
+				} catch (Exception e) {
+					e.printStackTrace();
+					fromCount = 0;
+				}
+			}
+			
+			// 마지막 회차의 전회차까지만 반복해야함.
+			for (int countIdx = 0 + fromCount ; countIdx < winDataList.size() - 1; countIdx++) {
+				
+				WinDataDto sourceWinDataDto = winDataList.get(countIdx);	// 최근회차
+				WinDataDto targetWinDataDto = winDataList.get(countIdx+1);	// 다음회차
+				
+				int[] targetNumbers = LottoUtil.getNumbers(targetWinDataDto);
+				
+				boolean isAppear = false;
+
+				// 최근회차에서 보너스번호 40번대 출현 확인
+				int sourceBonusNumber = sourceWinDataDto.getBonus_num(); 
+				if (40 <= sourceBonusNumber && sourceBonusNumber <= 45) {
+					allAppearCnt++;
+					isAppear = true;
+					log.info("[" + loginUserNo + "] " + sourceWinDataDto.getWin_count() + "회 보너스번호 40번대 출현!!!");
+				}
+				
+				if (isAppear) {
+					// 구간별 출현회수 목록 조회
+					int[] rangeCnt = lottoDataService.getRange3Numbers(targetNumbers);
+					for (int i = 0; i < rangeCnt.length; i++) {
+						if (rangeCnt[i] == 3) {
+							matchedCnt++;
+							log.info("[" + loginUserNo + "]\t" + targetWinDataDto.getWin_count() + "회 " + (i+1) + "구간 3수 출현!!!");						
 						}
 					}
 				}
