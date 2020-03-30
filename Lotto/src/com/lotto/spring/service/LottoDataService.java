@@ -2524,6 +2524,28 @@ public class LottoDataService extends DefaultService {
 
 	/**
 	 * @description <div id=description><b>해당 홀짝비율에 포함되는지 여부확인</b></div>
+	 *              <div id=detail>데이터의 홀짝비율을 계산하여 해당비율에 제외패턴에 포함되는지 비교한다.(로또9단#1)</div>
+	 *              
+	 * @param ratioTitle
+	 * @param data
+	 * @return true: 제외패턴 포함, false: 미포함
+	 */
+	public boolean existExcludeOddEvenRatio(String[] ratioTitle, ExDataDto data) {
+		boolean result = false;
+		
+		int[] numbers = data.getNumbers();
+		String oddEven = this.getOddEven(numbers); 
+		data.setOdd_even(oddEven);
+		if(oddEven.equals(ratioTitle[0])
+				|| oddEven.equals(ratioTitle[6])){
+			return true;
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * @description <div id=description><b>해당 홀짝비율에 포함되는지 여부확인</b></div>
 	 *              <div id=detail>데이터의 홀짝비율을 계산하여 해당비율에 포함되는지 비교한다.</div>
 	 *              
 	 * @param ratioTitle
@@ -2909,7 +2931,8 @@ public class LottoDataService extends DefaultService {
 
 	/**
 	 * @description <div id=description><b>AC 포함 여부 확인</b></div >
-	 *              <div id=detail>데이터 중 AC가 7 ~ 10 사이인지 확인한다.(범위는 표준범위)</div >
+	 *              <div id=detail>데이터 중 AC가 6 ~ 10 사이인지 확인한다.(범위는 표준범위)</div >
+	 *              <div id=detail>동행복권으로 변경되어 min범위를 7에서 6으로 변경(로또9단) 2020.03.30</div >
 	 *              
 	 * @param data
 	 * @param exptPtrnAnlyInfo
@@ -2928,7 +2951,7 @@ public class LottoDataService extends DefaultService {
 //		}
 		
 		// 표준범위로 체크
-		if (ac >= 7 && ac <= 10) {
+		if (ac >= 6 && ac <= 10) {
 			result = true;
 		}
 		
@@ -3538,17 +3561,27 @@ public class LottoDataService extends DefaultService {
 		
 		//1. 총합 범위 포함 비교
 		if (!totalGroupCntMap.containsKey(exData.getTotal())) {
+			log.info("총합 범위 미포함 제외 : " + exData.getTotal());
+			return false;
+		}
+		
+		//1-1. 총합 범위 포함 비교
+		if (exData.getTotal() < 100
+				|| 175 < exData.getTotal()) {
+			log.info("총합 100미만, 175초과 제외");
 			return false;
 		}
 		
 		//2. 끝수합 범위 포함 비교
 		if (!endnumGroupCntMap.containsKey(exData.getSum_end_num())) {
+			log.info("끝수합 범위 미포함 제외 : " + exData.getSum_end_num());
 			return false;
 		}
 				
 		//3. 출현번호 매치여부로 예상번호 설정
 		result = this.matchAppearNumbers(exData, appearNumbersList);
 		if (!result) {
+			log.info("출현번호 매치여부로 예상번호 설정 제외");
 			return false;
 		}
 		
@@ -3562,18 +3595,11 @@ public class LottoDataService extends DefaultService {
 			return false;
 		}
 		
-		//5. AC 비교(7 ~ 10)
+		//5. AC 비교(6 ~ 10)
 		result = this.isContainAc(exData, exptPtrnAnlyInfo);
-		if (verification && isEqual) {
-			if(!result) {
-				equalCnt++;	//일치함.
-				log.info("12. AC 비교 : " + equalCnt);
-			}
-		} else {
-			if(!result) {
-				log.info("AC 평균구간 미포함 제외");
-				return false;
-			}
+		if(!result) {
+			log.info("AC 평균구간 미포함 제외");
+			return false;
 		}
 		
 		/*
@@ -3602,9 +3628,206 @@ public class LottoDataService extends DefaultService {
 			}
 		}
 		
+		// 8. 홀짝 비율 제외 패턴 확인
+		result = this.existExcludeOddEvenRatio(LottoUtil.getRatioTitle(), exData);
+		if(result) {
+			log.info("홀짝비율 제외패턴(0:6, 6:0) 포함 제외");
+			return false;
+		}
+		
+		// 9. 시작번호, 끝번호 범위 확인
+		result = this.existStartEndNumber(exData);
+		if(!result) {
+			log.info("시작번호(1~14), 끝번호(31이상) 범위 미포함 제외");
+			return false;
+		}
+
+		// 10. 앞줄 4줄 패턴 확인 (로또용지기준)
+		result = this.existFront4Cols(exData);
+		if(result) {
+			log.info("앞줄 4줄 패턴 범위 포함 제외");
+			return false;
+		}
+		
+		// 11. 뒷줄 4줄 패턴 확인 (로또용지기준)
+		result = this.existBackend4Cols(exData);
+		if(result) {
+			log.info("뒷줄 4줄 패턴 범위 포함 제외");
+			return false;
+		}
+		
+		// 12. 색상별 제외 범위(1~2, 5색상) 포함 확인
+		result = this.checkExcludeColorCount(exData);
+		if(result) {
+			log.info("색상별 제외 범위(1~2, 5색상) 포함 제외");
+			return false;
+		}
+				
+		// 13. 모서리영역 포함 확인 (로또용지기준)
+		result = this.existEdgeRange(exData);
+		if(!result) {
+			log.info("모서리영역 미포함 제외");
+			return false;
+		}
+		
 		return true;
 	}
 	
+	/**
+	 * 모서리영역 포함 확인 (로또용지기준)
+	 * 1~4개 포함 확인
+	 * 
+	 * TODO 패턴분석 필요
+	 * 
+	 * 2020.03.31
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean existEdgeRange(ExDataDto exData) {
+		boolean check = false;
+		
+		int[] nubmers = LottoUtil.getNumbers(exData);
+		
+		// 모서리패턴 check Map 설정
+		int[] checkNumbers = {1,2,8,9,6,7,13,14,29,30,36,37,34,35,41,42,43,44,45};
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		for (int i = 0; i < checkNumbers.length; i++) {
+			map.put(checkNumbers[i],1);
+		}
+		
+		int checkCnt = 0;
+		for (int i = 0; i < nubmers.length; i++) {
+			if (map.containsKey(nubmers[i])) {
+				checkCnt++;
+			}
+		}
+		
+		if (1 <= checkCnt && checkCnt <= 4) {
+			check = true;
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 색상별 제외 범위(1~2, 5색상) 포함 확인
+	 * 2020.03.31
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean checkExcludeColorCount(ExDataDto exData) {
+		boolean check = false;
+		
+		int[] containGroupCnt = LottoUtil.getArrayFromColor(exData);
+		
+		int checkCnt = 0;
+		for (int i = 0; i < containGroupCnt.length; i++) {
+			if (containGroupCnt[i] > 0) {
+				checkCnt++;
+			}
+		}
+		
+		// TODO 전체 패턴을 분석하여 적중률로 개선이 필요함.
+		// 3~4개 색상으로 선택된 조합으로 선택되도록 설정
+		if (checkCnt == 1 || checkCnt == 2 || checkCnt == 5) {
+			check = true;
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 뒷줄 4줄 패턴 확인 (로또용지기준)
+	 * 2020.03.31
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean existBackend4Cols(ExDataDto exData) {
+		boolean check = false;
+		
+		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
+		
+		int checkCnt = 0;
+		for (int row = 0; row < arrNumbers.length; row++) {
+			for (int col = 0; col < arrNumbers[row].length; col++) {
+				// 뒤 4줄 확인
+				if (2 < col) {
+					if (arrNumbers[row][col] > 0) {
+						checkCnt++;
+					}
+				}
+			}
+			
+			if (checkCnt == 6) {
+				break;
+			}
+		}
+		
+		if (checkCnt == 6) {
+			check = true;
+		}
+		
+		return check;
+	}
+	
+	/**
+	 * 앞줄 4줄 패턴 확인 (로또용지기준)
+	 * 2020.03.31
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean existFront4Cols(ExDataDto exData) {
+		boolean check = false;
+		
+		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
+		
+		int checkCnt = 0;
+		for (int row = 0; row < arrNumbers.length; row++) {
+			for (int col = 0; col < arrNumbers[row].length; col++) {
+				// 앞 4줄 확인
+				if (col < 4) {
+					if (arrNumbers[row][col] > 0) {
+						checkCnt++;
+					}
+				} else {
+					break;
+				}
+			}
+			
+			if (checkCnt == 6) {
+				break;
+			}
+		}
+		
+		if (checkCnt == 6) {
+			check = true;
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 시작번호(1~14), 끝번호(31이상) 범위 확인 (로또9단)
+	 * 2020.03.30
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean existStartEndNumber(ExDataDto exData) {
+		boolean check = false;
+		
+		int[] nubmers = LottoUtil.getNumbers(exData); 
+		if ((1 <= nubmers[0] || nubmers[0] <= 14)
+				&& nubmers[5] >= 31) {
+			check = true;
+		}
+		return check;
+	}
+
 	/**
 	 * 임시 예외처리
 	 * 2019.03.08

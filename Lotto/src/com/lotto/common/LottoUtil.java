@@ -63,6 +63,78 @@ public final class LottoUtil {
 	/** 총합범위유형 201 이상 */
 	public static final int TOTAL_RANGE_TYPE_4 = 4;
 	
+	/**
+	 * 색상별 번호포함 배열 가져오기 
+	 * 2020.03.31
+	 * 
+	 * @param data
+	 * @return
+	 */
+	public static int[] getArrayFromColor(Object data) {
+		/** 각 자리의 포함개수 */
+		int[] containGroupCnt = {0,0,0,0,0};
+		
+		int[] numbers = LottoUtil.getNumbersFromObj(data);
+		
+		//각 자리의 포함개수를 구한다.
+		for(int index = 0 ; index < numbers.length ; index++){
+			int mok = numbers[index] / 10;
+			/*
+			 * 10의자리수는 작은 자리 수로 설정한다.
+			 * 10 : 1의 자리
+			 * 20 : 10의 자리
+			 * 30 : 20의 자리
+			 * 40 : 30의 자리
+			 */
+			if(mok > 0 && (numbers[index] % 10 == 0)){
+				mok -= 1;
+			}
+			containGroupCnt[mok] = containGroupCnt[mok] + 1;
+		}
+		
+		return containGroupCnt;
+	}
+	
+	/**
+	 * 로또용지기준 번호 배열 가져오기
+	 * 2020.03.31
+	 * 
+	 * @param data
+	 * @return
+	 */
+	public static int[][] getArrayLikePaper(Object data) {
+		int[][] arrNumbers = {
+			{0, 0, 0, 0, 0, 0, 0}, 
+			{0, 0, 0, 0, 0, 0, 0}, 
+			{0, 0, 0, 0, 0, 0, 0}, 
+			{0, 0, 0, 0, 0, 0, 0}, 
+			{0, 0, 0, 0, 0, 0, 0}, 
+			{0, 0, 0, 0, 0, 0, 0}, 
+			{0, 0, 0, 0, 0, 0, 0} 
+		};
+		
+		int[] numbers = LottoUtil.getNumbersFromObj(data);
+		for (int i = 0; i < numbers.length; i++) {
+			int row = numbers[i] / 7;
+			int col = numbers[i] % 7 - 1;
+			
+			if(row > 0 && (numbers[i] % 7 == 0)){
+				row -= 1;
+				col = 6;
+			}
+			
+			arrNumbers[row][col] = numbers[i]; 
+		}
+		
+		return arrNumbers;
+	}
+	
+	/**
+	 * 번호 배열 가져오기 (from Object)
+	 * 
+	 * @param data Object
+	 * @return
+	 */
 	public static int[] getNumbersFromObj(Object data) {
 		int[] numbers = { 0, 0, 0, 0, 0, 0 };
 				
