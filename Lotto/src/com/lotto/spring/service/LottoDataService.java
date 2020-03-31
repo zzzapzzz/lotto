@@ -3645,14 +3645,14 @@ public class LottoDataService extends DefaultService {
 		// 10. 앞줄 4줄 패턴 확인 (로또용지기준)
 		result = this.existFront4Cols(exData);
 		if(result) {
-			log.info("앞줄 4줄 패턴 범위 포함 제외");
+			log.info("앞줄 4줄 패턴 범위 포함 제외 (로또용지기준)");
 			return false;
 		}
 		
 		// 11. 뒷줄 4줄 패턴 확인 (로또용지기준)
 		result = this.existBackend4Cols(exData);
 		if(result) {
-			log.info("뒷줄 4줄 패턴 범위 포함 제외");
+			log.info("뒷줄 4줄 패턴 범위 포함 제외 (로또용지기준)");
 			return false;
 		}
 		
@@ -3666,7 +3666,36 @@ public class LottoDataService extends DefaultService {
 		// 13. 모서리영역 포함 확인 (로또용지기준)
 		result = this.existEdgeRange(exData);
 		if(!result) {
-			log.info("모서리영역 미포함 제외");
+			log.info("모서리영역 미포함 제외 (로또용지기준)");
+			return false;
+		}
+		
+		// 14. 연속 3줄패턴 포함 확인 (로또용지기준)
+		result = this.checkLinesRange(exData, 3);
+		if(result) {
+			log.info("연속 3줄패턴 포함 제외 (로또용지기준)");
+			return false;
+		}
+		
+		// 15. 연속 4줄패턴 포함 확인 (로또용지기준)
+		// TODO 적중율 패턴분석 필요
+		result = this.checkLinesRange(exData, 4);
+		if(result) {
+			log.info("연속 4줄패턴 포함 제외 (로또용지기준)");
+			return false;
+		}
+		
+		// 16. 3연번 제외
+		result = this.check3ConsecutivelyNumber(exData);
+		if(result) {
+			log.info("3연번 포함 제외");
+			return false;
+		}
+		
+		// 17. 좌우2줄 패턴 제외 (로또용지기준)
+		result = this.checkLeftRightLinesRange(exData);
+		if(result) {
+			log.info("좌우2줄 포함 제외 (로또용지기준)");
 			return false;
 		}
 		
@@ -3674,10 +3703,161 @@ public class LottoDataService extends DefaultService {
 	}
 	
 	/**
+	 * 좌우2줄 패턴 제외
+	 * 2020.04.01
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean checkLeftRightLinesRange(ExDataDto exData) {
+		boolean check = false;
+		
+		int[] nubmers = LottoUtil.getNumbers(exData);
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		for (int i = 0; i < nubmers.length; i++) {
+			map.put(nubmers[i],1);
+		}
+		
+		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
+		
+		int checkCnt = 0;		
+		for (int row = 0; row < arrNumbers.length; row++) {
+			for (int col = 0; col < arrNumbers[row].length; col++) {
+				// 3,4,5열 체크 제외
+				if (2 <= col || col <= 4) {
+					continue;
+				}
+				
+				if (map.containsKey(arrNumbers[row][col])) {
+					checkCnt++;
+				}
+			}
+			
+			// 결과체크
+			if (checkCnt == 6) {
+				break;
+			}
+		}
+		
+		// 결과체크
+		if (checkCnt == 6) {
+			check = true;
+		}
+		
+		
+		return check;
+	}
+
+	/**
+	 * 3연번 제외
+	 * 2020.04.01
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean check3ConsecutivelyNumber(ExDataDto exData) {
+		boolean check = false;
+		
+		int[] numbers = LottoUtil.getNumbers(exData);
+		for (int i = 0; i < numbers.length - 2; i++) {
+			int firtNumber = numbers[i];
+			int secondNumber = numbers[i+1];
+			int thirdNumber = numbers[i+2];
+			
+			if (secondNumber - firtNumber == 1
+					&& thirdNumber - secondNumber == 1) {
+				check = true;
+				break;
+			}
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 연속 라인 패턴 포함 확인 (로또용지기준)
+	 * 2020.04.01
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean checkLinesRange(ExDataDto exData, int checkLineCnt) {
+		boolean check = false;
+		
+		int[] nubmers = LottoUtil.getNumbers(exData);
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		for (int i = 0; i < nubmers.length; i++) {
+			map.put(nubmers[i],1);
+		}
+		
+		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
+		
+		// 반복회수
+		int repeatCnt = 7 - (checkLineCnt - 1);
+		// 체크한도 라인수
+		int limitCheckLine = arrNumbers.length - checkLineCnt;
+
+		// 가로패턴 체크
+		int checkCnt = 0;
+		for (int i = 0; i < repeatCnt; i++) {
+			// 체크수 초기화
+			checkCnt = 0;
+
+			for (int row = 0 + i; row < arrNumbers.length - (limitCheckLine - i); row++) {
+				for (int col = 0; col < arrNumbers[row].length; col++) {
+					if (map.containsKey(arrNumbers[row][col])) {
+						checkCnt++;
+					}
+				}
+			}
+
+			// 결과체크
+			if (checkCnt == 6) {
+				break;
+			}
+		}
+
+		// 결과체크
+		if (checkCnt == 6) {
+			// 가로 연속 라인 패턴 포함
+			log.info("\t가로 " + checkLineCnt + "줄패턴 포함");
+			check = true;
+		} else {
+			// 세로패턴 체크
+			for (int i = 0; i < repeatCnt; i++) {
+				// 체크수 초기화
+				checkCnt = 0;
+
+				for (int row = 0; row < arrNumbers.length; row++) {
+					for (int col = 0 + i; col < arrNumbers[row].length - (limitCheckLine - i); col++) {
+						if (map.containsKey(arrNumbers[row][col])) {
+							checkCnt++;
+						}
+					}
+				}
+
+				// 결과체크
+				if (checkCnt == 6) {
+					break;
+				}
+			}
+		}
+
+		// 결과체크
+		if (checkCnt == 6) {
+			// 세로 연속 라인 패턴 포함
+			log.info("\t세로 " + checkLineCnt + "줄패턴 포함");
+			check = true;
+		}
+		
+		return check;
+	}
+
+	/**
 	 * 모서리영역 포함 확인 (로또용지기준)
 	 * 1~4개 포함 확인
 	 * 
-	 * TODO 패턴분석 필요
+	 * TODO 적중율 패턴분석 필요
 	 * 
 	 * 2020.03.31
 	 * 
