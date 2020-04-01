@@ -2935,6 +2935,29 @@ public class LottoDataService extends DefaultService {
 	 *              <div id=detail>동행복권으로 변경되어 min범위를 7에서 6으로 변경(로또9단) 2020.03.30</div >
 	 *              
 	 * @param data
+	 * @return
+	 */
+	public boolean isContainAc(ExDataDto data) {
+		boolean result = false;
+		
+		data.setAc(LottoUtil.getAc(data));
+		
+		int ac = data.getAc();
+		
+		// 표준범위로 체크
+		if (6 <= ac && ac <= 10) {
+			result = true;
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * @description <div id=description><b>AC 포함 여부 확인</b></div >
+	 *              <div id=detail>데이터 중 AC가 6 ~ 10 사이인지 확인한다.(범위는 표준범위)</div >
+	 *              <div id=detail>동행복권으로 변경되어 min범위를 7에서 6으로 변경(로또9단) 2020.03.30</div >
+	 *              
+	 * @param data
 	 * @param exptPtrnAnlyInfo
 	 * @return
 	 */
@@ -3488,7 +3511,7 @@ public class LottoDataService extends DefaultService {
 //			if(!result) equalCnt++;	//일치함.
 //		}
 //		
-//		//12. AC 비교(7 ~ 10)
+		//12. AC 비교(7 ~ 10)
 //		result = this.isContainAc(exData, exptPtrnAnlyInfo);
 //		if (verification && isEqual) {
 //			if(!result) {
@@ -3699,9 +3722,485 @@ public class LottoDataService extends DefaultService {
 			return false;
 		}
 		
+		// 18. 가로 6줄 패턴 1개씩 출현 제외 (로또용지기준)
+		result = this.checkRows6LinesRange(exData);
+		if(result) {
+			log.info("가로 6줄 패턴 1개씩 출현 제외 (로또용지기준)");
+			return false;
+		}
+		
+		// 19. 6번째 수는 42,43,44,45 포함 확인
+		// TODO 패턴분석을 통해 개선해야함.
+		result = this.checkFortyNumbers(exData);
+		if(!result) {
+			log.info("6번째 수는 42,43,44,45 미포함 제외");
+			return false;
+		}
+		
+		// 20. 1,2,4,5열에서만 출현 제외
+		result = this.check12And45Cols(exData);
+		if(result) {
+			log.info("1,2,4,5열에서만 출현 제외");
+			return false;
+		}
+		
+		// 21. 3,4,6,7열에서만 출현 제외
+		result = this.check34And67Cols(exData);
+		if(result) {
+			log.info("3,4,6,7열에서만 출현 제외");
+			return false;
+		}
+		
+		// 22. AC 6이상 포함 확인
+		result = this.isContainAc(exData);
+		if(!result) {
+			log.info("AC 6이상 미포함 제외");
+			return false;
+		}		
+		
+		// 23. 좌상 삼각패턴만 포함 제외
+		result = this.checkUpperLeftTriangle(exData);
+		if(!result) {
+			log.info("좌상 삼각패턴만 포함 제외");
+			return false;
+		}
+		
+		// 24. 좌하 삼각패턴만 포함 제외
+		result = this.checkLowerLeftTriangle(exData);
+		if(!result) {
+			log.info("좌하 삼각패턴만 포함 제외");
+			return false;
+		}
+		
+		// 25. 우상 삼각패턴만 포함 제외
+		result = this.checkUpperRightTriangle(exData);
+		if(!result) {
+			log.info("우상 삼각패턴만 포함 제외");
+			return false;
+		}
+		
+		// 26. 우하 삼각패턴만 포함 제외
+		result = this.checkLowerRightTriangle(exData);
+		if(!result) {
+			log.info("우하 삼각패턴만 포함 제외");
+			return false;
+		}
+		
+		// 27. 최근 10회 이내 포함개수 부적합 제외
+		result = this.checkLast10WinDatas(exData, winDataList);
+		if(!result) {
+			log.info("최근 10회 이내 포함개수 부적합 제외");
+			return false;
+		}
+		
+		
 		return true;
 	}
 	
+	/**
+	 * 최근 10회 이내 포함개수 부적합 제외
+	 * 2020.04.01
+	 * 
+	 * @param exData
+	 * @param winDataList
+	 * @return
+	 */
+	private boolean checkLast10WinDatas(ExDataDto exData, List<WinDataAnlyDto> winDataList) {
+		boolean check = false;
+		
+		int[] nubmers = LottoUtil.getNumbers(exData);
+		
+		int check1Cnt = 0;
+		int check2Cnt = 0;
+		
+		// 1. 1,2구, 5,6구 번호들 중 3~4개 포함 확인
+		Map<Integer, Integer> map1 = new HashMap<Integer, Integer>();
+		Map<Integer, Integer> map2 = new HashMap<Integer, Integer>();
+		int lastCheckCount = 10;
+		int startIndex = winDataList.size() - 1;
+		for (int i = startIndex; i > winDataList.size() - lastCheckCount; i--) {
+			WinDataAnlyDto winData = winDataList.get(i);
+			int[] checkNubmers = LottoUtil.getNumbers(winData);
+			for (int j = 0; j < checkNubmers.length; j++) {
+				// 2. 3,4구는 최근 5회까지만 포함 (4개 이상 포함 확인)
+				if (i > winDataList.size() - 5) {
+					if (!map2.containsKey(checkNubmers[j])) {
+						map2.put(checkNubmers[j], 1);	// 중복방지 입력
+					}	
+				} else {
+					// 3,4구 체크 제외
+					if (j == 2 || j == 3) {
+						continue;
+					}
+				}
+				
+				if (!map1.containsKey(checkNubmers[j])) {
+					map1.put(checkNubmers[j], 1);	// 중복방지 입력
+				}
+				if (!map2.containsKey(checkNubmers[j])) {
+					map2.put(checkNubmers[j], 1);	// 중복방지 입력
+				}
+			}
+		}
+		
+		// 포함개수 확인
+		for (int i = 0; i < nubmers.length; i++) {
+			if (map1.containsKey(nubmers[i])) {
+				check1Cnt++;
+			}
+			if (map2.containsKey(nubmers[i])) {
+				check2Cnt++;
+			}
+		}
+		
+		if (check1Cnt == 3 || check1Cnt == 4) {
+			log.info("\t최근 10회 이내 1,2구, 5,6구 번호들 중 3~4개 포함 확인");
+			
+			if (check2Cnt >= 4) {
+				log.info("\t최근 10회 이내 1,2구, 5,6구 번호들 과 3,4구는 최근 5회까지만 4개 이상 포함 확인");
+				check = true;
+			} else {
+				log.info("\t최근 10회 이내 1,2구, 5,6구 번호들 과 3,4구는 최근 5회까지만 4개 이상 미포함");
+			}
+		} else {
+			log.info("\t최근 10회 이내 1,2구, 5,6구 번호들 중 3~4개 미포함");
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 우하 삼각패턴만 포함 제외
+	 * 2020.04.01
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean checkLowerRightTriangle(ExDataDto exData) {
+		boolean check = false;
+		
+		int[] nubmers = LottoUtil.getNumbers(exData);
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		for (int i = 0; i < nubmers.length; i++) {
+			map.put(nubmers[i],1);
+		}
+		
+		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
+		
+		int checkCnt = 0;
+		for (int row = 0; row < arrNumbers.length; row++) {
+			int startColIndex = arrNumbers[row].length - row - 1;
+			for (int col = 0 + startColIndex; col < arrNumbers[row].length; col++) {
+				if (map.containsKey(arrNumbers[row][col])) {
+					checkCnt++;
+				}
+			}
+			
+			// 결과체크
+			if (checkCnt == 6) {
+				break;
+			}
+		}
+		
+		// 결과체크
+		if (checkCnt == 6) {
+			check = true;
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 우상 삼각패턴만 포함 제외
+	 * 2020.04.01
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean checkUpperRightTriangle(ExDataDto exData) {
+		boolean check = false;
+		
+		int[] nubmers = LottoUtil.getNumbers(exData);
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		for (int i = 0; i < nubmers.length; i++) {
+			map.put(nubmers[i],1);
+		}
+		
+		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
+		
+		int checkCnt = 0;
+		for (int row = 0; row < arrNumbers.length; row++) {
+			int startColIndex = arrNumbers[row].length - (arrNumbers[row].length - row);
+			for (int col = 0 + startColIndex; col < arrNumbers[row].length; col++) {
+				if (map.containsKey(arrNumbers[row][col])) {
+					checkCnt++;
+				}
+			}
+			
+			// 결과체크
+			if (checkCnt == 6) {
+				break;
+			}
+		}
+		
+		// 결과체크
+		if (checkCnt == 6) {
+			check = true;
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 좌하 삼각패턴만 포함 제외
+	 * 2020.04.01
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean checkLowerLeftTriangle(ExDataDto exData) {
+		boolean check = false;
+		
+		int[] nubmers = LottoUtil.getNumbers(exData);
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		for (int i = 0; i < nubmers.length; i++) {
+			map.put(nubmers[i],1);
+		}
+		
+		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
+		
+		int checkCnt = 0;
+		for (int row = 0; row < arrNumbers.length; row++) {
+			int endColIndex = arrNumbers[row].length - row;
+			for (int col = 0; col < arrNumbers[row].length - endColIndex + 1; col++) {
+				if (map.containsKey(arrNumbers[row][col])) {
+					checkCnt++;
+				}
+			}
+			
+			// 결과체크
+			if (checkCnt == 6) {
+				break;
+			}
+		}
+		
+		// 결과체크
+		if (checkCnt == 6) {
+			check = true;
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 좌상 삼각패턴만 포함 제외
+	 * 2020.04.01
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean checkUpperLeftTriangle(ExDataDto exData) {
+		boolean check = false;
+		
+		int[] nubmers = LottoUtil.getNumbers(exData);
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		for (int i = 0; i < nubmers.length; i++) {
+			map.put(nubmers[i],1);
+		}
+		
+		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
+		
+		int checkCnt = 0;
+		for (int row = 0; row < arrNumbers.length; row++) {
+			for (int col = 0; col < arrNumbers[row].length - row; col++) {
+				if (map.containsKey(arrNumbers[row][col])) {
+					checkCnt++;
+				}
+			}
+			
+			// 결과체크
+			if (checkCnt == 6) {
+				break;
+			}
+		}
+		
+		// 결과체크
+		if (checkCnt == 6) {
+			check = true;
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 3,4,6,7열에서만 출현 제외
+	 * 2020.04.01
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean check34And67Cols(ExDataDto exData) {
+		boolean check = false;
+		
+		int[] nubmers = LottoUtil.getNumbers(exData);
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		for (int i = 0; i < nubmers.length; i++) {
+			map.put(nubmers[i],1);
+		}
+		
+		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
+		
+		int checkCnt = 0;		
+		for (int row = 0; row < arrNumbers.length; row++) {
+			for (int col = 0; col < arrNumbers[row].length; col++) {
+				// 1,2,5열 체크 제외
+				if (1 == col || 2 == col || 5 == col) {
+					continue;
+				}
+				
+				if (map.containsKey(arrNumbers[row][col])) {
+					checkCnt++;
+				}
+			}
+			
+			// 결과체크
+			if (checkCnt == 6) {
+				break;
+			}
+		}
+		
+		// 결과체크
+		if (checkCnt == 6) {
+			check = true;
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 1,2,4,5열에서만 출현 제외
+	 * 2020.04.01
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean check12And45Cols(ExDataDto exData) {
+		boolean check = false;
+
+		int[] nubmers = LottoUtil.getNumbers(exData);
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		for (int i = 0; i < nubmers.length; i++) {
+			map.put(nubmers[i],1);
+		}
+		
+		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
+		
+		int checkCnt = 0;		
+		for (int row = 0; row < arrNumbers.length; row++) {
+			for (int col = 0; col < arrNumbers[row].length; col++) {
+				// 3,6,7열 체크 제외
+				if (3 == col || 6 == col || 7 == col) {
+					continue;
+				}
+				
+				if (map.containsKey(arrNumbers[row][col])) {
+					checkCnt++;
+				}
+			}
+			
+			// 결과체크
+			if (checkCnt == 6) {
+				break;
+			}
+		}
+		
+		// 결과체크
+		if (checkCnt == 6) {
+			check = true;
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 6번째 수는 42,43,44,45 포함 확인
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean checkFortyNumbers(ExDataDto exData) {
+		boolean check = false;
+		
+		if (42 <= exData.getNum6() && exData.getNum6() <= 45) {
+			// 포함됨
+			check = true;
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 가로 6줄 패턴 1개씩 출현 제외 (로또용지기준)
+	 * 2020.04.01
+	 * 
+	 * @param exData
+	 * @return
+	 */
+	private boolean checkRows6LinesRange(ExDataDto exData) {
+		boolean check = false;
+		
+		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
+		
+		// 체크할 대상 row 수
+		int checkLineCnt = 6;
+		// 체크할 row count
+		int[] checkLineArray = {0,0,0,0,0,0};
+		// 체크할 row 인덱스
+		int checkRowIndex = 0;
+		
+		// 반복회수
+		int repeatCnt = 7 - (checkLineCnt - 1);
+		// 체크한도 라인수
+		int limitCheckLine = arrNumbers.length - checkLineCnt;
+
+		// 가로패턴 체크
+		int checkCnt = 0;
+		for (int i = 0; i < repeatCnt; i++) {
+			// 체크수 초기화
+			checkCnt = 0;
+			checkRowIndex = 0;
+			
+			for (int row = 0 + i; row < arrNumbers.length - (limitCheckLine - i); row++) {
+				for (int col = 0; col < arrNumbers[row].length; col++) {
+					if (arrNumbers[row][col] > 0) {
+						// 체크할 row count를 1로 설정
+						checkLineArray[checkRowIndex] = 1;
+					}
+				}
+				// 1~7열 체크 후 체크할 row수 인덱스 증가
+				checkRowIndex++;
+			}
+
+			// 결과체크
+			for (int j = 0; j < checkLineArray.length; j++) {
+				checkCnt += checkLineArray[j];
+			}
+			
+			if (checkCnt == 6) {
+				break;
+			}
+		}
+
+		// 결과체크
+		if (checkCnt == 6) {
+			// 가로 연속 라인 패턴 포함
+			log.info("\t가로 " + checkLineCnt + "줄패턴 각 1줄 포함");
+			check = true;
+		}
+		
+		return check;
+	}
+
 	/**
 	 * 좌우2줄 패턴 제외
 	 * 2020.04.01
