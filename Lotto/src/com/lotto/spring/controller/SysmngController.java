@@ -2316,6 +2316,42 @@ public class SysmngController extends DefaultSMController {
 				}
 			}
 			
+			/************************************************************
+			 * 기본제외수 추가
+			 * : 5주 이내 2번 이상 출현 수 제외수로 추가
+			 * 2020.04.02
+			 ************************************************************/
+			List<Integer> addExcludeNumbers = lottoDataService.getAddExcludeNumbersFromDtoList(winDataList);
+			String strAddExcludeNumbers = ""; 
+			for (int i = 0; i < addExcludeNumbers.size(); i++) {
+				int excludeNumber = addExcludeNumbers.get(i);
+				if (!"".equals(strAddExcludeNumbers)) {
+					strAddExcludeNumbers += ",";
+				}
+				strAddExcludeNumbers += excludeNumber;
+			}			
+			log.info("[" + loginUserNo + "]\t\t추가된 기본제외수 (5주 이내 2번 이상 출현) >>> " + strAddExcludeNumbers);
+
+			// allExcludeNumList에서 확인 후 없으면 추가 처리
+			boolean checkAdd = false;
+			for (int j = 0; j < addExcludeNumbers.size(); j++) {
+				int addExcludeNumber = addExcludeNumbers.get(j);
+				for (int i = 0; i < allExcludeNumList.size(); i++) {
+					if (addExcludeNumber == allExcludeNumList.get(i)) {
+						continue;
+					}
+				}
+				allExcludeNumList.add(addExcludeNumber);
+				checkAdd = true;
+			}
+			
+			// 내용이 추가되면 다시 정렬
+			if (checkAdd) {
+				allExcludeNumList = (List<Integer>) LottoUtil.dataSort(allExcludeNumList);
+			}
+			
+			
+			
 			// 결과 확인
 			String modiExcludeNum = "";
 			for (int j = 0; j < allExcludeNumList.size(); j++) {

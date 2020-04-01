@@ -5807,6 +5807,39 @@ public class LottoDataService extends DefaultService {
 			}
 		}
 		
+		/************************************************************
+		 * 기본제외수 추가
+		 * : 5주 이내 2번 이상 출현 수 제외수로 추가
+		 * 2020.04.02
+		 ************************************************************/
+		List<Integer> addExcludeNumbers = this.getAddExcludeNumbersFromDtoList(winDataList);
+		String strAddExcludeNumbers = ""; 
+		for (int i = 0; i < addExcludeNumbers.size(); i++) {
+			int excludeNumber = addExcludeNumbers.get(i);
+			if (!"".equals(strAddExcludeNumbers)) {
+				strAddExcludeNumbers += ",";
+			}
+			strAddExcludeNumbers += excludeNumber;
+		}			
+		log.info("[" + loginUserNo + "]\t\t추가된 기본제외수 (5주 이내 2번 이상 출현) >>> " + strAddExcludeNumbers);
+
+		// allExcludeNumList에서 확인 후 없으면 추가 처리
+		boolean checkAdd = false;
+		for (int j = 0; j < addExcludeNumbers.size(); j++) {
+			int addExcludeNumber = addExcludeNumbers.get(j);
+			for (int i = 0; i < allExcludeNumList.size(); i++) {
+				if (addExcludeNumber == allExcludeNumList.get(i)) {
+					continue;
+				}
+			}
+			allExcludeNumList.add(addExcludeNumber);
+			checkAdd = true;
+		}
+		
+		// 내용이 추가되면 다시 정렬
+		if (checkAdd) {
+			allExcludeNumList = (List<Integer>) LottoUtil.dataSort(allExcludeNumList);
+		}
 		
 		
 		// 결과 확인
@@ -10055,5 +10088,63 @@ public class LottoDataService extends DefaultService {
 		}
 		
 		return isCheck;
+	}
+
+	/**
+	 * 추가 기본제외수 조회
+	 * 조건 : 최근 5주 이내 2번 이상 출현한 수는 제외한다.(로또9단)
+	 * 2020.04.02
+	 * 
+	 * @param winDataList
+	 * @return
+	 */
+	public List<Integer> getAddExcludeNumbers(List<WinDataAnlyDto> winDataList) {
+		List<Integer> excludeNumbers = new ArrayList<Integer>();
+		// 중복체크
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		for (int i = winDataList.size() - 1; i > winDataList.size() - 1 - 5; i--) {
+			WinDataAnlyDto winDataDto = winDataList.get(i);
+			int[] numbers = LottoUtil.getNumbers(winDataDto);
+			for (int j = 0; j < numbers.length; j++) {
+				int checkNumber = numbers[j];
+				if (map.containsKey(checkNumber)) {
+					// 2회 이상 출현 수 설정
+					excludeNumbers.add(checkNumber);
+				} else {
+					map.put(checkNumber, 1);
+				}
+			}
+		}
+		
+		return excludeNumbers;
+	}
+	
+	/**
+	 * 추가 기본제외수 조회
+	 * 조건 : 최근 5주 이내 2번 이상 출현한 수는 제외한다.(로또9단)
+	 * 2020.04.02
+	 * 
+	 * @param winDataList
+	 * @return
+	 */
+	public List<Integer> getAddExcludeNumbersFromDtoList(List<WinDataDto> winDataList) {
+		List<Integer> excludeNumbers = new ArrayList<Integer>();
+		// 중복체크
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		for (int i = winDataList.size() - 1; i > winDataList.size() - 1 - 5; i--) {
+			WinDataDto winDataDto = winDataList.get(i);
+			int[] numbers = LottoUtil.getNumbers(winDataDto);
+			for (int j = 0; j < numbers.length; j++) {
+				int checkNumber = numbers[j];
+				if (map.containsKey(checkNumber)) {
+					// 2회 이상 출현 수 설정
+					excludeNumbers.add(checkNumber);
+				} else {
+					map.put(checkNumber, 1);
+				}
+			}
+		}
+		
+		return excludeNumbers;
 	}
 }
