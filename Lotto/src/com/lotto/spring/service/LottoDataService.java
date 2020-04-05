@@ -1229,13 +1229,13 @@ public class LottoDataService extends DefaultService {
 	 * @return
 	 */
 	public int[] getDifNumbers(int[] numbers) {
-		int[] difNubmers = {0,0,0,0,0};
+		int[] difnumbers = {0,0,0,0,0};
 		
 		for (int i = 0; i < numbers.length -1 ; i++) {
-			difNubmers[i] = Math.abs(numbers[i] - numbers[i+1]);
+			difnumbers[i] = Math.abs(numbers[i] - numbers[i+1]);
 		}
 		
-		return difNubmers;
+		return difnumbers;
 	}
 	
 	/**
@@ -1435,6 +1435,116 @@ public class LottoDataService extends DefaultService {
 		}
 		
 		return numberList;
+	}
+	
+	/**
+	 * 조합할 수 있는 모든 번호목록을 조회한다.
+	 * @param exCount 
+	 * 
+	 * @param numberList 제외수를 제거한 번호 전체목록
+	 * @return
+	 */
+	public List<ExDataDto> getExDataList(List<Integer> controlList, int exCount) {
+		/** 추출한 예상데이터 목록 */
+		List<ExDataDto> exDataList = new ArrayList<ExDataDto>();
+		
+		/** 숫자 조합 목록 */
+		List<String> numbersList = new ArrayList<String>();
+		
+		for (int i = 0; i < controlList.size() - 5; i++) {
+			for (int j = i + 1; j < controlList.size() - 4; j++) {
+				for (int k = j + 1; k < controlList.size() - 3; k++) {
+					for (int l = k + 1; l < controlList.size() - 2; l++) {
+						for (int m = l + 1; m < controlList.size() - 1; m++) {
+							for (int n = m + 1; n < controlList.size(); n++) {
+								numbersList.add("" + controlList.get(i) + ","
+										+ controlList.get(j) + "," + controlList.get(k) + ","
+										+ controlList.get(l) + "," + controlList.get(m) + ","
+										+ controlList.get(n));
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		int[] numbers = new int[6];
+		for (int i = 0; i < numbersList.size(); i++) {
+			String strNumber = numbersList.get(i);
+			String[] strNumbers = strNumber.split(",");
+			for (int k = 0; k < strNumbers.length; k++) {
+				numbers[k] = Integer.parseInt(strNumbers[k]);
+				if (numbers[k] == 5) {
+					System.out.println(5);
+				}
+			}
+			
+			numbers = (int[]) LottoUtil.dataSort(numbers);
+			
+			// 예상데이터 등록
+			ExDataDto exData = this.getExData(exCount, i + 1, numbers);
+			exDataList.add(exData);
+			
+		}
+		
+		
+		return exDataList;
+	}
+	
+	/**
+	 * 조합할 수 있는 모든 번호목록을 조회한다.
+	 * @param exCount 
+	 * 
+	 * @param numberList 제외수를 제거한 번호 전체목록
+	 * @return
+	 */
+	public List<ExDataDto> getExDataList(int exCount) {
+		/** 추출한 예상데이터 목록 */
+		List<ExDataDto> exDataList = new ArrayList<ExDataDto>();
+		
+		/** 숫자 조합 목록 */
+		List<String> numbersList = new ArrayList<String>();
+		
+		// 중복조합 체크 Map
+		Map<String, String> duplCheckMap = new HashMap<String, String>();
+		
+		for (int i = 1; i <= 14; i++) {
+			for (int j = i + 1; j <= 45 - 4; j++) {
+				for (int k = j + 1; k <= 45 - 3; k++) {
+					for (int l = k + 1; l <= 45 - 2; l++) {
+						for (int m = l + 1; m <= 45 - 1; m++) {
+							for (int n = m + 1; n <= 45; n++) {
+								String numbers = "" + i + "," + j + "," + k + ","
+										+ l + "," + m + "," + n;
+								if (!duplCheckMap.containsKey(numbers)) {
+									duplCheckMap.put(numbers, "Y");
+									numbersList.add(numbers);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		int[] numbers = new int[6];
+		for (int i = 0; i < numbersList.size(); i++) {
+			String strNumber = numbersList.get(i);
+			String[] strNumbers = strNumber.split(",");
+			for (int k = 0; k < strNumbers.length; k++) {
+				numbers[k] = Integer.parseInt(strNumbers[k]);
+			}
+			
+			numbers = (int[]) LottoUtil.dataSort(numbers);
+			
+			// 예상데이터 등록
+			ExDataDto exData = this.getExData(exCount, i + 1, numbers);
+			exDataList.add(exData);
+			
+		}
+		
+		
+		return exDataList;
 	}
 	
 	/**
@@ -2091,16 +2201,15 @@ public class LottoDataService extends DefaultService {
 		}
 		
 		//진행도 출력
-		double total = dataList.size();
-		DecimalFormat df = new DecimalFormat("#.##"); 
+		int total = dataList.size();
 		double sumPercent = 0.0;
 		
 		for (int i = 0; i < countData.length ; i++) {
-			double percent = Double.parseDouble(df.format( (double)countData[i][1] /total ));
-//			log.info( countData[i][0] + " : " + countData[i][1] + " --- 출현률 : " + (percent*100) + "%");
+			double percent = LottoUtil.getPercent(countData[i][1], total);
+//			log.info( countData[i][0] + " : " + countData[i][1] + " --- 출현률 : " + (percent) + "%");
 			
 			numbersList.add(countData[i][0]);
-			sumPercent += percent*100;			
+			sumPercent += percent;			
 			
 			//80%이상이면 종료
 			if(sumPercent > 80.0){
@@ -2200,8 +2309,7 @@ public class LottoDataService extends DefaultService {
 		
 		
 		//진행도 출력
-		double total = winDataList.size();
-		DecimalFormat df = new DecimalFormat("#.##"); 
+		int total = winDataList.size();
 		double sumPercent = 0.0;
 		
 		for (int i = 0; i < countData.length ; i++) {
@@ -2213,10 +2321,10 @@ public class LottoDataService extends DefaultService {
 				max = countData[i][0];
 			}
 			
-			double percent = Double.parseDouble(df.format( (double)countData[i][1] /total ));
-			log.info( countData[i][0] + " : " + countData[i][1] + " --- 출현률 : " + (percent*100) + "%");
+			double percent = LottoUtil.getPercent(countData[i][1], total);
+			log.info( countData[i][0] + " : " + countData[i][1] + " --- 출현률 : " + (percent) + "%");
 			
-			sumPercent += percent*100;			
+			sumPercent += percent;			
 			
 			//80%이상이면 종료
 			if(sumPercent > 80.0){
@@ -2281,18 +2389,17 @@ public class LottoDataService extends DefaultService {
 		
 		
 		//진행도 출력
-		double total = winDataList.size();
-		DecimalFormat df = new DecimalFormat("#.##"); 
+		int total = winDataList.size();
 		double sumPercent = 0.0;
 		
 		for (int i = 0; i < countData.length ; i++) {
 			
 			map.put(String.valueOf(countData[i][0]), countData[i][1]);
 			
-			double percent = Double.parseDouble(df.format( (double)countData[i][1] /total ));
-//			log.info( countData[i][0] + " : " + countData[i][1] + " --- 출현률 : " + (percent*100) + "%");
+			double percent = LottoUtil.getPercent(countData[i][1], total);
+//			log.info( countData[i][0] + " : " + countData[i][1] + " --- 출현률 : " + (percent) + "%");
 			
-			sumPercent += percent*100;			
+			sumPercent += percent;			
 			
 			if(sumPercent >= MATCH_PER){
 //				log.info("총 출현률 : " + sumPercent + "%");
@@ -2974,7 +3081,7 @@ public class LottoDataService extends DefaultService {
 //		}
 		
 		// 표준범위로 체크
-		if (ac >= 6 && ac <= 10) {
+		if (6 <= ac && ac <= 10) {
 			result = true;
 		}
 		
@@ -3585,6 +3692,8 @@ public class LottoDataService extends DefaultService {
 		//1. 총합 범위 포함 비교
 		if (!totalGroupCntMap.containsKey(exData.getTotal())) {
 			log.info("총합 범위 미포함 제외 : " + exData.getTotal());
+			String contents = "총합 범위 미포함 제외 : " + exData.getTotal();
+			sysmngService.insertExptNumNewVari(exData, contents);
 			return false;
 		}
 		
@@ -3592,36 +3701,53 @@ public class LottoDataService extends DefaultService {
 		if (exData.getTotal() < 100
 				|| 175 < exData.getTotal()) {
 			log.info("총합 100미만, 175초과 제외");
+			String contents = "총합 100미만, 175초과 제외";
+			sysmngService.insertExptNumNewVari(exData, contents);
 			return false;
 		}
 		
 		//2. 끝수합 범위 포함 비교
 		if (!endnumGroupCntMap.containsKey(exData.getSum_end_num())) {
 			log.info("끝수합 범위 미포함 제외 : " + exData.getSum_end_num());
+			String contents = "끝수합 범위 미포함 제외 : " + exData.getSum_end_num();
+			sysmngService.insertExptNumNewVari(exData, contents);
 			return false;
 		}
 				
-		//3. 출현번호 매치여부로 예상번호 설정
-		result = this.matchAppearNumbers(exData, appearNumbersList);
-		if (!result) {
-			log.info("출현번호 매치여부로 예상번호 설정 제외");
-			return false;
-		}
+		/*
+		 * 3. 출현번호 매치여부로 예상번호 설정
+		 * 
+		 * 예상번호 NEW 추출 시 제외처리 함. 2020.04.04
+		// 건수는 얼마 안됨.
+		 */
+//		result = this.matchAppearNumbers(exData, appearNumbersList);
+//		if (!result) {
+//			log.info("출현번호 매치여부로 예상번호 설정 제외");
+//			String contents = "출현번호 매치여부로 예상번호 설정 제외";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
 		
 		/*
 		 * 4. 번호간 차이값 체크
 		 * 번호간 차이값이 평균범위 포함되어 있는지 체크한다.
-		 */
-		result = this.isContainRange(exData, numbersRangeList);
-		if (!result) {
-			log.info("번호간 차이값 너무 큼 제외");
-			return false;
-		}
+		 * 
+		 * 예상번호 NEW 추출 시 제외처리 함. 2020.04.04
+		 */		
+//		result = this.isContainRange(exData, numbersRangeList);
+//		if (!result) {
+//			log.info("번호간 차이값 너무 큼 제외");
+//			String contents = "번호간 차이값 너무 큼 제외";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
 		
 		//5. AC 비교(6 ~ 10)
 		result = this.isContainAc(exData, exptPtrnAnlyInfo);
 		if(!result) {
 			log.info("AC 평균구간 미포함 제외");
+			String contents = "AC 평균구간 미포함 제외";
+			sysmngService.insertExptNumNewVari(exData, contents);
 			return false;
 		}
 		
@@ -3639,6 +3765,8 @@ public class LottoDataService extends DefaultService {
 		result = this.checkZeroCntRange(exData);
 		if (!result) {
 			log.info("3구간 미출현은 제외");
+			String contents = "3구간 미출현은 제외";
+			sysmngService.insertExptNumNewVari(exData, contents);
 			return false;
 		}
 		
@@ -3647,6 +3775,8 @@ public class LottoDataService extends DefaultService {
 		for (int i = 0; i < containGroupCnt.length; i++) {
 			if (containGroupCnt[i] > 3) {
 				log.info("한 구간 4개 출현 제외");
+				String contents = "한 구간 4개 출현 제외";
+				sysmngService.insertExptNumNewVari(exData, contents);
 				return false;
 			}
 		}
@@ -3655,6 +3785,8 @@ public class LottoDataService extends DefaultService {
 		result = this.existExcludeOddEvenRatio(LottoUtil.getRatioTitle(), exData);
 		if(result) {
 			log.info("홀짝비율 제외패턴(0:6, 6:0) 포함 제외");
+			String contents = "홀짝비율 제외패턴(0:6, 6:0) 포함 제외";
+			sysmngService.insertExptNumNewVari(exData, contents);
 			return false;
 		}
 		
@@ -3662,41 +3794,565 @@ public class LottoDataService extends DefaultService {
 		result = this.existStartEndNumber(exData);
 		if(!result) {
 			log.info("시작번호(1~14), 끝번호(31이상) 범위 미포함 제외");
+			String contents = "시작번호(1~14), 끝번호(31이상) 범위 미포함 제외";
+			sysmngService.insertExptNumNewVari(exData, contents);
 			return false;
 		}
 
+		// 2020.04.04 TEST 종료
+//		// 10. 앞줄 4줄 패턴 확인 (로또용지기준)
+//		result = this.existFront4Cols(exData);
+//		if(result) {
+//			log.info("앞줄 4줄 패턴 범위 포함 제외 (로또용지기준)");
+//			String contents = "앞줄 4줄 패턴 범위 포함 제외 (로또용지기준)";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//		
+//		// 11. 뒷줄 4줄 패턴 확인 (로또용지기준)
+//		result = this.existBackend4Cols(exData);
+//		if(result) {
+//			log.info("뒷줄 4줄 패턴 범위 포함 제외 (로또용지기준)");
+//			String contents = "뒷줄 4줄 패턴 범위 포함 제외 (로또용지기준)";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//		
+//		// 12. 색상별 제외 범위(1~2, 5색상) 포함 확인
+//		result = this.checkExcludeColorCount(exData);
+//		if(result) {
+//			log.info("색상별 제외 범위(1~2, 5색상) 포함 제외");
+//			String contents = "색상별 제외 범위(1~2, 5색상) 포함 제외";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//				
+//		// 13. 모서리영역 포함 확인 (로또용지기준)
+//		result = this.existEdgeRange(exData);
+//		if(!result) {
+//			log.info("모서리영역 미포함 제외 (로또용지기준)");
+//			String contents = "모서리영역 미포함 제외 (로또용지기준)";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//		
+//		// 14. 연속 3줄패턴 포함 확인 (로또용지기준)
+//		result = this.checkLinesRange(exData, 3);
+//		if(result) {
+//			log.info("연속 3줄패턴 포함 제외 (로또용지기준)");
+//			String contents = "연속 3줄패턴 포함 제외 (로또용지기준)";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//		
+//		// 15. 연속 4줄패턴 포함 확인 (로또용지기준)
+//		// TODO 적중율 패턴분석 필요
+//		result = this.checkLinesRange(exData, 4);
+//		if(result) {
+//			log.info("연속 4줄패턴 포함 제외 (로또용지기준)");
+//			String contents = "연속 4줄패턴 포함 제외 (로또용지기준)";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//		
+//		// 16. 3연번 제외
+//		result = this.check3ConsecutivelyNumber(exData);
+//		if(result) {
+//			log.info("3연번 포함 제외");
+//			String contents = "3연번 포함 제외";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//		
+//		// 17. 좌우2줄 패턴 제외 (로또용지기준)
+//		result = this.checkLeftRightLinesRange(exData);
+//		if(result) {
+//			log.info("좌우2줄 포함 제외 (로또용지기준)");
+//			String contents = "좌우2줄 포함 제외 (로또용지기준)";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//		
+//		// 18. 가로 6줄 패턴 1개씩 출현 제외 (로또용지기준)
+//		result = this.checkRows6LinesRange(exData);
+//		if(result) {
+//			log.info("가로 6줄 패턴 1개씩 출현 제외 (로또용지기준)");
+//			String contents = "가로 6줄 패턴 1개씩 출현 제외 (로또용지기준)";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//		
+//		// 19. 6번째 수는 42,43,44,45 포함 확인
+//		// TODO 패턴분석을 통해 개선해야함.
+//		result = this.checkFortyNumbers(exData);
+//		if(!result) {
+//			log.info("6번째 수는 42,43,44,45 미포함 제외");
+//			String contents = "6번째 수는 42,43,44,45 미포함 제외";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//		
+//		// 20. 1,2,4,5열에서만 출현 제외
+//		result = this.check12And45Cols(exData);
+//		if(result) {
+//			log.info("1,2,4,5열에서만 출현 제외");
+//			String contents = "1,2,4,5열에서만 출현 제외";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//		
+//		// 21. 3,4,6,7열에서만 출현 제외
+//		result = this.check34And67Cols(exData);
+//		if(result) {
+//			log.info("3,4,6,7열에서만 출현 제외");
+//			String contents = "3,4,6,7열에서만 출현 제외";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//		
+//		// 22. AC 6이상 포함 확인
+//		result = this.isContainAc(exData);
+//		if(!result) {
+//			log.info("AC 6이상 미포함 제외");
+//			String contents = "AC 6이상 미포함 제외";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}		
+//		
+//		// 23. 좌상 삼각패턴만 포함 제외
+//		result = this.checkUpperLeftTriangle(exData);
+//		if(!result) {
+//			log.info("좌상 삼각패턴만 포함 제외");
+//			String contents = "좌상 삼각패턴만 포함 제외";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//		
+//		// 24. 좌하 삼각패턴만 포함 제외
+//		result = this.checkLowerLeftTriangle(exData);
+//		if(!result) {
+//			log.info("좌하 삼각패턴만 포함 제외");
+//			String contents = "좌하 삼각패턴만 포함 제외";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//		
+//		// 25. 우상 삼각패턴만 포함 제외
+//		result = this.checkUpperRightTriangle(exData);
+//		if(!result) {
+//			log.info("우상 삼각패턴만 포함 제외");
+//			String contents = "우상 삼각패턴만 포함 제외";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//		
+//		// 26. 우하 삼각패턴만 포함 제외
+//		result = this.checkLowerRightTriangle(exData);
+//		if(!result) {
+//			log.info("우하 삼각패턴만 포함 제외");
+//			String contents = "우하 삼각패턴만 포함 제외";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+//		
+//		// 27. 최근 10회 이내 포함개수 부적합 제외
+//		result = this.checkLast10WinDatas(exData, winDataList);
+//		if(!result) {
+//			log.info("최근 10회 이내 포함개수 부적합 제외");
+//			String contents = "최근 10회 이내 포함개수 부적합 제외";
+//			sysmngService.insertExptNumNewVari(exData, contents);
+//			return false;
+//		}
+		
+		
+		return true;
+	}
+	
+	/**
+	 * 예상패턴 비교 NEW
+	 * 
+	 * @param exData 예상 데이터
+	 * @param winDataList 전체 당첨번호 정보 목록
+	 * @param exptPtrnAnlyInfo 예상패턴분석정보
+	 * @param endnumGroupCntMap 
+	 * @param totalGroupCntMap 
+	 * @return 대상가능여부 (true: 일치하지 않음, false: 일치함)
+	 */
+	public boolean compareExptPtrnNew(ExDataDto exData, List<WinDataAnlyDto> winDataList,
+			ExptPtrnAnlyDto exptPtrnAnlyInfo, Map<Integer, Integer> totalGroupCntMap, Map<Integer, Integer> endnumGroupCntMap) {
+		boolean isPossible = false;
+		
+		boolean result = false;
+		boolean verification = false;
+		boolean isEqual = false;
+		int equalCnt = 0;
+		/** 매칭예상 개수 */
+		int EXPT_MATCH_CNT = 10;
+		/** 첫 번째 번호 출현빈도 (Frequency of appearance) */
+		int FOA_PER = 50;
+		Map<Integer, Integer> num1AppearMapOver50 = this.getNumberMap(winDataList, 1, FOA_PER);
+		
+		// 표준 끝수합 범위 설정
+		int[] lowHighEndNumData = this.getEndNumberBaseDistribution(winDataList);
+		/** 최저끝수 */
+		int lowEndNumber = lowHighEndNumData[0];
+		/** 최고끝수 */
+		int highEndNumber = lowHighEndNumData[1];
+		
+		/** 번호간 범위 결과 목록 */
+		ArrayList<HashMap<String, Integer>> numbersRangeList = this.getNumbersRangeList(winDataList);
+		/** 숫자별 출현번호 결과 목록 */
+		ArrayList<ArrayList<Integer>> groupByNumbersList = this.getGroupByNumbersList(winDataList);
+		/** 번호별 궁합/불협수 */
+		Map<Integer, Map<String, ArrayList<Integer>>> mcNumberMap = this.getMcNumberByAnly(winDataList);		
+		
+		/** 최대 출현횟수별 설정 */
+		List<Map> appearNumbersList = this.getAppearNumbersList(winDataList);
+		
+		//1. 전회차 추출번호 예측 일치여부 비교
+//		result = this.existOfPrevCount(winDataList, exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				System.out.println("1. 전회차 추출번호 예측 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//2. 저고 비율 비교
+//		result = this.existLowHighRatio(LottoUtil.getRatioTitle(), exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("2. 저고 비율 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//3. 홀짝 비율 비교
+//		result = this.existOddEvenRatio(LottoUtil.getRatioTitle(), exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("3. 홀짝 비율 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//4. 총합 비교
+//		result = this.existTotalRange(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("4. 총합 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//5. 연속되는 수 비교
+//		result = this.existConsecutivelyNumbers(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("5. 연속되는 수 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//6. 끝수합 비교
+//		result = this.existSumEndNumberRange(exData, lowEndNumber, highEndNumber);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("6. 끝수합 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//7. 그룹 내 포함개수 비교
+//		result = this.existGroup(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("7. 그룹 내 포함개수 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//8. 끝자리가 같은 수 비교
+//		result = this.existEndNumberCount(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("8. 끝자리가 같은 수 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//9. 소수 1개이상 포함 비교
+//		result = this.existSotsu(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("9. 소수 1개이상 포함 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//10. 3의 배수 포함 비교
+//		result = this.existNumberOf3(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("10. 3의 배수 포함 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//11. 합성수 포함 비교 : 합성수란 소수와 3의 배수가 아닌 수
+//		result = this.existNumberOfNot3(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("11. 합성수 포함 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+		//12. AC 비교(7 ~ 10)
+//		result = this.isContainAc(exData, exptPtrnAnlyInfo);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("12. AC 비교 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		//13. 궁합도 매치
+//		//2016.02.19
+//		result = this.isMcMatched(exData, mcNumberMap);
+//		if (verification && isEqual) {
+//			if(!result) {
+//				equalCnt++;	//일치함.
+//				log.info("13. 궁합도 매치 : " + equalCnt);
+//			}
+//		} else {
+//			if(!result) equalCnt++;	//일치함.
+//		}
+//		
+//		/*
+//		 * 14. 번호간 차이값 체크
+//		 * 번호간 차이값이 평균범위 포함되어 있는지 체크한다.
+//		 */
+//		result = this.isContainRange(exData, numbersRangeList);
+//		if (verification && isEqual) {
+//			if(result) {
+//				equalCnt++;	//일치함.
+//				log.info("14. 번호간 차이값 체크 : OK - " + equalCnt);
+//			}
+//		} else {
+//			if(result) equalCnt++;	//일치함.
+//		}
+//		
+//		/*
+//		 * 15. 숫자별 출현번호 체크
+//		 * 숫자별 평균출현번호인지 체크한다.
+//		 */
+//		result = this.isContainGroup(exData, groupByNumbersList);
+//		if (verification && isEqual) {
+//			if(result) {
+//				equalCnt++;	//일치함.
+//				log.info("15. 숫자별 출현번호 체크 : OK - " + equalCnt);
+//			}
+//		} else {
+//			if(result) equalCnt++;	//일치함.
+//		}
+//		
+//		/*
+//		 * 16. 첫번째 숫자 출현번호의 출현빈도 체크
+//		 */
+//		result = num1AppearMapOver50.containsKey(exData.getNum1());
+//		if (verification && isEqual) {
+//			if(result) {
+//				equalCnt++;	//일치함.
+//				log.info("16. 첫번째 숫자 출현번호의 출현빈도 체크 : OK - " + equalCnt);
+//			}
+//		} else {
+//			if(result) equalCnt++;	//일치함.
+//		}
+//		
+//		
+//		log.info("예상패턴 일치 개수 : " + equalCnt);
+//		if (equalCnt == EXPT_MATCH_CNT) {
+//			isPossible = true;
+//		}
+		
+		
+		//1. 총합 범위 포함 비교
+		if (!totalGroupCntMap.containsKey(exData.getTotal())) {
+			String comments = "총합 범위 미포함 제외 : " + exData.getTotal();
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
+			return false;
+		}
+		
+		//1-1. 총합 범위 포함 비교
+		if (exData.getTotal() < 100
+				|| 175 < exData.getTotal()) {
+			String comments = "총합 100미만, 175초과 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
+			return false;
+		}
+		
+		//2. 끝수합 범위 포함 비교
+		if (!endnumGroupCntMap.containsKey(exData.getSum_end_num())) {
+			String comments = "끝수합 범위 미포함 제외 : " + exData.getSum_end_num();
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
+			return false;
+		}
+		
+		/*
+		 * 3. 출현번호 매치여부로 예상번호 설정
+		 * 
+		 * 예상번호 NEW 추출 시 제외처리 함. 2020.04.04
+		// 건수는 얼마 안됨.
+		 */
+//		result = this.matchAppearNumbers(exData, appearNumbersList);
+//		if (!result) {
+//			String comments = "출현번호 매치여부로 예상번호 설정 제외";
+//			log.info(comments);
+//			sysmngService.insertExptNumNewVari(exData, comments);
+//			return false;
+//		}
+		
+		/*
+		 * 4. 번호간 차이값 체크
+		 * 번호간 차이값이 평균범위 포함되어 있는지 체크한다.
+		 * 
+		 * 예상번호 NEW 추출 시 제외처리 함. 2020.04.04
+		 */		
+//		result = this.isContainRange(exData, numbersRangeList);
+//		if (!result) {
+//			String comments = "번호간 차이값 너무 큼 제외";
+//			log.info(comments);
+//			sysmngService.insertExptNumNewVari(exData, comments);
+//			return false;
+//		}
+		
+		//5. AC 비교(6 ~ 10)
+		result = this.isContainAc(exData, exptPtrnAnlyInfo);
+		if(!result) {
+			String comments = "AC 평균구간 미포함 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
+			return false;
+		}
+		
+		/*
+		 * 6. 미출현구간대 설정
+		 * 
+		 * 844회 기준 일치율
+		 * 0	92	  10.9%
+		 * 1	444	  52.6%
+		 * 2	279	  33.0%
+		 * 3	29	  3.4%
+		 * 
+		 * 3구간 미출현은 제외처리함.
+		 */
+		result = this.checkZeroCntRange(exData);
+		if (!result) {
+			String comments = "3구간 미출현은 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
+			return false;
+		}
+		
+		// 7. 한 구간 4개 출현 제외
+		int[] containGroupCnt = this.getZeroCntRangeData(exData);
+		for (int i = 0; i < containGroupCnt.length; i++) {
+			if (containGroupCnt[i] > 3) {
+				String comments = "한 구간 4개 출현 제외";
+				log.info(comments);
+				sysmngService.insertExptNumNewVari(exData, comments);
+				return false;
+			}
+		}
+		
+		// 8. 홀짝 비율 제외 패턴 확인
+		result = this.existExcludeOddEvenRatio(LottoUtil.getRatioTitle(), exData);
+		if(result) {
+			String comments = "홀짝비율 제외패턴(0:6, 6:0) 포함 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
+			return false;
+		}
+		
+		// 9. 시작번호, 끝번호 범위 확인
+		result = this.existStartEndNumber(exData);
+		if(!result) {
+			String comments = "시작번호(1~14), 끝번호(31이상) 범위 미포함 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
+			return false;
+		}
+		
 		// 10. 앞줄 4줄 패턴 확인 (로또용지기준)
 		result = this.existFront4Cols(exData);
 		if(result) {
-			log.info("앞줄 4줄 패턴 범위 포함 제외 (로또용지기준)");
+			String comments = "앞줄 4줄 패턴 범위 포함 제외 (로또용지기준)";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
 		// 11. 뒷줄 4줄 패턴 확인 (로또용지기준)
 		result = this.existBackend4Cols(exData);
 		if(result) {
-			log.info("뒷줄 4줄 패턴 범위 포함 제외 (로또용지기준)");
+			String comments = "뒷줄 4줄 패턴 범위 포함 제외 (로또용지기준)";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
 		// 12. 색상별 제외 범위(1~2, 5색상) 포함 확인
 		result = this.checkExcludeColorCount(exData);
 		if(result) {
-			log.info("색상별 제외 범위(1~2, 5색상) 포함 제외");
+			String comments = "색상별 제외 범위(1~2, 5색상) 포함 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 				
 		// 13. 모서리영역 포함 확인 (로또용지기준)
 		result = this.existEdgeRange(exData);
 		if(!result) {
-			log.info("모서리영역 미포함 제외 (로또용지기준)");
+			String comments = "모서리영역 미포함 제외 (로또용지기준)";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
 		// 14. 연속 3줄패턴 포함 확인 (로또용지기준)
 		result = this.checkLinesRange(exData, 3);
 		if(result) {
-			log.info("연속 3줄패턴 포함 제외 (로또용지기준)");
+			String comments = "연속 3줄패턴 포함 제외 (로또용지기준)";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
@@ -3704,92 +4360,127 @@ public class LottoDataService extends DefaultService {
 		// TODO 적중율 패턴분석 필요
 		result = this.checkLinesRange(exData, 4);
 		if(result) {
-			log.info("연속 4줄패턴 포함 제외 (로또용지기준)");
+			String comments = "연속 4줄패턴 포함 제외 (로또용지기준)";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
 		// 16. 3연번 제외
 		result = this.check3ConsecutivelyNumber(exData);
 		if(result) {
-			log.info("3연번 포함 제외");
+			String comments = "3연번 포함 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
 		// 17. 좌우2줄 패턴 제외 (로또용지기준)
 		result = this.checkLeftRightLinesRange(exData);
 		if(result) {
-			log.info("좌우2줄 포함 제외 (로또용지기준)");
+			String comments = "좌우2줄 포함 제외 (로또용지기준)";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
 		// 18. 가로 6줄 패턴 1개씩 출현 제외 (로또용지기준)
 		result = this.checkRows6LinesRange(exData);
 		if(result) {
-			log.info("가로 6줄 패턴 1개씩 출현 제외 (로또용지기준)");
+			String comments = "가로 6줄 패턴 1개씩 출현 제외 (로또용지기준)";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
-		// 19. 6번째 수는 42,43,44,45 포함 확인
+		// 19. 6번째 수는 40,41,42,43,44,45 포함 확인
 		// TODO 패턴분석을 통해 개선해야함.
 		result = this.checkFortyNumbers(exData);
 		if(!result) {
-			log.info("6번째 수는 42,43,44,45 미포함 제외");
+			String comments = "6번째 수는 40,41,42,43,44,45 미포함 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
 		// 20. 1,2,4,5열에서만 출현 제외
 		result = this.check12And45Cols(exData);
 		if(result) {
-			log.info("1,2,4,5열에서만 출현 제외");
+			String comments = "1,2,4,5열에서만 출현 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
 		// 21. 3,4,6,7열에서만 출현 제외
 		result = this.check34And67Cols(exData);
 		if(result) {
-			log.info("3,4,6,7열에서만 출현 제외");
+			String comments = "3,4,6,7열에서만 출현 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
 		// 22. AC 6이상 포함 확인
 		result = this.isContainAc(exData);
 		if(!result) {
-			log.info("AC 6이상 미포함 제외");
+			String comments = "AC 6이상 미포함 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}		
 		
 		// 23. 좌상 삼각패턴만 포함 제외
 		result = this.checkUpperLeftTriangle(exData);
-		if(!result) {
-			log.info("좌상 삼각패턴만 포함 제외");
+		if(result) {
+			String comments = "좌상 삼각패턴만 포함 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
 		// 24. 좌하 삼각패턴만 포함 제외
 		result = this.checkLowerLeftTriangle(exData);
-		if(!result) {
-			log.info("좌하 삼각패턴만 포함 제외");
+		if(result) {
+			String comments = "좌하 삼각패턴만 포함 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
 		// 25. 우상 삼각패턴만 포함 제외
 		result = this.checkUpperRightTriangle(exData);
-		if(!result) {
-			log.info("우상 삼각패턴만 포함 제외");
+		if(result) {
+			String comments = "우상 삼각패턴만 포함 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
 		// 26. 우하 삼각패턴만 포함 제외
 		result = this.checkLowerRightTriangle(exData);
-		if(!result) {
-			log.info("우하 삼각패턴만 포함 제외");
+		if(result) {
+			String comments = "우하 삼각패턴만 포함 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
 		// 27. 최근 10회 이내 포함개수 부적합 제외
 		result = this.checkLast10WinDatas(exData, winDataList);
 		if(!result) {
-			log.info("최근 10회 이내 포함개수 부적합 제외");
+			String comments = "최근 10회 이내 포함개수 부적합 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
+			return false;
+		}
+		
+		// 28. 40회 이내 6번 이상 출현수 제외
+		result = this.checkLast40MoreThan6Appear(exData, winDataList);
+		if(result) {
+			String comments = "40회 이내 6번 이상 출현수 제외";
+			log.info(comments);
+			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
 		
@@ -3797,6 +4488,57 @@ public class LottoDataService extends DefaultService {
 		return true;
 	}
 	
+	/**
+	 * 40회 이내 6번 이상 출현수 제외
+	 * 2020.04.04
+	 * 
+	 * @param exData
+	 * @param winDataList
+	 * @return
+	 */
+	private boolean checkLast40MoreThan6Appear(ExDataDto exData, List<WinDataAnlyDto> winDataList) {
+		boolean check = false;
+		
+		// 예상회차 조합번호
+		int[] numbers = LottoUtil.getNumbers(exData);
+		
+		// 출현회수 체크할 배열 선언
+		int[] appearCnt = new int[45];
+		for (int i = 0; i < appearCnt.length; i++) {
+			appearCnt[i] = 0;
+		}
+		Map<Integer, Integer> checkMap = new HashMap<Integer, Integer>();
+		
+		
+		// 최근회차부터 설정
+		int startIndex = winDataList.size() - 1;
+		int lastCheckCount = 40;
+		for (int i = startIndex; i > winDataList.size() - lastCheckCount; i--) {
+			WinDataAnlyDto winData = winDataList.get(i);
+			int[] checkNumbers = LottoUtil.getNumbers(winData);
+			for (int j = 0; j < checkNumbers.length; j++) {
+				int number = checkNumbers[j];
+				int appearIndex = number - 1;
+				appearCnt[appearIndex] = appearCnt[appearIndex] + 1;
+				
+				// 6번 이상 출현수를 체크대상으로 설정
+				if (appearCnt[appearIndex] >= 6) {
+					checkMap.put(number, appearCnt[appearIndex]);
+				}
+			}
+		}
+		
+		// 예상회차 조합번호 중 체크대상 포함 체크
+		for (int i = 0; i < numbers.length; i++) {
+			if (checkMap.containsKey(numbers[i])) {
+				check = true;
+				break;
+			}
+		}
+		
+		return check;
+	}
+
 	/**
 	 * 최근 10회 이내 포함개수 부적합 제외
 	 * 2020.04.01
@@ -3808,7 +4550,7 @@ public class LottoDataService extends DefaultService {
 	private boolean checkLast10WinDatas(ExDataDto exData, List<WinDataAnlyDto> winDataList) {
 		boolean check = false;
 		
-		int[] nubmers = LottoUtil.getNumbers(exData);
+		int[] numbers = LottoUtil.getNumbers(exData);
 		
 		int check1Cnt = 0;
 		int check2Cnt = 0;
@@ -3820,12 +4562,12 @@ public class LottoDataService extends DefaultService {
 		int startIndex = winDataList.size() - 1;
 		for (int i = startIndex; i > winDataList.size() - lastCheckCount; i--) {
 			WinDataAnlyDto winData = winDataList.get(i);
-			int[] checkNubmers = LottoUtil.getNumbers(winData);
-			for (int j = 0; j < checkNubmers.length; j++) {
+			int[] checkNumbers = LottoUtil.getNumbers(winData);
+			for (int j = 0; j < checkNumbers.length; j++) {
 				// 2. 3,4구는 최근 5회까지만 포함 (4개 이상 포함 확인)
 				if (i > winDataList.size() - 5) {
-					if (!map2.containsKey(checkNubmers[j])) {
-						map2.put(checkNubmers[j], 1);	// 중복방지 입력
+					if (!map2.containsKey(checkNumbers[j])) {
+						map2.put(checkNumbers[j], 1);	// 중복방지 입력
 					}	
 				} else {
 					// 3,4구 체크 제외
@@ -3834,21 +4576,21 @@ public class LottoDataService extends DefaultService {
 					}
 				}
 				
-				if (!map1.containsKey(checkNubmers[j])) {
-					map1.put(checkNubmers[j], 1);	// 중복방지 입력
+				if (!map1.containsKey(checkNumbers[j])) {
+					map1.put(checkNumbers[j], 1);	// 중복방지 입력
 				}
-				if (!map2.containsKey(checkNubmers[j])) {
-					map2.put(checkNubmers[j], 1);	// 중복방지 입력
+				if (!map2.containsKey(checkNumbers[j])) {
+					map2.put(checkNumbers[j], 1);	// 중복방지 입력
 				}
 			}
 		}
 		
 		// 포함개수 확인
-		for (int i = 0; i < nubmers.length; i++) {
-			if (map1.containsKey(nubmers[i])) {
+		for (int i = 0; i < numbers.length; i++) {
+			if (map1.containsKey(numbers[i])) {
 				check1Cnt++;
 			}
-			if (map2.containsKey(nubmers[i])) {
+			if (map2.containsKey(numbers[i])) {
 				check2Cnt++;
 			}
 		}
@@ -3879,10 +4621,10 @@ public class LottoDataService extends DefaultService {
 	private boolean checkLowerRightTriangle(ExDataDto exData) {
 		boolean check = false;
 		
-		int[] nubmers = LottoUtil.getNumbers(exData);
+		int[] numbers = LottoUtil.getNumbers(exData);
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-		for (int i = 0; i < nubmers.length; i++) {
-			map.put(nubmers[i],1);
+		for (int i = 0; i < numbers.length; i++) {
+			map.put(numbers[i],1);
 		}
 		
 		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
@@ -3920,10 +4662,10 @@ public class LottoDataService extends DefaultService {
 	private boolean checkUpperRightTriangle(ExDataDto exData) {
 		boolean check = false;
 		
-		int[] nubmers = LottoUtil.getNumbers(exData);
+		int[] numbers = LottoUtil.getNumbers(exData);
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-		for (int i = 0; i < nubmers.length; i++) {
-			map.put(nubmers[i],1);
+		for (int i = 0; i < numbers.length; i++) {
+			map.put(numbers[i],1);
 		}
 		
 		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
@@ -3961,10 +4703,10 @@ public class LottoDataService extends DefaultService {
 	private boolean checkLowerLeftTriangle(ExDataDto exData) {
 		boolean check = false;
 		
-		int[] nubmers = LottoUtil.getNumbers(exData);
+		int[] numbers = LottoUtil.getNumbers(exData);
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-		for (int i = 0; i < nubmers.length; i++) {
-			map.put(nubmers[i],1);
+		for (int i = 0; i < numbers.length; i++) {
+			map.put(numbers[i],1);
 		}
 		
 		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
@@ -4002,10 +4744,10 @@ public class LottoDataService extends DefaultService {
 	private boolean checkUpperLeftTriangle(ExDataDto exData) {
 		boolean check = false;
 		
-		int[] nubmers = LottoUtil.getNumbers(exData);
+		int[] numbers = LottoUtil.getNumbers(exData);
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-		for (int i = 0; i < nubmers.length; i++) {
-			map.put(nubmers[i],1);
+		for (int i = 0; i < numbers.length; i++) {
+			map.put(numbers[i],1);
 		}
 		
 		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
@@ -4042,10 +4784,10 @@ public class LottoDataService extends DefaultService {
 	private boolean check34And67Cols(ExDataDto exData) {
 		boolean check = false;
 		
-		int[] nubmers = LottoUtil.getNumbers(exData);
+		int[] numbers = LottoUtil.getNumbers(exData);
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-		for (int i = 0; i < nubmers.length; i++) {
-			map.put(nubmers[i],1);
+		for (int i = 0; i < numbers.length; i++) {
+			map.put(numbers[i],1);
 		}
 		
 		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
@@ -4087,10 +4829,10 @@ public class LottoDataService extends DefaultService {
 	private boolean check12And45Cols(ExDataDto exData) {
 		boolean check = false;
 
-		int[] nubmers = LottoUtil.getNumbers(exData);
+		int[] numbers = LottoUtil.getNumbers(exData);
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-		for (int i = 0; i < nubmers.length; i++) {
-			map.put(nubmers[i],1);
+		for (int i = 0; i < numbers.length; i++) {
+			map.put(numbers[i],1);
 		}
 		
 		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
@@ -4125,13 +4867,15 @@ public class LottoDataService extends DefaultService {
 	/**
 	 * 6번째 수는 42,43,44,45 포함 확인
 	 * 
+	 * 40, 41 추가. 2020.04.05
+	 * 
 	 * @param exData
 	 * @return
 	 */
 	private boolean checkFortyNumbers(ExDataDto exData) {
 		boolean check = false;
 		
-		if (42 <= exData.getNum6() && exData.getNum6() <= 45) {
+		if (40 <= exData.getNum6() && exData.getNum6() <= 45) {
 			// 포함됨
 			check = true;
 		}
@@ -4169,6 +4913,9 @@ public class LottoDataService extends DefaultService {
 			// 체크수 초기화
 			checkCnt = 0;
 			checkRowIndex = 0;
+			for (int j = 0; j < checkLineArray.length; j++) {
+				checkLineArray[j] = 0;
+			}
 			
 			for (int row = 0 + i; row < arrNumbers.length - (limitCheckLine - i); row++) {
 				for (int col = 0; col < arrNumbers[row].length; col++) {
@@ -4211,10 +4958,10 @@ public class LottoDataService extends DefaultService {
 	private boolean checkLeftRightLinesRange(ExDataDto exData) {
 		boolean check = false;
 		
-		int[] nubmers = LottoUtil.getNumbers(exData);
+		int[] numbers = LottoUtil.getNumbers(exData);
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-		for (int i = 0; i < nubmers.length; i++) {
-			map.put(nubmers[i],1);
+		for (int i = 0; i < numbers.length; i++) {
+			map.put(numbers[i],1);
 		}
 		
 		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
@@ -4283,10 +5030,10 @@ public class LottoDataService extends DefaultService {
 	private boolean checkLinesRange(ExDataDto exData, int checkLineCnt) {
 		boolean check = false;
 		
-		int[] nubmers = LottoUtil.getNumbers(exData);
+		int[] numbers = LottoUtil.getNumbers(exData);
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-		for (int i = 0; i < nubmers.length; i++) {
-			map.put(nubmers[i],1);
+		for (int i = 0; i < numbers.length; i++) {
+			map.put(numbers[i],1);
 		}
 		
 		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
@@ -4354,7 +5101,7 @@ public class LottoDataService extends DefaultService {
 
 	/**
 	 * 모서리영역 포함 확인 (로또용지기준)
-	 * 1~4개 포함 확인
+	 * 1~5개 포함 확인
 	 * 
 	 * TODO 적중율 패턴분석 필요
 	 * 
@@ -4366,7 +5113,7 @@ public class LottoDataService extends DefaultService {
 	private boolean existEdgeRange(ExDataDto exData) {
 		boolean check = false;
 		
-		int[] nubmers = LottoUtil.getNumbers(exData);
+		int[] numbers = LottoUtil.getNumbers(exData);
 		
 		// 모서리패턴 check Map 설정
 		int[] checkNumbers = {1,2,8,9,6,7,13,14,29,30,36,37,34,35,41,42,43,44,45};
@@ -4376,13 +5123,13 @@ public class LottoDataService extends DefaultService {
 		}
 		
 		int checkCnt = 0;
-		for (int i = 0; i < nubmers.length; i++) {
-			if (map.containsKey(nubmers[i])) {
+		for (int i = 0; i < numbers.length; i++) {
+			if (map.containsKey(numbers[i])) {
 				checkCnt++;
 			}
 		}
 		
-		if (1 <= checkCnt && checkCnt <= 4) {
+		if (1 <= checkCnt && checkCnt <= 5) {
 			check = true;
 		}
 		
@@ -4499,9 +5246,9 @@ public class LottoDataService extends DefaultService {
 	private boolean existStartEndNumber(ExDataDto exData) {
 		boolean check = false;
 		
-		int[] nubmers = LottoUtil.getNumbers(exData); 
-		if ((1 <= nubmers[0] || nubmers[0] <= 14)
-				&& nubmers[5] >= 31) {
+		int[] numbers = LottoUtil.getNumbers(exData); 
+		if ((1 <= numbers[0] || numbers[0] <= 14)
+				&& numbers[5] >= 31) {
 			check = true;
 		}
 		return check;
@@ -5812,10 +6559,10 @@ public class LottoDataService extends DefaultService {
 		 * : 5주 이내 2번 이상 출현 수 제외수로 추가
 		 * 2020.04.02
 		 ************************************************************/
-		List<Integer> addExcludeNumbers = this.getAddExcludeNumbersFromDtoList(winDataList);
+		List<Integer> addExcludeNumbersFromDtoList = this.getAddExcludeNumbersFromDtoList(winDataList);
 		String strAddExcludeNumbers = ""; 
-		for (int i = 0; i < addExcludeNumbers.size(); i++) {
-			int excludeNumber = addExcludeNumbers.get(i);
+		for (int i = 0; i < addExcludeNumbersFromDtoList.size(); i++) {
+			int excludeNumber = addExcludeNumbersFromDtoList.get(i);
 			if (!"".equals(strAddExcludeNumbers)) {
 				strAddExcludeNumbers += ",";
 			}
@@ -5825,19 +6572,63 @@ public class LottoDataService extends DefaultService {
 
 		// allExcludeNumList에서 확인 후 없으면 추가 처리
 		boolean checkAdd = false;
-		for (int j = 0; j < addExcludeNumbers.size(); j++) {
-			int addExcludeNumber = addExcludeNumbers.get(j);
+		for (int j = 0; j < addExcludeNumbersFromDtoList.size(); j++) {
+			int addExcludeNumber = addExcludeNumbersFromDtoList.get(j);
+			boolean exist = false;
 			for (int i = 0; i < allExcludeNumList.size(); i++) {
 				if (addExcludeNumber == allExcludeNumList.get(i)) {
-					continue;
+					exist = true;
+					break;
 				}
 			}
-			allExcludeNumList.add(addExcludeNumber);
-			checkAdd = true;
+			if (exist) {
+				continue;
+			} else {
+				allExcludeNumList.add(addExcludeNumber);
+				checkAdd = true;
+			}
 		}
 		
+		/************************************************************
+		 * 미출수 출현 시 제외수 추가
+		 * : 11주 이상 미출구간부터 최근회차 당첨번호가 출현한 
+		 * 동일한 미출기간 번호는 제외한다.
+		 * : 직전회차 당첨구간의 동일한 위치(인덱스) 숫자는 제외
+		 * 2020.04.03
+		 ************************************************************/
+		List<Integer> addExcludeNumbersFromNotContain = this.getAddExcludeNumbersFromNotContain(winDataList);
+		strAddExcludeNumbers = ""; 
+		for (int i = 0; i < addExcludeNumbersFromNotContain.size(); i++) {
+			int excludeNumber = addExcludeNumbersFromNotContain.get(i);
+			if (!"".equals(strAddExcludeNumbers)) {
+				strAddExcludeNumbers += ",";
+			}
+			strAddExcludeNumbers += excludeNumber;
+		}			
+		log.info("[" + loginUserNo + "]\t\t추가된 기본제외수 (미출수 중 동일한 포지션 출현) >>> " + strAddExcludeNumbers);
+
+		// allExcludeNumList에서 확인 후 없으면 추가 처리
+		boolean checkAdd2 = false;
+		for (int j = 0; j < addExcludeNumbersFromNotContain.size(); j++) {
+			int addExcludeNumber = addExcludeNumbersFromNotContain.get(j);
+			boolean exist = false;
+			for (int i = 0; i < allExcludeNumList.size(); i++) {
+				if (addExcludeNumber == allExcludeNumList.get(i)) {
+					exist = true;
+					break;
+				}
+			}
+			if (exist) {
+				continue;
+			} else {
+				allExcludeNumList.add(addExcludeNumber);
+				checkAdd2 = true;
+			}
+		}		
+		
+		
 		// 내용이 추가되면 다시 정렬
-		if (checkAdd) {
+		if (checkAdd || checkAdd2) {
 			allExcludeNumList = (List<Integer>) LottoUtil.dataSort(allExcludeNumList);
 		}
 		
@@ -10143,6 +10934,145 @@ public class LottoDataService extends DefaultService {
 					map.put(checkNumber, 1);
 				}
 			}
+		}
+		
+		return excludeNumbers;
+	}
+	
+	/**
+	 * 미출수 출현 시 제외수 추가
+	 * : 11주 이상 미출구간부터 최근회차 당첨번호가 출현한 
+	 * 동일한 미출기간 번호는 제외한다. 
+	 * 조건 : 직전회차 미출수 당첨번호와 동일한 위치(인덱스) 숫자는 제외
+	 * 2020.04.03
+	 * 
+	 * @param winDataList
+	 * @return
+	 */
+	public List<Integer> getAddExcludeNumbersFromNotContain(List<WinDataDto> winDataList) {
+		List<Integer> excludeNumbers = new ArrayList<Integer>();
+		
+		// 중복체크
+		Map<Integer, Integer> map1 = new HashMap<Integer, Integer>();
+		Map<Integer, Integer> map2 = new HashMap<Integer, Integer>();
+		Map<Integer, Integer> map3 = new HashMap<Integer, Integer>();
+		
+		// 번호집계 배열
+		int[][] arrayLastWin = new int[30][6];	// 최근회차 기준
+		int[][] arrayBeforeWin = new int[30][6];// 직전회차 기준
+		
+		//등록하는 index
+		int targetRow = 0;
+		int targetCol = 0;
+		
+		/*
+		 * 최근회차 기준
+		 * 30회 이내 출현번호 배열 집계
+		 * 중복된 번호는 0 처리한다.
+		 */
+		for (int i = winDataList.size() - 1; i > winDataList.size() - 1 - 30; i--) {
+			WinDataDto winDataDto = winDataList.get(i);
+			int[] numbers = LottoUtil.getNumbers(winDataDto);
+			// 열번호 초기화 (한 행이 집계가 끝나면 열번호를 초기화한다.)
+			targetCol = 0;
+					
+			for (int j = 0; j < numbers.length; j++) {
+				int checkNumber = numbers[j];
+				if (map1.containsKey(checkNumber)) {
+					continue;
+				} else {
+					map1.put(checkNumber, 1);
+					arrayLastWin[targetRow][targetCol] = checkNumber;
+				}
+			}
+			// 행번호 증가
+			targetRow++;
+		}
+		
+		//등록하는 index 초기화
+		targetRow = 0;
+		targetCol = 0;
+				
+		/*
+		 * 직전회차 기준
+		 * 30회 이내 출현번호 배열 집계
+		 * 중복된 번호는 0 처리한다.
+		 */
+		for (int i = winDataList.size() - 1 - 1; i > winDataList.size() - 1 - 30 - 1; i--) {
+			WinDataDto winDataDto = winDataList.get(i);
+			int[] numbers = LottoUtil.getNumbers(winDataDto);
+			// 열번호 초기화 (한 행이 집계가 끝나면 열번호를 초기화한다.)
+			targetCol = 0;
+			
+			for (int j = 0; j < numbers.length; j++) {
+				int checkNumber = numbers[j];
+				if (map2.containsKey(checkNumber)) {
+					continue;
+				} else {
+					map2.put(checkNumber, 1);
+					arrayBeforeWin[targetRow][targetCol] = checkNumber;
+				}
+			}
+			// 행번호 증가
+			targetRow++;
+		}
+		
+		// 직전회차 기준배열에서 11주 이상 미출구간부터 최근회차 당첨번호가 출현개수 확인
+		WinDataDto winDataDto = winDataList.get(winDataList.size() - 1);
+		int[] numbers = LottoUtil.getNumbers(winDataDto);
+		for (int i = 0; i < numbers.length; i++) {
+			if (!map3.containsKey(numbers[i])) {
+				map3.put(numbers[i], 1);
+			}
+		}
+		
+		// 11주 이상 출현회수
+		int appearCount = 0;
+		for (int row = 0; row < arrayBeforeWin.length; row++) {
+			// 11회 미만은 카운팅 제외
+			if (row < 10) {
+				continue;
+			}
+			for (int col = 0; col < arrayBeforeWin[row].length; col++) {
+				int number = arrayBeforeWin[row][col];
+				if (number > 0 && map3.containsKey(number)) {
+					appearCount++;
+				}
+			}
+		}
+		
+		// 직전회차 기준 11주 이상 출현회수가 있으면 직전회차기준 출현 인덱스 추출
+		if (appearCount > 0) {
+			// 인덱스 배열 선언
+			int[][] excludePosition = new int[appearCount][2];
+			int setCount = 0;
+			
+			// 최근회차 기준으로 출현 인덱스에 해당하는 미출수를 제외수로 설정
+			for (int row = 0; row < arrayBeforeWin.length; row++) {
+				// 11회 미만은 카운팅 제외
+				if (row < 10) {
+					continue;
+				}
+				for (int col = 0; col < arrayBeforeWin[row].length; col++) {
+					int number = arrayBeforeWin[row][col];
+					if (number > 0 && map3.containsKey(number)) {
+
+						excludePosition[setCount][0] = row;
+						excludePosition[setCount][1] = col;
+						setCount++;
+					}
+				}
+			}
+
+			// 최근회차 기준 해당인덱스 번호를 제외수로 설정
+			for (int i = 0; i < excludePosition.length; i++) {
+				int row = excludePosition[i][0];
+				int col = excludePosition[i][1];
+				
+				if (arrayLastWin[row][col] > 0) {
+					excludeNumbers.add(arrayLastWin[row][col]);
+				}
+			} 
 		}
 		
 		return excludeNumbers;

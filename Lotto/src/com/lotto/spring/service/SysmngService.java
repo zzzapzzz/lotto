@@ -427,12 +427,11 @@ public class SysmngService extends DefaultService {
 		do {
 			map.put("cnt", cnt);
 			int totalGroupSumCnt = this.getTotalGroupSumCnt(map);
-			double d_cnt = totalGroupSumCnt;
-			double d_total = lastWinCount;
-			DecimalFormat df = new DecimalFormat("#.##"); 
-			double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+			int d_cnt = totalGroupSumCnt;
+			int d_total = lastWinCount;
+			double percent = LottoUtil.getPercent(d_cnt, d_total);
 			
-			if (percent * 100 >= AIM_PER) {
+			if (percent >= AIM_PER) {
 				totalGroupCntList = this.getTotalGroupCntList(map);
 				break;
 			}
@@ -512,12 +511,11 @@ public class SysmngService extends DefaultService {
 			map.put("cnt", cnt);
 			int acGroupSumCnt = this.getAcGroupSumCnt(map);
 			if (acGroupSumCnt > 0) {
-				double d_cnt = acGroupSumCnt;
-				double d_total = winCount;
-				DecimalFormat df = new DecimalFormat("#.##"); 
-				double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+				int d_cnt = acGroupSumCnt;
+				int d_total = winCount;
+				double percent = LottoUtil.getPercent(d_cnt, d_total);
 				
-				if (percent * 100 >= AIM_PER) {
+				if (percent >= AIM_PER) {
 					acGroupCntList = this.getAcGroupCntList(map);
 					break;
 				}
@@ -1127,6 +1125,85 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
+	 * 예상번호 NEW 등록
+	 * 2020.04.04
+	 * 
+	 * @param exData
+	 */
+	public boolean insertExptNumNew(ExDataDto exData) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.insert("sysmngMapper.insertExptNumNew", exData);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * 예상번호 NEW 검증 등록
+	 * 2020.04.04
+	 * 
+	 * @param exData
+	 */
+	public boolean insertExptNumNewVari(ExDataDto exData, String comments) {
+		boolean flag = false;		
+		
+		int[] arrNumbers = LottoUtil.getNumbers(exData);
+		String numbers = "";
+		for (int i = 0; i < arrNumbers.length; i++) {
+			if (i > 0) {
+				numbers += ",";
+			}
+			numbers += arrNumbers[i];
+		}
+		
+		Map map = new HashMap();
+		map.put("numbers", numbers);
+		map.put("comments", comments);
+		
+		
+		int i = (Integer) baseDao.insert("sysmngMapper.insertExptNumNewVari", map);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+		flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * 예상번호 NEW 삭제
+	 * 2020.04.04
+	 * 
+	 * @param exData
+	 */
+	public boolean deleteExptNumNew(ExDataDto exData) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.delete("sysmngMapper.deleteExptNumNew", exData);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+			flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * 예상번호 NEW 검증 삭제
+	 * 2020.04.04
+	 * 
+	 * @param exData
+	 */
+	public boolean deleteExptNumNewVari() {
+		boolean flag = false;		
+		int i = (Integer) baseDao.delete("sysmngMapper.deleteExptNumNewVari");
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+		flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
 	 * 예상패턴이 적용된 예상번호 추출 및 등록
 	 * 
 	 * @param winDataList 전체데이터 (오름차순) 
@@ -1391,13 +1468,12 @@ public class SysmngService extends DefaultService {
 				/*********************************************************
 				 * 진행도 출력
 				 *********************************************************/
-				double d_cnt = i + 1;
-				double d_total = numberList.size();
-				DecimalFormat df = new DecimalFormat("#.##"); 
-				double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+				int d_cnt = i + 1;
+				int d_total = numberList.size();
+				double percent = LottoUtil.getPercent(d_cnt, d_total);
 				if (!verification) {
 					//검증이 아닐경우 진행도 출력
-					log.info("index : " + (i+1) + " / " + numberList.size() + " [ equalCnt : " + equalCnt + " ] --- 진행률 : " + (percent*100) + "%");
+					log.info("index : " + (i+1) + " / " + numberList.size() + " [ equalCnt : " + equalCnt + " ] --- 진행률 : " + (percent) + "%");
 				}
 				
 				//2016.08.05

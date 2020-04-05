@@ -722,6 +722,71 @@
 	</foreach>
 	</insert>
 	
+	<!-- 예상번호 NEW 등록 -->
+	<insert id="insertExptNumNew" parameterType="exDataDto">
+		/* sysmng.insertExptNumNew */
+		INSERT INTO TB_EXPT_NUM_NEW (
+			  EX_COUNT
+			, SEQ
+			, NUM1
+			, NUM2
+			, NUM3
+			, NUM4
+			, NUM5
+			, NUM6
+			, TOTAL
+			, SUM_END_NUM
+			, LOW_HIGH
+			, ODD_EVEN
+			, AC
+			, PTRN_MATCH_CNT
+		)
+		VALUES
+		(
+			  #{ex_count}
+			, #{seq}
+			, #{num1}
+			, #{num2}
+			, #{num3}
+			, #{num4}
+			, #{num5}
+			, #{num6}
+			, #{total}
+			, #{sum_end_num}
+			, #{low_high}
+			, #{odd_even}
+			, #{ac}
+			, #{ptrn_match_cnt}
+		)
+	</insert>
+	
+	<!-- 예상번호 NEW 검증로그 등록 -->
+	<insert id="insertExptNumNewVari" parameterType="java.util.Map">
+		/* sysmng.insertExptNumNewVari */
+		INSERT INTO TB_EXPT_NUM_NEW_VARI (
+			  NUMBERS
+			, COMMENTS			
+		)
+		VALUES
+		(
+			  #{numbers}
+			, #{comments}			
+		)
+	</insert>
+	
+	<!-- 예상번호 NEW 삭제 -->
+	<delete id="deleteExptNumNew" parameterType="exDataDto">
+		/* sysmng.deleteExptNumNew */
+		DELETE FROM TB_EXPT_NUM_NEW
+		WHERE EX_COUNT = #{ex_count}
+	</delete>
+	
+	<!-- 예상번호 NEW 검증 삭제 -->
+	<delete id="deleteExptNumNewVari" parameterType="exDataDto">
+		/* sysmng.deleteExptNumNewVari */
+		DELETE FROM TB_EXPT_NUM_NEW_VARI		
+	</delete>
+	
 	<!-- 과거 예상번호 목록 삭제 -->
 	<delete id="deletePastExptNumList" parameterType="Map">
 		/* sysmng.deletePastExptNumList */

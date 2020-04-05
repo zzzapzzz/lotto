@@ -44,6 +44,9 @@ public class ExDataDto extends DefaultDto{
 	//당첨번호 배열
 	private int[] numbers;
 		
+	/** 회원번호 */
+	private int user_no;
+	
 	public int getEx_count() {
 		return ex_count;
 	}
@@ -149,6 +152,12 @@ public class ExDataDto extends DefaultDto{
 	
 	public String toString() {
 		return num1 + ", " + num2 + ", " + num3 + ", " + num4 + ", " + num5 + ", " + num6;
+	}
+	public int getUser_no() {
+		return user_no;
+	}
+	public void setUser_no(int user_no) {
+		this.user_no = user_no;
 	}
 	
 }

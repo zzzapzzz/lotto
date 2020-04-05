@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
+import com.lotto.common.LottoUtil;
 import com.lotto.common.WebUtil;
 import com.lotto.spring.core.DefaultSMController;
 import com.lotto.spring.domain.dao.SystemSession;
@@ -220,12 +221,11 @@ public class ExptController extends DefaultSMController {
 		do {
 			map.put("cnt", cnt);
 			int totalGroupSumCnt = sysmngService.getTotalGroupSumCnt(map);
-			double d_cnt = totalGroupSumCnt;
-			double d_total = winDataList.get(winDataList.size()-1).getWin_count();
-			DecimalFormat df = new DecimalFormat("#.##"); 
-			double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+			int d_cnt = totalGroupSumCnt;
+			int d_total = winDataList.get(winDataList.size()-1).getWin_count();
+			double percent = LottoUtil.getPercent(d_cnt, d_total);
 			
-			if (percent * 100 >= AIM_PER) {
+			if (percent >= AIM_PER) {
 				totalGroupCntList = sysmngService.getTotalGroupCntList(map);
 				break;
 			}
@@ -253,12 +253,11 @@ public class ExptController extends DefaultSMController {
 		do {
 			map.put("cnt", cnt);
 			int endnumGroupSumCnt = sysmngService.getEndnumGroupSumCnt(map);
-			double d_cnt = endnumGroupSumCnt;
-			double d_total = winDataList.get(winDataList.size()-1).getWin_count();
-			DecimalFormat df = new DecimalFormat("#.##"); 
-			double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+			int d_cnt = endnumGroupSumCnt;
+			int d_total = winDataList.get(winDataList.size()-1).getWin_count();
+			double percent = LottoUtil.getPercent(d_cnt, d_total);
 			
-			if (percent * 100 >= AIM_PER) {
+			if (percent >= AIM_PER) {
 				endnumGroupCntList = sysmngService.getEndnumGroupCntList(map);
 				break;
 			}
@@ -302,11 +301,10 @@ public class ExptController extends DefaultSMController {
 			excuteCnt++;
 			
 			// 진행도 출력
-			double d_cnt = excuteCnt;
-			double d_total = exDataListCnt;
-			DecimalFormat df = new DecimalFormat("#.##"); 
-			double percent = Double.parseDouble(df.format( d_cnt/d_total ));
-			log.info("추출횟수 = " + exDataList.size() + " / 실행횟수 = " + excuteCnt + " (" + (percent*100) + "%)");
+			int d_cnt = excuteCnt;
+			int d_total = exDataListCnt;
+			double percent = LottoUtil.getPercent(d_cnt, d_total);
+			log.info("추출횟수 = " + exDataList.size() + " / 실행횟수 = " + excuteCnt + " (" + (percent) + "%)");
 			
 			if (exDataList.size() >= iSearchCount || exDataListCnt == excuteCnt) {
 				break;

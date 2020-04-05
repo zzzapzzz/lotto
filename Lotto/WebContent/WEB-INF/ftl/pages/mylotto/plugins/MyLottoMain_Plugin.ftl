@@ -276,6 +276,73 @@
 				});
 			}
 			
+			function autoAddNewCheckGo() {
+				var param = {
+					ex_count : Number($("#ex_count").val())
+				}
+				
+				$.ajax({
+					type: "POST",
+					url: "${APP_ROOT}/mylotto/autoAddCheck.do",
+					data: param,
+					dataType: "json",
+					async: false,
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+		               		location.href = "/index.do"; 
+		               		return;
+		            	}
+		            	
+						if (result.status == "exist") {
+							if (confirm(result.msg)) {
+								autoAddNewGo();
+							}
+		            	} else {
+		            		autoAddGo();
+		            	}
+		            	
+					}
+				});
+			}
+			
+			function autoAddNewGo() {
+				var param = {
+					ex_count : Number($("#ex_count").val()),
+					maxSaveCnt : Number($("#maxSaveCnt").val())
+				}
+				
+				$.ajax({
+					type: "POST",
+					url: "${APP_ROOT}/mylotto/autoAddNew.do",
+					data: param,
+					dataType: "json",
+					async: false,
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+		               		location.href = "/index.do"; 
+		               		return;
+		            	}
+		            	
+	               		showSmallBox(result.msg);
+		            	
+						if (result.status == "success") {
+							searchGo();
+		            	}
+		            	
+					}
+				});
+			}
+			
 			function filterAddGo() {
 				var url = "${APP_ROOT}/mylotto/filterAddajax.do?ex_count=" + thisExCount;
 				changeContent(url);

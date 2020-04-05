@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.chello.base.spring.core.DefaultService;
+import com.lotto.spring.domain.dto.ExDataDto;
 import com.lotto.spring.domain.dto.MyLottoSaveNumDto;
 
 @Service("myLottoService")
@@ -50,6 +51,34 @@ public class MyLottoService extends DefaultService {
 	}
 	
 	/**
+	 * MY로또저장번호 일반등록 NEW
+	 * @param dto
+	 */
+	public boolean insertMyDataNew(Map map) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.insert("myLottoMapper.insertMyDataNew", map);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+		flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * MY로또저장번호 매핑데이터 등록
+	 * @param dto
+	 */
+	public boolean insertMyNewMpngData(Map map) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.insert("myLottoMapper.insertMyNewMpngData", map);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+		flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
 	 * MY로또저장번호 삭제
 	 * @param dto
 	 * @return
@@ -63,6 +92,21 @@ public class MyLottoService extends DefaultService {
 //		}
 		return flag;
 	}
+	
+	/**
+	 * 등록된 매핑 데이터 삭제 for New
+	 * @param dto
+	 * @return
+	 */
+	public boolean deleteMyNewMpngData(MyLottoSaveNumDto dto) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.delete("myLottoMapper.deleteMyNewMpngData", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+		flag = true;
+//		}
+		return flag;
+	}
 
 	/**
 	 * MY로또저장번호 등록체크
@@ -72,5 +116,26 @@ public class MyLottoService extends DefaultService {
 	 */
 	public int checkSaveMyData(MyLottoSaveNumDto dto) {
 		return (Integer) baseDao.getSingleRow("myLottoMapper.checkSaveMyData", dto);
+	}
+	
+	/**
+	 * MY로또저장번호 NEW 미사용 조합 개수 조회
+	 * 
+	 * @param map
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public int getExptNumListCnt(MyLottoSaveNumDto dto) {
+		return (Integer) baseDao.getSingleRow("myLottoMapper.getExptNumListCnt", dto);
+	}
+	
+	/**
+	 * MY로또저장번호 NEW 목록 조회
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public ArrayList<ExDataDto> getExptNumList(MyLottoSaveNumDto dto) {
+		return (ArrayList<ExDataDto>) baseDao.getList("myLottoMapper.getExptNumList", dto);
 	}
 }

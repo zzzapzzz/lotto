@@ -58,6 +58,17 @@
 		</if>
 	</delete>
 	
+	<!-- 등록된 매핑 데이터 삭제 for New -->
+	<delete id="deleteMyNewMpngData" parameterType="myLottoSaveNumDto">		
+		/* mylotto.deleteMyNewMpngData */
+		DELETE FROM TB_EXPT_NUM_NEW_MPNG
+		WHERE EX_COUNT = #{ex_count}
+		AND USER_NO = #{user_no}
+		<if test='seq != null and seq != 0'>
+		AND SEQ = #{seq}
+		</if>
+	</delete>
+	
 	<!-- MY로또저장번호 일반등록 -->
 	<insert id="insertMyData" parameterType="java.util.Map">
 		/* mylotto.insertMyData */
@@ -70,6 +81,28 @@
 		</foreach>
 	</insert>
 	
+	<!-- MY로또저장번호 일반등록 New -->
+	<insert id="insertMyDataNew" parameterType="java.util.Map">
+		/* mylotto.insertMyData */
+		INSERT INTO TB_MY_SAVE_NUM (EX_COUNT,USER_NO,SEQ,NUM1,NUM2,NUM3,NUM4,NUM5,NUM6,WIN_RSLT,EMAIL_SEND_YN,SMS_SEND_YN,CR_DT,UP_DT)
+		VALUES 
+		<foreach collection="list" item="item" open="" separator="," close="">
+		(#{item.ex_count},#{item.user_no},
+		 #{item.seq},
+		 #{item.num1},#{item.num2},#{item.num3},#{item.num4},#{item.num5},#{item.num6},NULL,'N','N',NOW(),NOW())
+		</foreach>
+	</insert>
+	
+	<!-- MY로또저장번호 매핑데이터 등록 -->
+	<insert id="insertMyNewMpngData" parameterType="java.util.Map">
+		/* mylotto.insertMyNewMpngData */
+		INSERT INTO TB_EXPT_NUM_NEW_MPNG (EX_COUNT,USER_NO,SEQ)
+		VALUES 
+		<foreach collection="list" item="item" open="" separator="," close="">
+		(#{item.ex_count},#{item.user_no},#{item.seq})
+		</foreach>
+	</insert>
+	
 	<!-- MY로또저장번호 등록 체크 -->
 	<select id="checkSaveMyData" parameterType="myLottoSaveNumDto" resultType="int">		
 		/* mylotto.checkSaveMyData */
@@ -79,5 +112,58 @@
 		WHERE 1=1
 		AND ex_count = #{ex_count}
 		AND user_no = #{user_no}
+	</select>
+	
+	<!-- MY로또저장번호 NEW 조합 개수 조회 -->
+	<select id="getExptNumListCnt" parameterType="myLottoSaveNumDto" resultType="int">		
+		/* mylotto.getExptNumListCnt */
+		SELECT 
+			COUNT(N.SEQ)
+		FROM TB_EXPT_NUM_NEW N
+		WHERE N.EX_COUNT = #{ex_count}
+		<if test='onlyUnused != null and onlyUnused == "Y"'>
+		AND NOT EXISTS (
+			SELECT
+				SEQ
+			FROM TB_EXPT_NUM_NEW_MPNG M
+			WHERE EX_COUNT = #{ex_count}
+			AND M.EX_COUNT = N.EX_COUNT
+			AND M.SEQ = N.SEQ
+		)
+		</if>
+	</select>
+	
+	<!-- MY로또저장번호 NEW 목록 조회 -->
+	<select id="getExptNumList" parameterType="myLottoSaveNumDto" resultType="exDataDto">
+		/* mylotto.getExptNumList */		
+		SELECT 
+			  ex_count
+			, seq
+			, num1
+			, num2
+			, num3
+			, num4
+			, num5
+			, num6
+			, total
+			, sum_end_num
+			, low_high 
+			, odd_even
+			, ac
+			, ptrn_match_cnt
+			, @rownum := @rownum+1 AS row_num
+		FROM TB_EXPT_NUM_NEW N, (SELECT @rownum :=0) AS R		
+		WHERE ex_count = #{ex_count}
+		<if test='onlyUnused != null and onlyUnused == "Y"'>
+		AND NOT EXISTS (
+			SELECT
+				SEQ
+			FROM TB_EXPT_NUM_NEW_MPNG M
+			WHERE EX_COUNT = #{ex_count}
+			AND M.EX_COUNT = N.EX_COUNT
+			AND M.SEQ = N.SEQ
+		)
+		</if>
+		ORDER BY seq
 	</select>
 </mapper>

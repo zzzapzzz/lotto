@@ -118,6 +118,7 @@
 				$(".ui-icon.ui-icon-seek-end").removeClass().addClass("fa fa-fast-forward");
 				
 				$("#exDataExtraction").click(extractionGo);
+				$("#exDataNewExtraction").click(newExtractionGo);
 				$("#beforeExDataResult").click(changeExDataResultGo);
 				$("#exDataAnalysis").click(changeAnalysisGo);
 			}
@@ -138,7 +139,7 @@
 			
 			function extractionGo() {
 				var param = {
-					ex_count : ex_count
+					ex_count : $("#nextWinCount").val()
 				};
 				
 				$.ajax({
@@ -157,8 +158,43 @@
 		               		return;
 		            	}
 
+						showSmallBox(result.msg);
+						
 						if (result.status == "success") {
-			    			
+			    			searchGo();	
+		            	} else {
+		            		alert(result.msg);
+		            	}
+					}
+				});
+			}
+			
+			function newExtractionGo() {
+				var param = {
+					ex_count : $("#nextWinCount").val()
+				};
+				
+				$.ajax({
+					type: "POST",
+					url: "${APP_ROOT}/sysmng/insertNewExpectNumbers.do",
+					data: param,
+					dataType: "json",
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					async: true,
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+		               		location.href = "/index.do";
+		               		return;
+		            	}
+
+						showSmallBox(result.msg);
+
+						if (result.status == "success") {
+			    			searchGo();
 		            	} else {
 		            		alert(result.msg);
 		            	}
@@ -169,6 +205,21 @@
 			function changeExDataResultGo() {
 				var url = "${APP_ROOT}/sysmng/resultExDataajax.do";
 				changeContent(url);
+			}
+			
+			function searchGo() {
+				var param = {		
+					ex_count : $("#nextWinCount").val()
+				};	
+				
+				var page = 1;
+				// isAction = Y 인 경우 현재 페이지 유지, N 인 경우 1페이지로 표시
+				if (isAction == 'Y') {
+					page = jQuery("#jqgrid").getGridParam("page");
+					isAction = 'N';
+				}
+		
+				$("#jqgrid").setGridParam({	url: '${APP_ROOT}/sysmng/getExDataList.do', datatype:'json', postData: param, page: page, sortname: '', sortorder: ''   }).trigger("reloadGrid");
 			}
 
 		</script>

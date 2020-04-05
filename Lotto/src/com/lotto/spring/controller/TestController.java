@@ -229,12 +229,11 @@ public class TestController extends DefaultSMController {
 		do {
 			map.put("cnt", cnt);
 			int totalGroupSumCnt = sysmngService.getTotalGroupSumCnt(map);
-			double d_cnt = totalGroupSumCnt;
-			double d_total = lastWinCount;
-			DecimalFormat df = new DecimalFormat("#.##"); 
-			double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+			int d_cnt = totalGroupSumCnt;
+			int d_total = lastWinCount;
+			double percent = LottoUtil.getPercent(d_cnt, d_total);
 			
-			if (percent * 100 >= AIM_PER) {
+			if (percent >= AIM_PER) {
 				totalGroupCntList = sysmngService.getTotalGroupCntList(map);
 				break;
 			}
@@ -348,11 +347,10 @@ public class TestController extends DefaultSMController {
 			}
 		}
 		// 당첨확률 일치율
-		double d_cnt = isMatchCnt;
-		double d_total = winDataList.size();
-		DecimalFormat df = new DecimalFormat("#.##"); 
-		double percent = Double.parseDouble(df.format( d_cnt/d_total ));
-		log.info("매칭개수 : " + isMatchCnt + ", 일치율 : " + (percent * 100) + "%"); 
+		int d_cnt = isMatchCnt;
+		int d_total = winDataList.size();
+		double percent = LottoUtil.getPercent(d_cnt, d_total);
+		log.info("매칭개수 : " + isMatchCnt + ", 일치율 : " + (percent) + "%"); 
 		
 		
 		JSONObject json = new JSONObject();
@@ -433,11 +431,10 @@ public class TestController extends DefaultSMController {
 		 * 최대최소 출현 매칭률 80% 설정 시 일치율 : 66%
 		 * 최대최소 출현 매칭률 90% 설정 시 일치율 : 31%
 		 */
-		double d_cnt = isMatchCnt;
-		double d_total = winDataList.size();
-		DecimalFormat df = new DecimalFormat("#.##"); 
-		double percent = Double.parseDouble(df.format( d_cnt/d_total ));
-		log.info("매칭개수 : " + isMatchCnt + ", 일치율 : " + (percent * 100) + "%"); 
+		int d_cnt = isMatchCnt;
+		int d_total = winDataList.size();
+		double percent = LottoUtil.getPercent(d_cnt, d_total);
+		log.info("매칭개수 : " + isMatchCnt + ", 일치율 : " + (percent) + "%"); 
 		
 		
 		JSONObject json = new JSONObject();

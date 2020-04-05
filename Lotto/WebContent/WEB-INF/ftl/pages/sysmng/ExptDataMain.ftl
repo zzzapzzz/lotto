@@ -33,6 +33,7 @@
 					</div>
 					
 					<span id="exDataExtraction" class="btn btn-success"><i class="fa fa-edit"></i> 예상번호 추출</span>
+					<span id="exDataNewExtraction" class="btn btn-success"><i class="fa fa-edit"></i> 예상번호 NEW 추출</span>
 					<span id="beforeExDataResult" class="btn btn-warning"><i class="fa fa-edit"></i> 전회차 매칭결과</span>
 					<span id="exDataAnalysis" class="btn btn-info"><i class="fa fa-pencil"></i> 예상번호 분석</span>
 					

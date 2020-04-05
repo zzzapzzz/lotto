@@ -40,6 +40,8 @@ public class MyLottoSaveNumDto extends DefaultDto{
 	private String seqs;
 	/** 등록개수 */
 	private int maxSaveCnt;
+	/** 미사용 조회여부 */
+	private String onlyUnused;
 	
 	public int getEx_count() {
 		return ex_count;
@@ -136,5 +138,11 @@ public class MyLottoSaveNumDto extends DefaultDto{
 	}
 	public void setMaxSaveCnt(int maxSaveCnt) {
 		this.maxSaveCnt = maxSaveCnt;
+	}
+	public String getOnlyUnused() {
+		return onlyUnused;
+	}
+	public void setOnlyUnused(String onlyUnused) {
+		this.onlyUnused = onlyUnused;
 	}
 }

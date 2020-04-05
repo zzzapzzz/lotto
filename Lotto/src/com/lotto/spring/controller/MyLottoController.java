@@ -444,12 +444,11 @@ public class MyLottoController extends DefaultSMController {
 			do {
 				map.put("cnt", cnt);
 				int totalGroupSumCnt = sysmngService.getTotalGroupSumCnt(map);
-				double d_cnt = totalGroupSumCnt;
-				double d_total = winDataList.get(winDataList.size()-1).getWin_count();
-				DecimalFormat df = new DecimalFormat("#.##"); 
-				double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+				int d_cnt = totalGroupSumCnt;
+				int d_total = winDataList.get(winDataList.size()-1).getWin_count();
+				double percent = LottoUtil.getPercent(d_cnt, d_total);
 				
-				if (percent * 100 >= AIM_PER) {
+				if (percent >= AIM_PER) {
 					totalGroupCntList = sysmngService.getTotalGroupCntList(map);
 					break;
 				}
@@ -477,12 +476,11 @@ public class MyLottoController extends DefaultSMController {
 			do {
 				map.put("cnt", cnt);
 				int endnumGroupSumCnt = sysmngService.getEndnumGroupSumCnt(map);
-				double d_cnt = endnumGroupSumCnt;
-				double d_total = winDataList.get(winDataList.size()-1).getWin_count();
-				DecimalFormat df = new DecimalFormat("#.##"); 
-				double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+				int d_cnt = endnumGroupSumCnt;
+				int d_total = winDataList.get(winDataList.size()-1).getWin_count();				 
+				double percent = LottoUtil.getPercent(d_cnt, d_total);
 				
-				if (percent * 100 >= AIM_PER) {
+				if (percent >= AIM_PER) {
 					endnumGroupCntList = sysmngService.getEndnumGroupCntList(map);
 					break;
 				}
@@ -548,11 +546,10 @@ public class MyLottoController extends DefaultSMController {
 						myLottoSaveNumListCnt++;
 						
 						// 진행도 출력
-						double d_cnt = excuteCnt;
-						double d_total = maxSaveCnt;
-						DecimalFormat df = new DecimalFormat("#.##"); 
-						double percent = Double.parseDouble(df.format( d_cnt/d_total ));
-						log.info("추출횟수 = " + saveList.size() + " / 실행횟수 = " + excuteCnt + " (" + (percent*100) + "%)");
+						int d_cnt = excuteCnt;
+						int d_total = maxSaveCnt;						 
+						double percent = LottoUtil.getPercent(d_cnt, d_total);
+						log.info("추출횟수 = " + saveList.size() + " / 실행횟수 = " + excuteCnt + " (" + (percent) + "%)");
 						
 						if (saveList.size() >= maxSaveCnt || expectDataList.size() == excuteCnt) {
 							break;
@@ -759,12 +756,11 @@ public class MyLottoController extends DefaultSMController {
 			do {
 				map.put("cnt", cnt);
 				int totalGroupSumCnt = sysmngService.getTotalGroupSumCnt(map);
-				double d_cnt = totalGroupSumCnt;
-				double d_total = winDataList.get(winDataList.size()-1).getWin_count();
-				DecimalFormat df = new DecimalFormat("#.##"); 
-				double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+				int d_cnt = totalGroupSumCnt;
+				int d_total = winDataList.get(winDataList.size()-1).getWin_count();
+				double percent = LottoUtil.getPercent(d_cnt, d_total);
 				
-				if (percent * 100 >= AIM_PER) {
+				if (percent >= AIM_PER) {
 					totalGroupCntList = sysmngService.getTotalGroupCntList(map);
 					break;
 				}
@@ -792,10 +788,9 @@ public class MyLottoController extends DefaultSMController {
 			do {
 				map.put("cnt", cnt);
 				int endnumGroupSumCnt = sysmngService.getEndnumGroupSumCnt(map);
-				double d_cnt = endnumGroupSumCnt;
-				double d_total = winDataList.get(winDataList.size()-1).getWin_count();
-				DecimalFormat df = new DecimalFormat("#.##"); 
-				double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+				int d_cnt = endnumGroupSumCnt;
+				int d_total = winDataList.get(winDataList.size()-1).getWin_count();
+				double percent = LottoUtil.getPercent(d_cnt, d_total);
 				
 				if (percent * 100 >= AIM_PER) {
 					endnumGroupCntList = sysmngService.getEndnumGroupCntList(map);
@@ -882,11 +877,10 @@ public class MyLottoController extends DefaultSMController {
 						myLottoSaveNumListCnt++;
 						
 						// 진행도 출력
-						double d_cnt = excuteCnt;
-						double d_total = maxSaveCnt;
-						DecimalFormat df = new DecimalFormat("#.##"); 
-						double percent = Double.parseDouble(df.format( d_cnt/d_total ));
-						log.info("추출횟수 = " + saveList.size() + " / 실행횟수 = " + excuteCnt + " (" + (percent*100) + "%)");
+						int d_cnt = excuteCnt;
+						int d_total = maxSaveCnt;
+						double percent = LottoUtil.getPercent(d_cnt, d_total);
+						log.info("추출횟수 = " + saveList.size() + " / 실행횟수 = " + excuteCnt + " (" + (percent) + "%)");
 						
 						if (saveList.size() >= maxSaveCnt || expectDataList.size() == excuteCnt) {
 							break;
@@ -1180,6 +1174,10 @@ public class MyLottoController extends DefaultSMController {
 			dto.setUser_no(loginUserNo);
 			myLottoService.deleteMyData(dto);
 			
+			// 예상번호 NEW 검증 삭제
+			log.info("[" + loginUserNo + "]\t예상번호_NEW 검증 삭제");
+			sysmngService.deleteExptNumNewVari();
+						
 			int maxSaveCnt = 10; 	// 기본값 설정
 			if (dto.getMaxSaveCnt() > 0) {
 				maxSaveCnt = dto.getMaxSaveCnt(); 
@@ -1218,12 +1216,11 @@ public class MyLottoController extends DefaultSMController {
 			do {
 				map.put("cnt", cnt);
 				int totalGroupSumCnt = sysmngService.getTotalGroupSumCnt(map);
-				double d_cnt = totalGroupSumCnt;
-				double d_total = winDataList.get(winDataList.size()-1).getWin_count();
-				DecimalFormat df = new DecimalFormat("#.##"); 
-				double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+				int d_cnt = totalGroupSumCnt;
+				int d_total = winDataList.get(winDataList.size()-1).getWin_count();
+				double percent = LottoUtil.getPercent(d_cnt, d_total);
 				
-				if (percent * 100 >= AIM_PER) {
+				if (percent >= AIM_PER) {
 					totalGroupCntList = sysmngService.getTotalGroupCntList(map);
 					break;
 				}
@@ -1251,12 +1248,11 @@ public class MyLottoController extends DefaultSMController {
 			do {
 				map.put("cnt", cnt);
 				int endnumGroupSumCnt = sysmngService.getEndnumGroupSumCnt(map);
-				double d_cnt = endnumGroupSumCnt;
-				double d_total = winDataList.get(winDataList.size()-1).getWin_count();
-				DecimalFormat df = new DecimalFormat("#.##"); 
-				double percent = Double.parseDouble(df.format( d_cnt/d_total ));
+				int d_cnt = endnumGroupSumCnt;
+				int d_total = winDataList.get(winDataList.size()-1).getWin_count();
+				double percent = LottoUtil.getPercent(d_cnt, d_total);
 				
-				if (percent * 100 >= AIM_PER) {
+				if (percent >= AIM_PER) {
 					endnumGroupCntList = sysmngService.getEndnumGroupCntList(map);
 					break;
 				}
@@ -2130,11 +2126,10 @@ public class MyLottoController extends DefaultSMController {
 				}
 				
 				// 진행도 출력
-				double d_cnt = excuteCnt;
-				double d_total = maxSaveCnt;
-				DecimalFormat df = new DecimalFormat("#.##"); 
-				double percent = Double.parseDouble(df.format( d_cnt/d_total ));
-				log.info("추출횟수 = " + saveList.size() + " / 실행횟수 = " + excuteCnt + " (" + (percent*100) + "%)");
+				int d_cnt = excuteCnt;
+				int d_total = maxSaveCnt;
+				double percent = LottoUtil.getPercent(d_cnt, d_total);
+				log.info("추출횟수 = " + saveList.size() + " / 실행횟수 = " + excuteCnt + " (" + (percent) + "%)");
 				
 //				if (saveList.size() >= maxSaveCnt || exDataListCnt == excuteCnt) {
 				
@@ -2160,6 +2155,157 @@ public class MyLottoController extends DefaultSMController {
 		System.out.println("JSONObject::"+jsonObj.toString());
 		writeJSON(response, jsonObj);
         
+	}
+	
+	/**
+	 * MY로또저장번호 NEW 자동등록
+	 * 
+	 * 예상번호 NEW 테이블의 조합번호를 등록하도록 개선
+	 * 2020.04.04
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@RequestMapping("/mylotto/autoAddNew")
+	public void autoAddNew(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute MyLottoSaveNumDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] MY로또저장번호 NEW 자동등록");
+			
+			// 등록된 데이터 삭제
+			dto.setUser_no(loginUserNo);
+			myLottoService.deleteMyData(dto);
+						
+			// 등록된 매핑 데이터 삭제 for New
+			dto.setUser_no(loginUserNo);
+			myLottoService.deleteMyNewMpngData(dto);
+			
+			int maxSaveCnt = 10; 	// 기본값 설정
+			if (dto.getMaxSaveCnt() > 0) {
+				maxSaveCnt = dto.getMaxSaveCnt(); 
+			}
+						
+			List<ExDataDto> exList = new ArrayList<ExDataDto>(); // 추출한 목록
+			List saveList = new ArrayList(); // 저장할 목록
+			
+			/*
+			 * 예상번호 NEW 조합 매핑에 사용되지 않은 번호가 있는지 확인
+			 * NEW조합을 사용자가 중복해서 사용하지 않도록 하기 위함.
+			 * 모든 번호가 매핑될 경우 무시하고 매핑할 수 있도록 해야함.
+			 */
+			dto.setOnlyUnused("Y");	// // 미사용 조회 설정
+			int unusedNumCnt = myLottoService.getExptNumListCnt(dto);
+			if (maxSaveCnt < unusedNumCnt) {
+				// 미사용조합이 예상번호보다 많은 경우 랜덤 추출
+				// 미사용조합 조회
+				List<ExDataDto> exDataList = myLottoService.getExptNumList(dto);
+				int saveCnt = 0;
+				Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+				do {
+					int randomSeq = (int) (Math.random() * exDataList.size());
+					ExDataDto exDataDto = exDataList.get(randomSeq);
+					int exDataSeq = exDataDto.getSeq();
+					if (!map.containsKey(exDataSeq)) {
+						exDataDto.setUser_no(loginUserNo);
+						exList.add(exDataDto);
+						map.put(exDataSeq, exDataSeq);
+						saveCnt++;
+					}					
+				} while (maxSaveCnt == saveCnt);
+				
+				
+			} else if (maxSaveCnt == unusedNumCnt) {
+				// 같으면 전체 목록 설정
+				List<ExDataDto> exDataList = myLottoService.getExptNumList(dto);
+				for (ExDataDto exDataDto : exDataList) {
+					exDataDto.setUser_no(loginUserNo);
+					exList.add(exDataDto);
+				}
+			} else {
+				// 적으면 
+				// 1. 미사용 목록 전체를 설정하고
+				List<ExDataDto> exDataList = myLottoService.getExptNumList(dto);
+				for (ExDataDto exDataDto : exDataList) {
+					exDataDto.setUser_no(loginUserNo);
+					exList.add(exDataDto);
+				}
+				
+				// 2. 전체 매핑 목록에서 랜덤으로 남은 건수만큼 설정
+				// 전체 조합 조회
+				dto.setOnlyUnused("N");
+				List<ExDataDto> exDataAllList = myLottoService.getExptNumList(dto);
+				int checkCnt = maxSaveCnt - exList.size();
+				int saveCnt = 0;
+				Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+				do {
+					int randomSeq = (int) (Math.random() * exDataAllList.size());
+					ExDataDto exDataDto = exDataAllList.get(randomSeq);
+					int exDataSeq = exDataDto.getSeq();
+					if (!map.containsKey(exDataSeq)) {
+						exDataDto.setUser_no(loginUserNo);
+						exList.add(exDataDto);
+						map.put(exDataSeq, exDataSeq);
+						saveCnt++;
+					}					
+				} while (checkCnt == saveCnt);
+			}
+
+			/*
+			 * 조회된 예상번호 SEQ 목록을 랜덤으로 저장할 수만큼 반복등록 처리
+			 * 다른 사용자와 중복되어도 상관없음. (MY로또 저장시간 기준)
+			 */
+			log.info("추출한 예상번호 목록 설정 처리");
+			for (int i = 0; i < exList.size(); i++) {
+				ExDataDto exData = exList.get(i);
+				
+				MyLottoSaveNumDto mlsnDto = new MyLottoSaveNumDto();
+				mlsnDto.setEx_count(dto.getEx_count());
+				mlsnDto.setUser_no(loginUserNo);
+				mlsnDto.setSeq(exData.getSeq());	// 추출된 seq로 설정
+				mlsnDto.setNum1(exData.getNum1());
+				mlsnDto.setNum2(exData.getNum2());
+				mlsnDto.setNum3(exData.getNum3());
+				mlsnDto.setNum4(exData.getNum4());
+				mlsnDto.setNum5(exData.getNum5());
+				mlsnDto.setNum6(exData.getNum6());
+				saveList.add(mlsnDto);
+			}
+						
+			if (saveList.size() > 0) {
+				// MY로또 등록
+				Map paramMap = new HashMap();
+				paramMap.put("list", saveList);
+				myLottoService.insertMyDataNew(paramMap);
+				
+				// MY로또 매핑데이터 등록
+				Map paramMap2 = new HashMap();
+				paramMap2.put("list", exList);
+				myLottoService.insertMyNewMpngData(paramMap2);
+				
+				jsonObj.put("status", "success");
+				jsonObj.put("msg", saveList.size() + "조합이 등록되었습니다.");
+				log.info("추출한 예상번호 " + saveList.size() + "조합이 등록되었습니다.");
+			} else {
+				jsonObj.put("status", "fail");
+				jsonObj.put("msg", "자동저장할 알맞는 번호조합이 없습니다.");
+			}
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+		
 	}
 	
 	/**
