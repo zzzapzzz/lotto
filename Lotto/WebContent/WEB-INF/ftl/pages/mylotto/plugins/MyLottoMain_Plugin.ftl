@@ -65,7 +65,7 @@
 				};
 				
 				jQuery("#jqgrid").jqGrid({
-					url: '${APP_ROOT}/mylotto/saveNumList.do',
+					url: '${APP_ROOT}/mylotto/saveNumNewList.do',
 					postData: param,
 					datatype: 'json', //Data 형식   'json/xml/local'
 		        	jsonReader : {  // 이부분 추가 하셔야 json 쓰시기 편리 합니다.
@@ -201,7 +201,7 @@
 					isAction = 'N';
 				}
 		
-				$("#jqgrid").setGridParam({	url: '${APP_ROOT}/mylotto/saveNumList.do', datatype:'json', postData: param, page: page, sortname: '', sortorder: ''   }).trigger("reloadGrid");
+				$("#jqgrid").setGridParam({	url: '${APP_ROOT}/mylotto/saveNumNewList.do', datatype:'json', postData: param, page: page, sortname: '', sortorder: ''   }).trigger("reloadGrid");
 			}
 			
 			function addGo() {
@@ -283,7 +283,7 @@
 				
 				$.ajax({
 					type: "POST",
-					url: "${APP_ROOT}/mylotto/autoAddCheck.do",
+					url: "${APP_ROOT}/mylotto/autoAddNewCheck.do",
 					data: param,
 					dataType: "json",
 					async: false,
@@ -303,7 +303,7 @@
 								autoAddNewGo();
 							}
 		            	} else {
-		            		autoAddGo();
+		            		autoAddNewGo();
 		            	}
 		            	
 					}
@@ -408,7 +408,8 @@
 				
 				$.ajax({
 					type: "POST",
-					url: "${APP_ROOT}/mylotto/deleteMyData.do",
+					// url: "${APP_ROOT}/mylotto/deleteMyData.do",
+					url: "${APP_ROOT}/mylotto/deleteMyDataNew.do",
 					data: param,
 					dataType: "json",
 					async: false,

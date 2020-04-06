@@ -29,7 +29,8 @@
 				*/
 				
 				jQuery("#jqgrid").jqGrid({
-					url: '${APP_ROOT}/sysmng/getExDataList.do',
+					// url: '${APP_ROOT}/sysmng/getExDataList.do',
+					url: '${APP_ROOT}/sysmng/getExDataNewList.do',
 					// postData: param,
 					datatype: 'json', //Data 형식   'json/xml/local'
 		        	jsonReader : {  // 이부분 추가 하셔야 json 쓰시기 편리 합니다.

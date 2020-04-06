@@ -36,6 +36,39 @@
 		</if>
 	</select>
 	
+	<!-- MY로또저장번호 NEW 목록 조회 -->
+	<select id="getSaveNumNewList" parameterType="java.util.Map" resultType="myLottoSaveNumDto">
+		/* mylotto.getSaveNumNewList */		
+		SELECT *
+		FROM
+		(
+			SELECT 
+				  ex_count
+				, user_no
+				, seq
+				, num1
+				, num2
+				, num3
+				, num4
+				, num5
+				, num6
+				, win_rslt
+				, email_send_yn
+				, sms_send_yn 
+				, cr_dt
+				, up_dt
+				, @rownum := @rownum+1 AS row_num
+			FROM TB_MY_SAVE_NUM_NEW, (SELECT @rownum :=0) AS R		
+			WHERE 1=1
+			AND ex_count = #{ex_count}
+			AND user_no = #{user_no}
+			ORDER BY seq
+		) AA
+		<if test='startNum!="" and endNum!=""'>
+		WHERE row_num BETWEEN #{startNum} AND #{endNum}
+		</if>
+	</select>
+	
 	<!-- MY로또저장번호 목록 건수 조회 -->
 	<select id="getSaveNumListCnt" parameterType="java.util.Map" resultType="int">		
 		/* mylotto.getSaveNumListCnt */
@@ -47,10 +80,32 @@
 		AND user_no = #{user_no}
 	</select>
 	
+	<!-- MY로또저장번호 NEW 목록 건수 조회 -->
+	<select id="getSaveNumNewListCnt" parameterType="java.util.Map" resultType="int">		
+		/* mylotto.getSaveNumNewListCnt */
+		SELECT 
+			  COUNT(*)
+		FROM TB_MY_SAVE_NUM_NEW
+		WHERE 1=1
+		AND ex_count = #{ex_count}
+		AND user_no = #{user_no}
+	</select>
+	
 	<!-- MY로또저장번호 삭제 -->
 	<delete id="deleteMyData" parameterType="myLottoSaveNumDto">		
 		/* mylotto.deleteMyData */
 		DELETE FROM TB_MY_SAVE_NUM
+		WHERE EX_COUNT = #{ex_count}
+		AND USER_NO = #{user_no}
+		<if test='seq != null and seq != 0'>
+		AND SEQ = #{seq}
+		</if>
+	</delete>
+	
+	<!-- MY로또저장번호 NEW 삭제 -->
+	<delete id="deleteMyDataNew" parameterType="myLottoSaveNumDto">
+		/* mylotto.deleteMyDataNew */
+		DELETE FROM TB_MY_SAVE_NUM_NEW
 		WHERE EX_COUNT = #{ex_count}
 		AND USER_NO = #{user_no}
 		<if test='seq != null and seq != 0'>
@@ -83,8 +138,8 @@
 	
 	<!-- MY로또저장번호 일반등록 New -->
 	<insert id="insertMyDataNew" parameterType="java.util.Map">
-		/* mylotto.insertMyData */
-		INSERT INTO TB_MY_SAVE_NUM (EX_COUNT,USER_NO,SEQ,NUM1,NUM2,NUM3,NUM4,NUM5,NUM6,WIN_RSLT,EMAIL_SEND_YN,SMS_SEND_YN,CR_DT,UP_DT)
+		/* mylotto.insertMyDataNew */
+		INSERT INTO TB_MY_SAVE_NUM_NEW (EX_COUNT,USER_NO,SEQ,NUM1,NUM2,NUM3,NUM4,NUM5,NUM6,WIN_RSLT,EMAIL_SEND_YN,SMS_SEND_YN,CR_DT,UP_DT)
 		VALUES 
 		<foreach collection="list" item="item" open="" separator="," close="">
 		(#{item.ex_count},#{item.user_no},
@@ -114,9 +169,20 @@
 		AND user_no = #{user_no}
 	</select>
 	
+	<!-- MY로또저장번호 등록 체크 -->
+	<select id="checkSaveMyDataNew" parameterType="myLottoSaveNumDto" resultType="int">		
+		/* mylotto.checkSaveMyDataNew */
+		SELECT 
+			  COUNT(*)
+		FROM TB_MY_SAVE_NUM_NEW
+		WHERE 1=1
+		AND ex_count = #{ex_count}
+		AND user_no = #{user_no}
+	</select>
+	
 	<!-- MY로또저장번호 NEW 조합 개수 조회 -->
-	<select id="getExptNumListCnt" parameterType="myLottoSaveNumDto" resultType="int">		
-		/* mylotto.getExptNumListCnt */
+	<select id="getExptNumNewListCnt" parameterType="myLottoSaveNumDto" resultType="int">		
+		/* mylotto.getExptNumNewListCnt */
 		SELECT 
 			COUNT(N.SEQ)
 		FROM TB_EXPT_NUM_NEW N
@@ -134,8 +200,8 @@
 	</select>
 	
 	<!-- MY로또저장번호 NEW 목록 조회 -->
-	<select id="getExptNumList" parameterType="myLottoSaveNumDto" resultType="exDataDto">
-		/* mylotto.getExptNumList */		
+	<select id="getExptNumNewList" parameterType="myLottoSaveNumDto" resultType="exDataDto">
+		/* mylotto.getExptNumNewList */		
 		SELECT 
 			  ex_count
 			, seq

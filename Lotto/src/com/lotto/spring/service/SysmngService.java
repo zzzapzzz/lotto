@@ -891,6 +891,27 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
+	 * 예상번호 NEW 목록 조회 (Dto)
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<ExDataDto> getExDataNewList(ExDataDto dto) {
+		return (ArrayList<ExDataDto>) baseDao.getList("sysmngMapper.getExDataNewList", dto);
+	}
+	
+	/**
+	 * 예상번호 NEW 목록 건수 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public int getExDataNewListCnt(ExDataDto dto) {
+		return (Integer) baseDao.getSingleRow("sysmngMapper.getExDataNewListCnt", dto);
+	}
+	
+	/**
 	 * 예상번호 목록 삭제
 	 * 
 	 * @param exCount 예상번호

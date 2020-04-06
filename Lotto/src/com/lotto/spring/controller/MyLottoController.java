@@ -253,6 +253,86 @@ public class MyLottoController extends DefaultSMController {
 			json.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");		
 		}
 		writeJSON(response, json); 
+	}
+	
+	/**
+	 * MY로또저장번호 NEW 목록 조회
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws SQLException
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@RequestMapping("/mylotto/saveNumNewList")
+	public void saveNumNewList(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		
+		String exCount       = WebUtil.replaceParam(request.getParameter("ex_count"), "");
+		
+		String page = WebUtil.replaceParam(request.getParameter("page"), "1");
+		String rows = WebUtil.replaceParam(request.getParameter("rows"), "100");
+		String sidx = WebUtil.replaceParam(request.getParameter("sidx"), "usr_id");
+		String sord = WebUtil.replaceParam(request.getParameter("sord"), "ASC");	
+		
+		JSONObject json = new JSONObject();
+		if (userInfo != null) {
+			// 로그인 아이디
+			int loginUserId = userInfo.getUser_no();
+			log.info("[" + loginUserId + "][C] MY로또저장번호 NEW 목록 조회");
+			
+			Map map = new HashMap();
+			map.put("ex_count", exCount);
+			map.put("user_no", userInfo.getUser_no());
+			map.put("startNum", Integer.toString(1+((Integer.parseInt(page)-1)*Integer.parseInt(rows))));
+			map.put("endNum", Integer.toString(Integer.parseInt(page)*Integer.parseInt(rows)));
+			map.put("sidx", sidx);
+			map.put("sord", sord);
+			
+			int myLottoSaveNumListCnt = myLottoService.getSaveNumNewListCnt(map);
+			ArrayList<MyLottoSaveNumDto> myLottoSaveNumList = new ArrayList<MyLottoSaveNumDto>();
+			
+			int total_pages = 0;
+			if( myLottoSaveNumListCnt > 0 ) {
+				total_pages = (int) Math.ceil((double)myLottoSaveNumListCnt/Double.parseDouble(rows));
+				myLottoSaveNumList = myLottoService.getSaveNumNewList(map);
+				
+				// 당첨번호가 있으면 결과비교 처리
+				WinDataDto param = new WinDataDto();
+				param.setWin_count(Integer.parseInt(exCount));
+				WinDataDto winData = sysmngService.getWinData(param);
+				if (winData != null) {
+					lottoDataService.getMyDataResult(myLottoSaveNumList, winData);
+					
+					// TODO 당첨결과가 존재하면 알림처리 (Email, SMS 등)
+					
+				}
+				
+			} else { 
+				total_pages = 0; 
+			}  
+			
+			//토탈 값 구하기 끝
+			// Content Page - File which will included in tiles definition
+			
+			
+//		JSONArray jsonArr = JSONArray.fromObject(userList);
+			
+			
+			json.put("cnt", myLottoSaveNumList.size());
+			json.put("total", total_pages);
+			json.put("page", page);
+			json.put("records", myLottoSaveNumListCnt);
+			json.put("rows", myLottoSaveNumList);		
+			json.put("status", "success");		
+		} else {
+			json.put("status", "usernotfound");
+			json.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");		
+		}
+		writeJSON(response, json); 
 	} 
 	
 	
@@ -1107,6 +1187,52 @@ public class MyLottoController extends DefaultSMController {
 	}
 	
 	/**
+	 * MY로또저장번호 NEW 삭제
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/mylotto/deleteMyDataNew")
+	public void deleteMyDataNew(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute MyLottoSaveNumDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] MY로또저장번호 NEW 삭제");
+			
+			int exCount = dto.getEx_count();
+			
+			String[] seqArr = dto.getSeqs().split(",");
+			
+			for (int i = 0; i < seqArr.length; i++) {
+				MyLottoSaveNumDto delDto = new MyLottoSaveNumDto();
+				delDto.setEx_count(exCount);
+				delDto.setUser_no(loginUserNo);
+				delDto.setSeq(Integer.parseInt(seqArr[i]));
+				boolean result = myLottoService.deleteMyDataNew(delDto);
+				log.info("[" + loginUserNo + "]\t" + seqArr[i] + "번째 저장번호가 삭제되었습니다.");
+			}
+			
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("msg", "삭제했습니다.");
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+	}
+	
+	/**
 	 * MY로또저장번호 등록 체크
 	 * 
 	 * @param modelMap
@@ -1150,6 +1276,49 @@ public class MyLottoController extends DefaultSMController {
 	}
 	
 	/**
+	 * MY로또저장번호 NEW 등록 체크
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/mylotto/autoAddNewCheck")
+	public void autoAddNewCheck(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute MyLottoSaveNumDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] MY로또저장번호 NEW 등록 체크");
+			
+			int saveCnt = 0; 	// 기본값 설정
+			
+			dto.setUser_no(loginUserNo);
+			saveCnt = myLottoService.checkSaveMyDataNew(dto);
+			
+			if (saveCnt > 0) {
+				jsonObj.put("status", "exist");
+				jsonObj.put("msg", "등록된 데이터를 삭제하고 자동등록 하시겠습니까?");
+			} else {
+				jsonObj.put("status", "notexist");
+				jsonObj.put("msg", "등록된 번호조합이 없습니다.");
+			}
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString());
+		writeJSON(response, jsonObj);
+		
+	}
+	
+	/**
 	 * MY로또저장번호 자동등록
 	 * 
 	 * @param modelMap
@@ -1184,7 +1353,6 @@ public class MyLottoController extends DefaultSMController {
 			}
 			
 			/* 
-			 * TODO 
 			 * 사용자의 랜덤 저장개수 확인
 			 * 확인된 숫자만큼 자동 저장 처리
 			 */
@@ -2183,7 +2351,7 @@ public class MyLottoController extends DefaultSMController {
 			
 			// 등록된 데이터 삭제
 			dto.setUser_no(loginUserNo);
-			myLottoService.deleteMyData(dto);
+			myLottoService.deleteMyDataNew(dto);
 						
 			// 등록된 매핑 데이터 삭제 for New
 			dto.setUser_no(loginUserNo);
@@ -2203,13 +2371,17 @@ public class MyLottoController extends DefaultSMController {
 			 * 모든 번호가 매핑될 경우 무시하고 매핑할 수 있도록 해야함.
 			 */
 			dto.setOnlyUnused("Y");	// // 미사용 조회 설정
-			int unusedNumCnt = myLottoService.getExptNumListCnt(dto);
+			int unusedNumCnt = myLottoService.getExptNumNewListCnt(dto);
+			log.info("[" + loginUserNo + "]\t미사용 조회 건수=" + unusedNumCnt);
+			
 			if (maxSaveCnt < unusedNumCnt) {
 				// 미사용조합이 예상번호보다 많은 경우 랜덤 추출
 				// 미사용조합 조회
-				List<ExDataDto> exDataList = myLottoService.getExptNumList(dto);
+				List<ExDataDto> exDataList = myLottoService.getExptNumNewList(dto);
+				log.info("[" + loginUserNo + "]\t1. 미사용조합 조회 후 랜덤 추출");
+				
 				int saveCnt = 0;
-				Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+				Map<Integer, Integer> map = new HashMap<Integer, Integer>();	// 중복 제거용
 				do {
 					int randomSeq = (int) (Math.random() * exDataList.size());
 					ExDataDto exDataDto = exDataList.get(randomSeq);
@@ -2220,32 +2392,46 @@ public class MyLottoController extends DefaultSMController {
 						map.put(exDataSeq, exDataSeq);
 						saveCnt++;
 					}					
-				} while (maxSaveCnt == saveCnt);
-				
+				} while (maxSaveCnt > saveCnt);
+				log.info("[" + loginUserNo + "]\t\t조합 건수=" + exList.size());
 				
 			} else if (maxSaveCnt == unusedNumCnt) {
 				// 같으면 전체 목록 설정
-				List<ExDataDto> exDataList = myLottoService.getExptNumList(dto);
+				List<ExDataDto> exDataList = myLottoService.getExptNumNewList(dto);
+				log.info("[" + loginUserNo + "]\t2. 미사용조합 조회 후 전체 등록");
+				
 				for (ExDataDto exDataDto : exDataList) {
 					exDataDto.setUser_no(loginUserNo);
 					exList.add(exDataDto);
 				}
+				log.info("[" + loginUserNo + "]\t\t조합 건수=" + exList.size());
+				
 			} else {
 				// 적으면 
+				Map<Integer, Integer> map = new HashMap<Integer, Integer>(); // 중복 제거용
+				
 				// 1. 미사용 목록 전체를 설정하고
-				List<ExDataDto> exDataList = myLottoService.getExptNumList(dto);
+				List<ExDataDto> exDataList = myLottoService.getExptNumNewList(dto);
+				log.info("[" + loginUserNo + "]\t3-1. 미사용조합 조회 후 전체 등록");
+				
 				for (ExDataDto exDataDto : exDataList) {
+					int exDataSeq = exDataDto.getSeq();
 					exDataDto.setUser_no(loginUserNo);
-					exList.add(exDataDto);
+					if (!map.containsKey(exDataSeq)) {
+						exList.add(exDataDto);
+					}
 				}
+				
+				log.info("[" + loginUserNo + "]\t\t" + exList.size() + " / " + maxSaveCnt + " 등록함.");
 				
 				// 2. 전체 매핑 목록에서 랜덤으로 남은 건수만큼 설정
 				// 전체 조합 조회
 				dto.setOnlyUnused("N");
-				List<ExDataDto> exDataAllList = myLottoService.getExptNumList(dto);
+				List<ExDataDto> exDataAllList = myLottoService.getExptNumNewList(dto);
+				log.info("[" + loginUserNo + "]\t3-2. 전체 조회 후 랜덤 추출");
+				
 				int checkCnt = maxSaveCnt - exList.size();
 				int saveCnt = 0;
-				Map<Integer, Integer> map = new HashMap<Integer, Integer>();
 				do {
 					int randomSeq = (int) (Math.random() * exDataAllList.size());
 					ExDataDto exDataDto = exDataAllList.get(randomSeq);
@@ -2256,14 +2442,16 @@ public class MyLottoController extends DefaultSMController {
 						map.put(exDataSeq, exDataSeq);
 						saveCnt++;
 					}					
-				} while (checkCnt == saveCnt);
+				} while (checkCnt > saveCnt);
+				log.info("[" + loginUserNo + "]\t\t조합 건수=" + exList.size());
+				
 			}
 
 			/*
 			 * 조회된 예상번호 SEQ 목록을 랜덤으로 저장할 수만큼 반복등록 처리
 			 * 다른 사용자와 중복되어도 상관없음. (MY로또 저장시간 기준)
 			 */
-			log.info("추출한 예상번호 목록 설정 처리");
+			log.info("\t추출한 예상번호 목록 설정 처리");
 			for (int i = 0; i < exList.size(); i++) {
 				ExDataDto exData = exList.get(i);
 				
@@ -2282,18 +2470,20 @@ public class MyLottoController extends DefaultSMController {
 						
 			if (saveList.size() > 0) {
 				// MY로또 등록
+				log.info("\tMY로또 등록");
 				Map paramMap = new HashMap();
 				paramMap.put("list", saveList);
 				myLottoService.insertMyDataNew(paramMap);
 				
 				// MY로또 매핑데이터 등록
+				log.info("\tMY로또 매핑데이터 등록");
 				Map paramMap2 = new HashMap();
 				paramMap2.put("list", exList);
 				myLottoService.insertMyNewMpngData(paramMap2);
 				
 				jsonObj.put("status", "success");
 				jsonObj.put("msg", saveList.size() + "조합이 등록되었습니다.");
-				log.info("추출한 예상번호 " + saveList.size() + "조합이 등록되었습니다.");
+				log.info("\t추출한 예상번호 " + saveList.size() + "조합이 등록되었습니다.");
 			} else {
 				jsonObj.put("status", "fail");
 				jsonObj.put("msg", "자동저장할 알맞는 번호조합이 없습니다.");

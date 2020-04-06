@@ -682,6 +682,62 @@
 		AND EX_COUNT = #{ex_count}
 	</select>
 	
+	<!-- 예상번호 NEW 목록 조회 -->
+	<select id="getExDataNewList" parameterType="exDataDto" resultType="exDataDto">
+		/* sysmng.getExDataNewList */
+		SELECT *
+		FROM
+		(
+			SELECT 
+				  EX_COUNT
+				, NUM1
+				, NUM2
+				, NUM3
+				, NUM4
+				, NUM5
+				, NUM6
+				, TOTAL
+				, SUM_END_NUM
+				, LOW_HIGH
+				, ODD_EVEN
+				, AC
+				, PTRN_MATCH_CNT
+				, @rownum := @rownum+1 AS row_num
+			FROM TB_EXPT_NUM_NEW, (SELECT @rownum :=0) AS R		
+			WHERE 1=1
+			AND EX_COUNT = #{ex_count}
+			ORDER BY 
+			<choose>
+    			<when test='sidx!=null and sidx != ""'>
+    				${sidx} 
+			    </when>
+			    <otherwise>
+			    	SEQ 
+			    </otherwise>
+  			</choose>
+			<choose>
+    			<when test='sord != null and sord != ""'>
+    				${sord} 
+			    </when>
+			    <otherwise>
+			    	ASC 
+			    </otherwise>
+  			</choose>
+		) AA
+		<if test='startNum!="" and endNum!=""'>
+		WHERE row_num BETWEEN #{startNum} AND #{endNum}
+		</if>
+	</select>
+	
+	<!-- 예상번호 NEW 목록 건수 조회 -->
+	<select id="getExDataNewListCnt" parameterType="exDataDto" resultType="Integer">
+		/* sysmng.getExDataNewListCnt */
+		SELECT COUNT(*)				
+		FROM TB_EXPT_NUM_NEW
+		WHERE 1=1
+		AND EX_COUNT = #{ex_count}
+	</select>
+	
 	<!-- 예상번호 목록 등록 -->
 	<insert id="insertExptNumList" parameterType="Map">
 		/* sysmng.insertExptNumList */

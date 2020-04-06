@@ -26,6 +26,16 @@ public class MyLottoService extends DefaultService {
 	}
 	
 	/**
+	 * MY로또저장번호 New 목록 조회
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public ArrayList<MyLottoSaveNumDto> getSaveNumNewList(Map map) {
+		return (ArrayList<MyLottoSaveNumDto>) baseDao.getList("myLottoMapper.getSaveNumNewList", map);
+	}
+	
+	/**
 	 * MY로또저장번호 목록 개수 조회
 	 * 
 	 * @param map
@@ -34,6 +44,17 @@ public class MyLottoService extends DefaultService {
 	@SuppressWarnings("rawtypes")
 	public int getSaveNumListCnt(Map map) {
 		return (Integer) baseDao.getSingleRow("myLottoMapper.getSaveNumListCnt", map);
+	}
+	
+	/**
+	 * MY로또저장번호 목록 개수 조회
+	 * 
+	 * @param map
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public int getSaveNumNewListCnt(Map map) {
+		return (Integer) baseDao.getSingleRow("myLottoMapper.getSaveNumNewListCnt", map);
 	}
 
 	/**
@@ -94,6 +115,21 @@ public class MyLottoService extends DefaultService {
 	}
 	
 	/**
+	 * MY로또저장번호 NEW 삭제
+	 * @param dto
+	 * @return
+	 */
+	public boolean deleteMyDataNew(MyLottoSaveNumDto dto) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.delete("myLottoMapper.deleteMyDataNew", dto);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+		flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
 	 * 등록된 매핑 데이터 삭제 for New
 	 * @param dto
 	 * @return
@@ -119,14 +155,24 @@ public class MyLottoService extends DefaultService {
 	}
 	
 	/**
+	 * MY로또저장번호 NEW 등록체크
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public int checkSaveMyDataNew(MyLottoSaveNumDto dto) {
+		return (Integer) baseDao.getSingleRow("myLottoMapper.checkSaveMyDataNew", dto);
+	}
+	
+	/**
 	 * MY로또저장번호 NEW 미사용 조합 개수 조회
 	 * 
 	 * @param map
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public int getExptNumListCnt(MyLottoSaveNumDto dto) {
-		return (Integer) baseDao.getSingleRow("myLottoMapper.getExptNumListCnt", dto);
+	public int getExptNumNewListCnt(MyLottoSaveNumDto dto) {
+		return (Integer) baseDao.getSingleRow("myLottoMapper.getExptNumNewListCnt", dto);
 	}
 	
 	/**
@@ -135,7 +181,7 @@ public class MyLottoService extends DefaultService {
 	 * @param map
 	 * @return
 	 */
-	public ArrayList<ExDataDto> getExptNumList(MyLottoSaveNumDto dto) {
-		return (ArrayList<ExDataDto>) baseDao.getList("myLottoMapper.getExptNumList", dto);
+	public ArrayList<ExDataDto> getExptNumNewList(MyLottoSaveNumDto dto) {
+		return (ArrayList<ExDataDto>) baseDao.getList("myLottoMapper.getExptNumNewList", dto);
 	}
 }
