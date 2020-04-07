@@ -4329,7 +4329,10 @@ public class LottoDataService extends DefaultService {
 			return false;
 		}
 		
-		// 12. 색상별 제외 범위(1~2, 5색상) 포함 확인
+		/*
+		 * 12. 색상별 제외 범위(1~2, 5색상) 포함 확인
+		 *     보통 1구간 멸한다. (모든구간 포함 제외)
+		 */
 		result = this.checkExcludeColorCount(exData);
 		if(result) {
 			String comments = "색상별 제외 범위(1~2, 5색상) 포함 제외";
@@ -4483,7 +4486,6 @@ public class LottoDataService extends DefaultService {
 			sysmngService.insertExptNumNewVari(exData, comments);
 			return false;
 		}
-		
 		
 		return true;
 	}
@@ -11076,5 +11078,123 @@ public class LottoDataService extends DefaultService {
 		}
 		
 		return excludeNumbers;
+	}
+
+	/**
+	 * 자동번호 추출 시 추가 필터체크
+	 * 2020.04.08
+	 * 
+	 * @param exDataDto
+	 * @param winDataList
+	 * @return true : 통과, false : 조합제외
+	 */
+	public boolean checkAddFilter(ExDataDto exData, List<WinDataAnlyDto> winDataList) {
+		boolean check = true;
+		
+		boolean result = false;
+		
+		// 29. 소수 0개, 4개 이상 포함 제외
+		// https://namu.wiki/w/소수(수론)
+		result = this.checkPrimeNumberCount(exData);
+		if(result) {
+			String comments = "추가 필터 : 소수 0개, 4개 이상 포함 제외";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumNewVari(exData, comments);
+			
+			return false;
+		}
+		
+		// 30. 동일끝수 2개이상 미포함 제외
+		result = this.checkSameEndNumberCount(exData);
+		if(!result) {
+			String comments = "추가 필터 : 동일끝수 2개이상 미포함 제외";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumNewVari(exData, comments);
+			
+			return false;
+		}
+		
+		return check;
+	}
+	
+	/**
+	 * 동일끝수 2개이상 미포함 제외
+	 * 2020.04.08
+	 * 
+	 * @param exData
+	 * @return true: 통과, false: 제외 
+	 */
+	private boolean checkSameEndNumberCount(ExDataDto exData) {
+		boolean check = false;
+		
+		// 예상회차 조합번호
+		int[] numbers = LottoUtil.getNumbers(exData);
+		
+		// 끝수 , 끝수 개수
+		Map<Integer, Integer> checkMap = new HashMap<Integer, Integer>();
+		List<Integer> checkList = new ArrayList<Integer>();
+		
+		for (int i = 0; i < numbers.length; i++) {
+			int endNumber = numbers[i] % 10;
+			if (checkMap.containsKey(endNumber)) {
+				int count = checkMap.get(endNumber);
+				checkMap.put(endNumber, ++count);
+			} else {
+				checkMap.put(endNumber, 1);
+				checkList.add(endNumber);
+			}
+		}
+		
+		// 체크
+		for (int i = 0; i < checkList.size(); i++) {
+			int checkNumber = checkList.get(i);
+			int checkCnt = checkMap.get(checkNumber);
+			
+			// 2개이상 존재하면 통과
+			if (checkCnt >= 2) {
+				check = true;
+				break;
+			}
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 소수 0개, 4개 이상 포함 제외
+	 * 2020.04.08
+	 * 
+	 * @param exData
+	 * @return true: 제외, false: 통과
+	 */
+	private boolean checkPrimeNumberCount(ExDataDto exData) {
+		boolean check = false;
+
+		int checkCnt = 0;
+		// 예상회차 조합번호
+		int[] numbers = LottoUtil.getNumbers(exData);
+		
+		int[] primeNumbers = {2,3,5,7,11,13,17,19,23,29,31,37,41,43};
+		Map<Integer, Integer> checkMap = new HashMap<Integer, Integer>();
+		for (int i = 0; i < primeNumbers.length; i++) {
+			checkMap.put(primeNumbers[i], primeNumbers[i]);
+		}
+		
+		for (int i = 0; i < numbers.length; i++) {
+			if (checkMap.containsKey(numbers[i])) {
+				checkCnt++;
+			}
+		}
+		
+		if (checkCnt == 0 || checkCnt >= 4) {
+			check = true;
+		}
+		
+		
+		return check;
 	}
 }
