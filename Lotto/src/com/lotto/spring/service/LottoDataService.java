@@ -6728,7 +6728,7 @@ public class LottoDataService extends DefaultService {
 	 * 
 	 * @param sourceNumbers
 	 * @param range 특정구간 <br>0: 1~9<br>1: 10~19<br>2: 20~29<br>3: 30~39<br>4: 40~45
-	 * @return
+	 * @return true:존재함, false: 존재하지않음
 	 */
 	public boolean checkRange3Numbers(int[] sourceNumbers, int range) { 
 		// 체크
@@ -11081,7 +11081,7 @@ public class LottoDataService extends DefaultService {
 	}
 
 	/**
-	 * 자동번호 추출 시 추가 필터체크
+	 * 자동번호 추출 시 추가 필터체크 (Reference 닥터존)
 	 * 2020.04.08
 	 * 
 	 * @param exDataDto
@@ -11118,9 +11118,271 @@ public class LottoDataService extends DefaultService {
 			return false;
 		}
 		
+		// 31. 당첨번호의 이웃수(+-1) 1개이상 미포함 제외
+		result = this.checkNeighborhoodNumberCount(exData, winDataList);
+		if(result) {
+			String comments = "추가 필터 : 당첨번호의 이웃수(+-1) 1개이상 미포함 제외";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumNewVari(exData, comments);
+			
+			return false;
+		}
+		
+		// 32. 마지막 끝수 35이상 미포함 제외
+		result = this.check6thNumber(exData);
+		if(result) {
+			String comments = "추가 필터 : 마지막 끝수 35이상 미포함 제외";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumNewVari(exData, comments);
+			
+			return false;
+		}
+		
+		// 33. 3의배수 적어도 1개 이상 미포함 제외
+		result = this.checkMultiplesOf3Number(exData);
+		if(result) {
+			String comments = "추가 필터 : 3의배수 적어도 1개 이상 미포함 제외";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumNewVari(exData, comments);
+			
+			return false;
+		}
+		
+		// 34. 모든구간 포함 제외
+		result = this.checkAllRange(exData);
+		if(result) {
+			String comments = "추가 필터 : 모든구간 포함 제외";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumNewVari(exData, comments);
+			
+			return false;
+		}
+		
+		// 35. 번호대 3개 이상 포함 제외
+		for (int i = 0; i < 5; i++) {
+			result = this.checkRange3Numbers(exData, i);
+			if(result) {
+				String msg = "번호대";
+				if (i == 0) {
+					msg = "단번대";
+				} else {
+					msg = i + "0번대";
+				}
+				String comments = "추가 필터 : " + msg + " 3개 이상 포함 제외";
+				log.info(comments);
+				
+				// TODO 실제 반영시에는 제거할 것
+				sysmngService.insertExptNumNewVari(exData, comments);
+				
+				return false;
+			}	
+		}
+		
+		// 36. 10번대 미포함 제외
+		result = this.checkRange10To19(exData);
+		if(result) {
+			String comments = "추가 필터 : 10번대 미포함 제외";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumNewVari(exData, comments);
+			
+			return false;
+		}
+		
 		return check;
 	}
 	
+	/**
+	 * 10번대 미포함 제외
+	 * 2020.04.10
+	 * 
+	 * @param exData
+	 * @return true:미포함, false:포함
+	 */
+	private boolean checkRange10To19(ExDataDto exData) {
+		boolean check = false;
+
+		int checkCnt = 0;
+		// 예상회차 조합번호
+		int[] numbers = LottoUtil.getNumbers(exData);
+		
+		// 10번대 설정
+		Map<Integer, Integer> checkMap = new HashMap<Integer, Integer>();
+		for (int i = 10; i <= 19; i++) {
+			checkMap.put(i, 1);
+		}
+		
+		// 1개이상 존재여부 확인
+		for (int i = 0; i < numbers.length; i++) {
+			int number = numbers[i];
+			if (checkMap.containsKey(number)) {
+				checkCnt++;
+			}
+		}
+		
+		if (checkCnt == 0) {
+			check = true;
+		}
+				
+		return check;
+	}
+
+	/**
+	 * 번호대 3개 이상 포함 제외
+	 * 2020.04.10
+	 * 
+	 * @param exData
+	 * @param range 특정구간 <br>0: 1~9<br>1: 10~19<br>2: 20~29<br>3: 30~39<br>4: 40~45
+	 * @return true: 포함, false: 미포함
+	 */
+	private boolean checkRange3Numbers(ExDataDto exData, int range) {
+		// 예상회차 조합번호
+		int[] numbers = LottoUtil.getNumbers(exData);
+		
+		return this.checkRange3Numbers(numbers, range);
+	}
+
+	/**
+	 * 모든구간 포함 제외
+	 * 2020.04.10
+	 * 
+	 * @param exData
+	 * @return true: 포함, false: 미포함
+	 */
+	private boolean checkAllRange(ExDataDto exData) {
+		boolean check = false;
+		
+		int[] containGroupCnt = LottoUtil.getArrayFromColor(exData);
+		
+		int checkCnt = 0;
+		for (int i = 0; i < containGroupCnt.length; i++) {
+			if (containGroupCnt[i] > 0) {
+				checkCnt++;
+			}
+		}
+		
+		if (checkCnt == 5) {
+			check = true;
+		}
+		
+		return check;
+	}
+	
+	/**
+	 * 3의배수 적어도 1개 이상 미포함 제외
+	 * 2020.04.10
+	 * 
+	 * @param exData
+	 * @return true: 미포함, false: 포함
+	 */
+	private boolean checkMultiplesOf3Number(ExDataDto exData) {
+		boolean check = false;
+		
+		int checkCnt = 0;
+		// 예상회차 조합번호
+		int[] numbers = LottoUtil.getNumbers(exData);
+		
+		// 3의 배수 설정
+		Map<Integer, Integer> checkMap = new HashMap<Integer, Integer>();
+		for (int i = 1; i <= 45; i++) {
+			if (i % 3 == 0) {
+				checkMap.put(i, 1);
+			}
+		}
+		
+		// 1개이상 존재여부 확인
+		for (int i = 0; i < numbers.length; i++) {
+			int number = numbers[i];
+			if (checkMap.containsKey(number)) {
+				checkCnt++;
+			}
+		}
+		
+		if (checkCnt == 0) {
+			check = true;
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 마지막 끝수 35이상 미포함 제외
+	 * 예상번호 추출 시 31이상 숫자로 설정했으나, 당첨번호 추출 시 한번 더 체크함.
+	 * 2020.04.10
+	 * 
+	 * @param exData
+	 * @return true: 미포함, false: 포함
+	 */
+	private boolean check6thNumber(ExDataDto exData) {
+		boolean check = false;
+		
+		// 예상회차 조합번호
+		int[] numbers = LottoUtil.getNumbers(exData);
+		int num6 = numbers[5];
+		
+		if (num6 < 35) {
+			check = true;
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 당첨번호의 이웃수(+-1) 1개이상 미포함 제외
+	 * 2020.04.10
+	 * 
+	 * @param exData
+	 * @param winDataList 
+	 * @return true: 미포함, false: 포함
+	 */
+	private boolean checkNeighborhoodNumberCount(ExDataDto exData, List<WinDataAnlyDto> winDataList) {
+		boolean check = false;
+		
+		int checkCnt = 0;
+		// 예상회차 조합번호
+		int[] numbers = LottoUtil.getNumbers(exData);
+				
+		// 최근당첨번호의 이웃수(+-) 설정
+		WinDataAnlyDto lastWinData = winDataList.get(winDataList.size()-1);
+		int[] lastWinDataNumbers = LottoUtil.getNumbers(lastWinData);
+		Map<Integer, Integer> checkMap = new HashMap<Integer, Integer>();
+		for (int i = 0; i < lastWinDataNumbers.length; i++) {
+			int number = lastWinDataNumbers[i];
+			// 1큰수 설정
+			if (!checkMap.containsKey(number+1)) {
+				checkMap.put(number+1, 1);
+			}
+			
+			// 1작은수 설정
+			if (!checkMap.containsKey(number-1)) {
+				checkMap.put(number-1, 1);
+			}
+		}
+		
+		// 1개이상 존재여부 확인
+		for (int i = 0; i < numbers.length; i++) {
+			int number = numbers[i];
+			if (checkMap.containsKey(number)) {
+				checkCnt++;
+			}
+		}
+		
+		if (checkCnt == 0) {
+			check = true;
+		}
+		
+		return check;
+	}
+
 	/**
 	 * 동일끝수 2개이상 미포함 제외
 	 * 2020.04.08
