@@ -11096,80 +11096,80 @@ public class LottoDataService extends DefaultService {
 		// 29. 소수 0개, 4개 이상 포함 제외
 		// https://namu.wiki/w/소수(수론)
 		result = this.checkPrimeNumberCount(exData);
-		if(result) {
+		if (result) {
 			String comments = "추가 필터 : 소수 0개, 4개 이상 포함 제외";
 			log.info(comments);
-			
+
 			// TODO 실제 반영시에는 제거할 것
 			sysmngService.insertExptNumNewVari(exData, comments);
-			
+
 			return false;
 		}
-		
+
 		// 30. 동일끝수 2개이상 미포함 제외
 		result = this.checkSameEndNumberCount(exData);
-		if(!result) {
+		if (!result) {
 			String comments = "추가 필터 : 동일끝수 2개이상 미포함 제외";
 			log.info(comments);
-			
+
 			// TODO 실제 반영시에는 제거할 것
 			sysmngService.insertExptNumNewVari(exData, comments);
-			
+
 			return false;
 		}
-		
+
 		// 31. 당첨번호의 이웃수(+-1) 1개이상 미포함 제외
 		result = this.checkNeighborhoodNumberCount(exData, winDataList);
-		if(result) {
+		if (result) {
 			String comments = "추가 필터 : 당첨번호의 이웃수(+-1) 1개이상 미포함 제외";
 			log.info(comments);
-			
+
 			// TODO 실제 반영시에는 제거할 것
 			sysmngService.insertExptNumNewVari(exData, comments);
-			
+
 			return false;
 		}
-		
+
 		// 32. 마지막 끝수 35이상 미포함 제외
 		result = this.check6thNumber(exData);
-		if(result) {
+		if (result) {
 			String comments = "추가 필터 : 마지막 끝수 35이상 미포함 제외";
 			log.info(comments);
-			
+
 			// TODO 실제 반영시에는 제거할 것
 			sysmngService.insertExptNumNewVari(exData, comments);
-			
+
 			return false;
 		}
-		
+
 		// 33. 3의배수 적어도 1개 이상 미포함 제외
 		result = this.checkMultiplesOf3Number(exData);
-		if(result) {
+		if (result) {
 			String comments = "추가 필터 : 3의배수 적어도 1개 이상 미포함 제외";
 			log.info(comments);
-			
+
 			// TODO 실제 반영시에는 제거할 것
 			sysmngService.insertExptNumNewVari(exData, comments);
-			
+
 			return false;
 		}
-		
+
 		// 34. 모든구간 포함 제외
 		result = this.checkAllRange(exData);
-		if(result) {
+		if (result) {
 			String comments = "추가 필터 : 모든구간 포함 제외";
 			log.info(comments);
-			
+
 			// TODO 실제 반영시에는 제거할 것
 			sysmngService.insertExptNumNewVari(exData, comments);
-			
+
 			return false;
 		}
 		
 		// 35. 번호대 3개 이상 포함 제외
 		for (int i = 0; i < 5; i++) {
 			result = this.checkRange3Numbers(exData, i);
-			if(result) {
+			if (result) {
 				String msg = "번호대";
 				if (i == 0) {
 					msg = "단번대";
@@ -11178,18 +11178,54 @@ public class LottoDataService extends DefaultService {
 				}
 				String comments = "추가 필터 : " + msg + " 3개 이상 포함 제외";
 				log.info(comments);
-				
+
 				// TODO 실제 반영시에는 제거할 것
 				sysmngService.insertExptNumNewVari(exData, comments);
-				
+
 				return false;
-			}	
+			}
 		}
-		
+
 		// 36. 10번대 미포함 제외
 		result = this.checkRange10To19(exData);
-		if(result) {
+		if (result) {
 			String comments = "추가 필터 : 10번대 미포함 제외";
+			log.info(comments);
+
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumNewVari(exData, comments);
+
+			return false;
+		}
+		
+		// 37. 장기미출수 1개 이상 미포함 제외
+		result = this.checkNotContain10Numbers(exData, winDataList);
+		if (!result) {
+			String comments = "추가 필터 : 장기미출수 1개 이상 미포함 제외";
+			log.info(comments);
+
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumNewVari(exData, comments);
+
+			return false;
+		}
+		
+		// 38. 세로줄 3개 또는 가로줄 3개이상 포함 제외 (로또용지기준)
+		result = this.check3NumbersInLine(exData);
+		if (result) {
+			String comments = "추가 필터 : 세로줄 3개 또는 가로줄 3개이상 포함 제외";
+			log.info(comments);
+
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumNewVari(exData, comments);
+
+			return false;
+		}
+		
+		// 39. 이월수 2개이상 제외
+		result = this.checkLastWinNumber(exData, winDataList);
+		if (result) {
+			String comments = "추가 필터 : 이월수 2개이상 제외";
 			log.info(comments);
 			
 			// TODO 실제 반영시에는 제거할 것
@@ -11197,10 +11233,134 @@ public class LottoDataService extends DefaultService {
 			
 			return false;
 		}
-		
+				
 		return check;
 	}
 	
+	/**
+	 * 이월수 2개이상 제외
+	 * 2020.04.11
+	 * 
+	 * @param exData
+	 * @param winDataList
+	 * @return true:포함, false:미포함
+	 */
+	private boolean checkLastWinNumber(ExDataDto exData, List<WinDataAnlyDto> winDataList) {
+		boolean check = false;
+		
+		int checkCnt = 0;
+		// 예상회차 조합번호
+		int[] numbers = LottoUtil.getNumbers(exData);
+		
+		// 최근회차 조합번호
+		Map<Integer, Integer> checkMap = new HashMap<Integer, Integer>();
+		int[] lastWinNumbers = LottoUtil.getNumbers(winDataList.get(winDataList.size()-1));
+		for (int i = 0; i < lastWinNumbers.length; i++) {
+			checkMap.put(lastWinNumbers[i],1);
+		}
+		
+		for (int i = 0; i < numbers.length; i++) {
+			if (checkMap.containsKey(numbers[i])) {
+				checkCnt++;
+			}
+		}
+		
+		if (checkCnt >= 2) {
+			check = true;
+		}
+		
+		return check;
+	}
+
+	/**
+	 * 세로줄 3개 또는 가로줄 3개이상 포함 제외 (로또용지기준)
+	 * 2020.04.11
+	 * 
+	 * @param exData
+	 * true:포함, false:미포함
+	 */
+	private boolean check3NumbersInLine(ExDataDto exData) {
+		boolean check = false;
+
+		int[][] arrNumbers = LottoUtil.getArrayLikePaper(exData);
+		
+		// 가로줄 체크
+		for (int row = 0; row < arrNumbers.length; row++) {
+			int checkRowCnt = 0;
+			for (int col = 0; col < arrNumbers[row].length; col++) {
+				if (arrNumbers[row][col] > 0) {
+					// 체크할 row count를 1로 설정
+					checkRowCnt++;
+				}
+			}
+			if (checkRowCnt >= 3) {
+				return true;
+			}
+		}
+		
+		// 세로줄 체크
+		for (int col = 0; col < arrNumbers[0].length; col++) {
+			int checkColCnt = 0;
+			for (int row = 0; row < arrNumbers.length; row++) {
+				if (arrNumbers[row][col] > 0) {
+					// 체크할 row count를 1로 설정
+					checkColCnt++;
+				}
+			}
+			if (checkColCnt >= 3) {
+				return true;
+			}
+		}
+
+		return check;
+	}
+
+	/**
+	 * 장기미출수 1개 이상 미포함 제외
+	 * : 최근 10회차 이내 출현숫자가 아닌 숫자들이 포함되어 있는지 확인	 * 
+	 * 2020.04.11
+	 * 
+	 * @param exData
+	 * @param winDataList 
+	 * @return true:포함, false:미포함
+	 */
+	private boolean checkNotContain10Numbers(ExDataDto exData, List<WinDataAnlyDto> winDataList) {
+		boolean check = false;
+		
+		int checkCnt = 0;
+		// 예상회차 조합번호
+		int[] numbers = LottoUtil.getNumbers(exData);
+		
+		Map<Integer, Integer> checkContainNumbersMap = new HashMap<Integer, Integer>();
+		Map<Integer, Integer> checkNotContainNumbersMap = new HashMap<Integer, Integer>();
+		
+		// 최근 10회차 이내 출현숫자 확인
+		for (int i = winDataList.size() - 1 - 10; i < winDataList.size(); i++) {
+			int[] winNumbers = LottoUtil.getNumbers(winDataList.get(i));
+			for (int j = 0; j < winNumbers.length; j++) {
+				if (!checkContainNumbersMap.containsKey(winNumbers[j])) {
+					checkContainNumbersMap.put(winNumbers[j],1);
+				}
+			}
+		}
+		
+		// 10회 초과 미출수 설정
+		for (int i = 1; i <= 45; i++) {
+			if (!checkContainNumbersMap.containsKey(i)) {
+				checkNotContainNumbersMap.put(i,1);
+			}
+		}
+		
+		// 미출수 포함 체크
+		for (int i = 0; i < numbers.length; i++) {
+			if (checkNotContainNumbersMap.containsKey(i)) {
+				return true;
+			}
+		}
+		
+		return check;
+	}
+
 	/**
 	 * 10번대 미포함 제외
 	 * 2020.04.10

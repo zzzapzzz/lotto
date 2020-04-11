@@ -2377,17 +2377,18 @@ public class MyLottoController extends DefaultSMController {
 			 * NEW조합을 사용자가 중복해서 사용하지 않도록 하기 위함.
 			 * 모든 번호가 매핑될 경우 무시하고 매핑할 수 있도록 해야함.
 			 */
-			dto.setOnlyUnused("Y");	// // 미사용 조회 설정
-			int unusedNumCnt = myLottoService.getExptNumNewListCnt(dto);
-			log.info("[" + loginUserNo + "]\t미사용 조회 건수=" + unusedNumCnt);
-			
 			
 			// 번호 저장 시 추가 필터를 통해 실행회수 개념을 추가함. 2020.04.08
 			// 실행회수
 			int excuteCnt = 0;
+			// 랜덤조회 실행기준 회수
+			int START_RANDOM_BASE_COUNT = 100;
 			// 실행 제한 횟수
 			int limitCnt = 500000;
-			boolean isLimit = false;
+			// 저장건수
+			int saveCnt = 0;
+			// 중복확인 Map
+			Map<Integer, Integer> map = new HashMap<Integer, Integer>();
 			
 			// 당첨번호 전체 목록 조회
 			WinDataDto winDataDto = new WinDataDto();
@@ -2396,190 +2397,130 @@ public class MyLottoController extends DefaultSMController {
 			
 			
 			
-			if (maxSaveCnt < unusedNumCnt) {
-				// 미사용조합이 예상번호보다 많은 경우 랜덤 추출
-				// 미사용조합 조회
-				List<ExDataDto> exDataList = myLottoService.getExptNumNewList(dto);
-				log.info("[" + loginUserNo + "]\t1. 미사용조합 조회 후 랜덤 추출");
+			// 미사용조합이 예상번호보다 많은 경우 랜덤 추출
+			// 미사용조합 조회
+			log.info("[" + loginUserNo + "]\t1. 미사용조합 조회 후 랜덤조합 추출");
+			dto.setOnlyUnused("Y");
+			List<ExDataDto> exDataList = myLottoService.getExptNumNewList(dto);
+			if (exDataList != null) {
+				log.info("[" + loginUserNo + "]\t\t> 미사용 조회 건수=" + exDataList.size());
 				
-				int saveCnt = 0;
-				Map<Integer, Integer> map = new HashMap<Integer, Integer>();	// 중복 제거용
-				do {
-					int randomSeq = (int) (Math.random() * exDataList.size());
-					ExDataDto exDataDto = exDataList.get(randomSeq);
-					
-					// 추가 필터 체크
-					boolean check = lottoDataService.checkAddFilter(exDataDto, winDataList);
-					
-					int exDataSeq = exDataDto.getSeq();
-//					if (!map.containsKey(exDataSeq)) {
-					if (!map.containsKey(exDataSeq) && check) {
-						exDataDto.setUser_no(loginUserNo);
-						exList.add(exDataDto);
-						map.put(exDataSeq, exDataSeq);
-						saveCnt++;
-					}
-					
-					excuteCnt++;
-					if (excuteCnt == limitCnt) {
-						isLimit = true;
-						break;
-					}
-					
-				} while (maxSaveCnt > saveCnt);
-				
-				log.info("[" + loginUserNo + "]\t\t1. 조합 건수=" + exList.size());
-				
-				// 실행제한으로 종료되면 전체를 대상으로 추가조회 2020.04.08
-				if (isLimit) {
-					excuteCnt = 0;
-					
-					// 전체 조합 조회
-					dto.setOnlyUnused("N");
-					List<ExDataDto> exDataAllList = myLottoService.getExptNumNewList(dto);
-					log.info("[" + loginUserNo + "]\t1-2. 전체 조회 후 랜덤 추출");
-					
-					int checkCnt = maxSaveCnt - saveCnt;
+				// 조회건수가 랜덤조회 실행기준 회수보다 크다면 랜덤조합 실행
+				if (exDataList.size() > START_RANDOM_BASE_COUNT) {
+					// 랜덤 조회
 					do {
-						int randomSeq = (int) (Math.random() * exDataAllList.size());
-						ExDataDto exDataDto = exDataAllList.get(randomSeq);
+						int randomSeq = (int) (Math.random() * exDataList.size());
+						ExDataDto exDataDto = exDataList.get(randomSeq);
+						int exDataSeq = exDataDto.getSeq();
 						
-						// 추가 필터 체크
-						boolean check = lottoDataService.checkAddFilter(exDataDto, winDataList);
-						
-						int exDataSeq = exDataDto.getSeq();					
-						if (!map.containsKey(exDataSeq) && check) {
-							exDataDto.setUser_no(loginUserNo);
-							exList.add(exDataDto);
+						if (!map.containsKey(exDataSeq)) {
 							map.put(exDataSeq, exDataSeq);
-							saveCnt++;
+							
+							// 추가 필터 체크
+							boolean check = lottoDataService.checkAddFilter(exDataDto, winDataList);
+							if (check) {
+								exDataDto.setUser_no(loginUserNo);
+								exList.add(exDataDto);
+								saveCnt++;
+							}
 						}
 						
 						excuteCnt++;
 						if (excuteCnt == limitCnt) {
-							isLimit = true;
 							break;
 						}
 						
-					} while (checkCnt > saveCnt);
-					log.info("[" + loginUserNo + "]\t\t1-2 조합 건수=" + exList.size());
-				}
-				
-				
-			} else if (maxSaveCnt == unusedNumCnt) {
-				// 같으면 전체 목록 설정
-				List<ExDataDto> exDataList = myLottoService.getExptNumNewList(dto);
-				log.info("[" + loginUserNo + "]\t2. 미사용조합 조회 후 전체 등록");
-				
-				int saveCnt = 0;
-				Map<Integer, Integer> map = new HashMap<Integer, Integer>();	// 중복 제거용
-				
-				for (ExDataDto exDataDto : exDataList) {
-					exDataDto.setUser_no(loginUserNo);
+					} while (maxSaveCnt > saveCnt);
 					
-					// 추가 필터 체크
-					boolean check = lottoDataService.checkAddFilter(exDataDto, winDataList);
-					if (check) {
+					log.info("[" + loginUserNo + "]\t\t> 랜덤조합 건수=" + exList.size());
+				} else {
+					log.info("[" + loginUserNo + "]\t\t> 순차조합 전환");
+					
+					for (ExDataDto exDataDto : exDataList) {
 						int exDataSeq = exDataDto.getSeq();					
 						map.put(exDataSeq, exDataSeq);
 						
-						exList.add(exDataDto);
-						saveCnt++;
-					}
-				}
-				log.info("[" + loginUserNo + "]\t\t2. 조합 건수=" + exList.size());
-				
-				// 필터제한으로 조합수에 못 미치면 전체를 대상으로 추가조회 2020.04.08
-				if (maxSaveCnt > saveCnt) {
-					// 전체 조합 조회
-					dto.setOnlyUnused("N");
-					List<ExDataDto> exDataAllList = myLottoService.getExptNumNewList(dto);
-					log.info("[" + loginUserNo + "]\t2-2. 전체 조회 후 랜덤 추출");
-					
-					int checkCnt = maxSaveCnt - saveCnt;
-					do {
-						int randomSeq = (int) (Math.random() * exDataAllList.size());
-						ExDataDto exDataDto = exDataAllList.get(randomSeq);
-						
 						// 추가 필터 체크
 						boolean check = lottoDataService.checkAddFilter(exDataDto, winDataList);
-						
-						int exDataSeq = exDataDto.getSeq();					
-//						if (!map.containsKey(exDataSeq)) {
-						if (!map.containsKey(exDataSeq) && check) {
+						if (check) {
 							exDataDto.setUser_no(loginUserNo);
 							exList.add(exDataDto);
-							map.put(exDataSeq, exDataSeq);
 							saveCnt++;
 						}
-						
-						excuteCnt++;
-						if (excuteCnt == limitCnt) {
-							isLimit = true;
-							break;
-						}
-						
-					} while (checkCnt > saveCnt);
-					log.info("[" + loginUserNo + "]\t\t2-2 조합 건수=" + exList.size());
+					}
+					log.info("[" + loginUserNo + "]\t\t> 미사용 조합 건수=" + exList.size());
 				}
-				
 			} else {
-				// 적으면 
-				Map<Integer, Integer> map = new HashMap<Integer, Integer>(); // 중복 제거용
+				log.info("[" + loginUserNo + "]\t\t> 미사용 조합 조회 건수=0");
+			}
 				
-				// 1. 미사용 목록 전체를 설정하고
-				List<ExDataDto> exDataList = myLottoService.getExptNumNewList(dto);
-				log.info("[" + loginUserNo + "]\t3-1. 미사용조합 조회 후 전체 등록");
+			// 추출 조합수에 못 미치면 전체를 대상으로 추가조회 2020.04.08
+			if (maxSaveCnt > saveCnt) {
+				log.info("[" + loginUserNo + "]\t2. 전체 예상번호 조회");
 				
-				for (ExDataDto exDataDto : exDataList) {
-					int exDataSeq = exDataDto.getSeq();
-					exDataDto.setUser_no(loginUserNo);
-					
-					// 추가 필터 체크
-					boolean check = lottoDataService.checkAddFilter(exDataDto, winDataList);
-					
-//					if (!map.containsKey(exDataSeq)) {
-					if (!map.containsKey(exDataSeq) && check) {
-						exList.add(exDataDto);
-					}
-				}
-				
-				log.info("[" + loginUserNo + "]\t\t3-1. " + exList.size() + " / " + maxSaveCnt + " 등록함.");
-				
-				// 2. 전체 매핑 목록에서 랜덤으로 남은 건수만큼 설정
 				// 전체 조합 조회
 				dto.setOnlyUnused("N");
 				List<ExDataDto> exDataAllList = myLottoService.getExptNumNewList(dto);
-				log.info("[" + loginUserNo + "]\t3-2. 전체 조회 후 랜덤 추출");
+				if (exDataAllList != null) {
 				
-				int checkCnt = maxSaveCnt - exList.size();
-				int saveCnt = 0;
-				do {
-					int randomSeq = (int) (Math.random() * exDataAllList.size());
-					ExDataDto exDataDto = exDataAllList.get(randomSeq);
-					
-					// 추가 필터 체크
-					boolean check = lottoDataService.checkAddFilter(exDataDto, winDataList);
-					
-					int exDataSeq = exDataDto.getSeq();
-//					if (!map.containsKey(exDataSeq)) {
-					if (!map.containsKey(exDataSeq) && check) {
-						exDataDto.setUser_no(loginUserNo);
-						exList.add(exDataDto);
-						map.put(exDataSeq, exDataSeq);
-						saveCnt++;
+					// 조회건수가 랜덤조회 실행기준 회수보다 크다면 랜덤조합 실행
+					if (exDataAllList.size() > START_RANDOM_BASE_COUNT) {
+						do {
+							int randomSeq = (int) (Math.random() * exDataAllList.size());
+							ExDataDto exDataDto = exDataAllList.get(randomSeq);
+							int exDataSeq = exDataDto.getSeq();					
+							
+							if (!map.containsKey(exDataSeq)) {
+								map.put(exDataSeq, exDataSeq);
+								
+								// 추가 필터 체크
+								boolean check = lottoDataService.checkAddFilter(exDataDto, winDataList);
+								if (check) {
+									exDataDto.setUser_no(loginUserNo);
+									exList.add(exDataDto);
+									saveCnt++;
+								}
+							}
+							
+							excuteCnt++;
+							if (excuteCnt == limitCnt) {
+								break;
+							}
+							
+						} while (maxSaveCnt > saveCnt);
+						log.info("[" + loginUserNo + "]\t\t> 전체 중 랜덤조합 포함 건수=" + exList.size());	
 					}
 					
-					excuteCnt++;
-					if (excuteCnt == limitCnt) {
-						isLimit = true;
-						break;
+					// 실행제한으로 종료되면 미추출 대상으로 추가조회 2020.04.11
+					if (maxSaveCnt > saveCnt) {					
+						log.info("[" + loginUserNo + "]\t2-1. 순차조합 추출");
+						
+						for (ExDataDto exDataDto : exDataAllList) {
+							int exDataSeq = exDataDto.getSeq();
+							
+							if (!map.containsKey(exDataSeq)) {
+								map.put(exDataSeq, exDataSeq);
+								
+								// 추가 필터 체크
+								boolean check = lottoDataService.checkAddFilter(exDataDto, winDataList);
+								if (check) {
+									exDataDto.setUser_no(loginUserNo);
+									exList.add(exDataDto);
+									saveCnt++;
+								}
+							}
+							
+							if (maxSaveCnt == saveCnt) {
+								break;
+							}
+							
+						}
+						
+						log.info("[" + loginUserNo + "]\t\t> 순차조합 포함 추출건수=" + exList.size());
 					}
-				} while (checkCnt > saveCnt);
-				log.info("[" + loginUserNo + "]\t\t3-2. 조합 건수=" + exList.size());
-				
+				} //end if exDataAllList null check 
 			}
-
+			
 			/*
 			 * 조회된 예상번호 SEQ 목록을 랜덤으로 저장할 수만큼 반복등록 처리
 			 * 다른 사용자와 중복되어도 상관없음. (MY로또 저장시간 기준)
