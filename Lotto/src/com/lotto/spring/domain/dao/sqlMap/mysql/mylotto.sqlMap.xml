@@ -25,7 +25,7 @@
 				, cr_dt
 				, up_dt
 				, @rownum := @rownum+1 AS row_num
-			FROM TB_MY_SAVE_NUM, (SELECT @rownum :=0) AS R		
+			FROM tb_my_save_num, (SELECT @rownum :=0) AS R		
 			WHERE 1=1
 			AND ex_count = #{ex_count}
 			AND user_no = #{user_no}
@@ -58,7 +58,7 @@
 				, cr_dt
 				, up_dt
 				, @rownum := @rownum+1 AS row_num
-			FROM TB_MY_SAVE_NUM_NEW, (SELECT @rownum :=0) AS R		
+			FROM tb_my_save_num_new, (SELECT @rownum :=0) AS R		
 			WHERE 1=1
 			AND ex_count = #{ex_count}
 			AND user_no = #{user_no}
@@ -74,7 +74,7 @@
 		/* mylotto.getSaveNumListCnt */
 		SELECT 
 			  COUNT(*)
-		FROM TB_MY_SAVE_NUM
+		FROM tb_my_save_num
 		WHERE 1=1
 		AND ex_count = #{ex_count}
 		AND user_no = #{user_no}
@@ -85,7 +85,7 @@
 		/* mylotto.getSaveNumNewListCnt */
 		SELECT 
 			  COUNT(*)
-		FROM TB_MY_SAVE_NUM_NEW
+		FROM tb_my_save_num_new
 		WHERE 1=1
 		AND ex_count = #{ex_count}
 		AND user_no = #{user_no}
@@ -94,7 +94,7 @@
 	<!-- MY로또저장번호 삭제 -->
 	<delete id="deleteMyData" parameterType="myLottoSaveNumDto">		
 		/* mylotto.deleteMyData */
-		DELETE FROM TB_MY_SAVE_NUM
+		DELETE FROM tb_my_save_num
 		WHERE EX_COUNT = #{ex_count}
 		AND USER_NO = #{user_no}
 		<if test='seq != null and seq != 0'>
@@ -105,7 +105,7 @@
 	<!-- MY로또저장번호 NEW 삭제 -->
 	<delete id="deleteMyDataNew" parameterType="myLottoSaveNumDto">
 		/* mylotto.deleteMyDataNew */
-		DELETE FROM TB_MY_SAVE_NUM_NEW
+		DELETE FROM tb_my_save_num_new
 		WHERE EX_COUNT = #{ex_count}
 		AND USER_NO = #{user_no}
 		<if test='seq != null and seq != 0'>
@@ -116,7 +116,7 @@
 	<!-- 등록된 매핑 데이터 삭제 for New -->
 	<delete id="deleteMyNewMpngData" parameterType="myLottoSaveNumDto">		
 		/* mylotto.deleteMyNewMpngData */
-		DELETE FROM TB_EXPT_NUM_NEW_MPNG
+		DELETE FROM tb_expt_num_new_MPNG
 		WHERE EX_COUNT = #{ex_count}
 		AND USER_NO = #{user_no}
 		<if test='seq != null and seq != 0'>
@@ -127,7 +127,7 @@
 	<!-- MY로또저장번호 일반등록 -->
 	<insert id="insertMyData" parameterType="java.util.Map">
 		/* mylotto.insertMyData */
-		INSERT INTO TB_MY_SAVE_NUM (EX_COUNT,USER_NO,SEQ,NUM1,NUM2,NUM3,NUM4,NUM5,NUM6,WIN_RSLT,EMAIL_SEND_YN,SMS_SEND_YN,CR_DT,UP_DT)
+		INSERT INTO tb_my_save_num (EX_COUNT,USER_NO,SEQ,NUM1,NUM2,NUM3,NUM4,NUM5,NUM6,WIN_RSLT,EMAIL_SEND_YN,SMS_SEND_YN,CR_DT,UP_DT)
 		VALUES 
 		<foreach collection="list" item="item" open="" separator="," close="">
 		(#{item.ex_count},#{item.user_no},
@@ -139,7 +139,7 @@
 	<!-- MY로또저장번호 일반등록 New -->
 	<insert id="insertMyDataNew" parameterType="java.util.Map">
 		/* mylotto.insertMyDataNew */
-		INSERT INTO TB_MY_SAVE_NUM_NEW (EX_COUNT,USER_NO,SEQ,NUM1,NUM2,NUM3,NUM4,NUM5,NUM6,WIN_RSLT,EMAIL_SEND_YN,SMS_SEND_YN,CR_DT,UP_DT)
+		INSERT INTO tb_my_save_num_new (EX_COUNT,USER_NO,SEQ,NUM1,NUM2,NUM3,NUM4,NUM5,NUM6,WIN_RSLT,EMAIL_SEND_YN,SMS_SEND_YN,CR_DT,UP_DT)
 		VALUES 
 		<foreach collection="list" item="item" open="" separator="," close="">
 		(#{item.ex_count},#{item.user_no},
@@ -151,7 +151,7 @@
 	<!-- MY로또저장번호 매핑데이터 등록 -->
 	<insert id="insertMyNewMpngData" parameterType="java.util.Map">
 		/* mylotto.insertMyNewMpngData */
-		INSERT INTO TB_EXPT_NUM_NEW_MPNG (EX_COUNT,USER_NO,SEQ)
+		INSERT INTO tb_expt_num_new_MPNG (EX_COUNT,USER_NO,SEQ)
 		VALUES 
 		<foreach collection="list" item="item" open="" separator="," close="">
 		(#{item.ex_count},#{item.user_no},#{item.seq})
@@ -163,7 +163,7 @@
 		/* mylotto.checkSaveMyData */
 		SELECT 
 			  COUNT(*)
-		FROM TB_MY_SAVE_NUM
+		FROM tb_my_save_num
 		WHERE 1=1
 		AND ex_count = #{ex_count}
 		AND user_no = #{user_no}
@@ -174,7 +174,7 @@
 		/* mylotto.checkSaveMyDataNew */
 		SELECT 
 			  COUNT(*)
-		FROM TB_MY_SAVE_NUM_NEW
+		FROM tb_my_save_num_new
 		WHERE 1=1
 		AND ex_count = #{ex_count}
 		AND user_no = #{user_no}
@@ -185,13 +185,13 @@
 		/* mylotto.getExptNumNewListCnt */
 		SELECT 
 			COUNT(N.SEQ)
-		FROM TB_EXPT_NUM_NEW N
+		FROM tb_expt_num_new N
 		WHERE N.EX_COUNT = #{ex_count}
 		<if test='onlyUnused != null and onlyUnused == "Y"'>
 		AND NOT EXISTS (
 			SELECT
 				SEQ
-			FROM TB_EXPT_NUM_NEW_MPNG M
+			FROM tb_expt_num_new_MPNG M
 			WHERE EX_COUNT = #{ex_count}
 			AND M.EX_COUNT = N.EX_COUNT
 			AND M.SEQ = N.SEQ
@@ -218,13 +218,13 @@
 			, ac
 			, ptrn_match_cnt
 			, @rownum := @rownum+1 AS row_num
-		FROM TB_EXPT_NUM_NEW N, (SELECT @rownum :=0) AS R		
+		FROM tb_expt_num_new N, (SELECT @rownum :=0) AS R		
 		WHERE ex_count = #{ex_count}
 		<if test='onlyUnused != null and onlyUnused == "Y"'>
 		AND NOT EXISTS (
 			SELECT
 				SEQ
-			FROM TB_EXPT_NUM_NEW_MPNG M
+			FROM tb_expt_num_new_MPNG M
 			WHERE EX_COUNT = #{ex_count}
 			AND M.EX_COUNT = N.EX_COUNT
 			AND M.SEQ = N.SEQ

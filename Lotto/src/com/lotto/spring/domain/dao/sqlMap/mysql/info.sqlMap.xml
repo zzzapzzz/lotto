@@ -6,9 +6,9 @@
  	<insert id="applyService" parameterType="serviceApplyDto">
  		/* info.applyService */	
  		<selectKey resultType="int" keyProperty="seq" order="BEFORE">
-	        SELECT COUNT(*)+1 as seq FROM TB_SERVICE_APPLY WHERE USER_NO = #{user_no}        
+	        SELECT COUNT(*)+1 as seq FROM tb_service_apply WHERE USER_NO = #{user_no}        
 	    </selectKey> 
-		INSERT INTO TB_SERVICE_APPLY
+		INSERT INTO tb_service_apply
 		(user_no, svc_cd, seq, apply_type, svc_stat, apply_date)
 		VALUES
 		(#{user_no},#{svc_cd},#{seq},#{apply_type}, 'apply', NOW())
@@ -29,7 +29,7 @@
 			, DATE_FORMAT(APPLY_DATE, '%Y%m%d%H%i%s') AS APPLY_DATE
 			, DATE_FORMAT(START_DATE, '%Y%m%d%H%i%s') AS START_DATE
 			, DATE_FORMAT(END_DATE, '%Y%m%d%H%i%s') AS END_DATE
-		FROM TB_SERVICE_APPLY		
+		FROM tb_service_apply		
 		WHERE USER_NO = #{user_no}
 		AND SVC_STAT = 'approved' 
 		<if test='svc_cd != null and svc_cd != ""'>
@@ -58,7 +58,7 @@
 				, DATE_FORMAT(START_DATE, '%Y%m%d%H%i%s') AS START_DATE
 				, DATE_FORMAT(END_DATE, '%Y%m%d%H%i%s') AS END_DATE
 				, @rownum := @rownum+1 AS row_num
-			FROM TB_SERVICE_APPLY, (SELECT @rownum :=0) AS R		
+			FROM tb_service_apply, (SELECT @rownum :=0) AS R		
 			WHERE USER_NO = #{user_no}
 			<if test='svc_cd != null and svc_cd != ""'>
 			AND SVC_CD = #{svc_cd}
@@ -90,7 +90,7 @@
 	<select id="getServiceApplyListCnt" parameterType="serviceApplyDto" resultType="Integer">
 		/* info.getServiceApplyListCnt */
 		SELECT COUNT(*)				
-		FROM TB_SERVICE_APPLY
+		FROM tb_service_apply
 		WHERE USER_NO = #{user_no}
 		<if test='svc_cd != null and svc_cd != ""'>
 		AND SVC_CD = #{svc_cd}

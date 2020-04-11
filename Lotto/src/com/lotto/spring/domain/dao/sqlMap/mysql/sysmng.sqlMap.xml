@@ -32,7 +32,7 @@
 			  END use_yn_nm 
 			, cr_dt
 			, up_dt
-		FROM TB_USER_INFO		
+		FROM tb_user_info		
 		WHERE user_no = #{user_no}			
 	</select>
 			
@@ -68,7 +68,7 @@
 				, cr_dt
 				, up_dt
 				, @rownum := @rownum+1 AS row_num
-			FROM TB_USER_INFO, (SELECT @rownum :=0) AS R		
+			FROM tb_user_info, (SELECT @rownum :=0) AS R		
 			WHERE 1=1
 			<if test='search_key!=""'>		
 				AND email = #{search_key}
@@ -113,7 +113,7 @@
 		/* sysmng.getUserListCnt */
 		SELECT 
 			  COUNT(*)
-		FROM TB_USER_INFO
+		FROM tb_user_info
 		WHERE 1=1
 		<if test='search_key!=""'>		
 			AND email = #{search_key}
@@ -168,7 +168,7 @@
 				, DATE_FORMAT(CR_DT, '%Y%m%d%H%i%s') AS CR_DT
 				, DATE_FORMAT(UP_DT, '%Y%m%d%H%i%s') AS UP_DT
 				, @rownum := @rownum+1 AS row_num
-			FROM TB_LOTTO_INFO, (SELECT @rownum :=0) AS R		
+			FROM tb_lotto_info, (SELECT @rownum :=0) AS R		
 			WHERE 1=1
 			<if test='win_count != null and win_count != "" and win_count != 99999999'>
 			AND WIN_COUNT = #{win_count}
@@ -200,7 +200,7 @@
 	<select id="getWinDataListCnt" parameterType="winDataDto" resultType="Integer">
 		/* sysmng.getWinDataListCnt */
 		SELECT COUNT(*)				
-		FROM TB_LOTTO_INFO
+		FROM tb_lotto_info
 		WHERE 1=1
 		<if test='win_count != null and win_count != "" and win_count != 99999999'>
 		AND WIN_COUNT = #{win_count}
@@ -229,8 +229,8 @@
 			, csi.COUNT_SUM
 			, csi.CONT_CNT
 			, csi.NOT_CONT_CNT
-		FROM TB_LOTTO_INFO li
-		LEFT OUTER JOIN TB_COUNT_SUM_INFO csi ON csi.WIN_COUNT = li.WIN_COUNT		
+		FROM tb_lotto_info li
+		LEFT OUTER JOIN tb_count_sum_info csi ON csi.WIN_COUNT = li.WIN_COUNT		
 		WHERE 1=1
 		<if test='win_count != null and win_count != "" and win_count != 99999999'>
 		AND li.WIN_COUNT = #{win_count}
@@ -257,7 +257,7 @@
 	<!-- 당첨번호 목록 등록 -->
 	<insert id="insertWinDataList" parameterType="java.util.Map">
 		/* sysmng.insertWinDataList */
-		INSERT INTO TB_LOTTO_INFO (WIN_COUNT,NUM1,NUM2,NUM3,NUM4,NUM5,NUM6,BONUS_NUM,TOTAL,SUM_END_NUM,LOW_HIGH,ODD_EVEN,AC)
+		INSERT INTO tb_lotto_info (WIN_COUNT,NUM1,NUM2,NUM3,NUM4,NUM5,NUM6,BONUS_NUM,TOTAL,SUM_END_NUM,LOW_HIGH,ODD_EVEN,AC)
 		VALUES 
 		<foreach collection="list" item="item" open="" separator="," close="">
 		(#{item.win_count},#{item.num1},#{item.num2},#{item.num3},#{item.num4},#{item.num5},#{item.num6},#{item.bonus_num},#{item.total},#{item.sum_end_num},#{item.low_high},#{item.odd_even},#{item.ac})
@@ -268,7 +268,7 @@
 	<select id="getWinData" resultType="winDataDto">
 		/* sysmng.getWinData */
 		SELECT *		
-		FROM TB_LOTTO_INFO
+		FROM tb_lotto_info
 		WHERE WIN_COUNT = #{win_count}			
 	</select>
 	
@@ -276,7 +276,7 @@
 	<select id="getLastWinData" resultType="winDataDto">
 		/* sysmng.getLastWinData */
 		SELECT *		
-		FROM TB_LOTTO_INFO
+		FROM tb_lotto_info
 		ORDER BY WIN_COUNT DESC
 		LIMIT 1			
 	</select>
@@ -284,14 +284,14 @@
 	<!-- 당첨번호 등록 -->
 	<insert id="insertWinData" parameterType="winDataDto">
 		/* sysmng.insertWinData */
-		INSERT INTO TB_LOTTO_INFO (WIN_COUNT,NUM1,NUM2,NUM3,NUM4,NUM5,NUM6,BONUS_NUM,TOTAL,SUM_END_NUM,LOW_HIGH,ODD_EVEN,AC)
+		INSERT INTO tb_lotto_info (WIN_COUNT,NUM1,NUM2,NUM3,NUM4,NUM5,NUM6,BONUS_NUM,TOTAL,SUM_END_NUM,LOW_HIGH,ODD_EVEN,AC)
 		VALUES (#{win_count},#{num1},#{num2},#{num3},#{num4},#{num5},#{num6},#{bonus_num},#{total},#{sum_end_num},#{low_high},#{odd_even},#{ac})
 	</insert>
 	
 	<!-- 당첨번호 수정 -->
 	<update id="modifyWinData" parameterType="winDataDto">		
 		/* sysmng.modifyWinData */
-		UPDATE TB_LOTTO_INFO
+		UPDATE tb_lotto_info
 		SET   NUM1 = #{num1}
 			, NUM2 = #{num2}
 			, NUM3 = #{num3}
@@ -310,7 +310,7 @@
 	<!-- 당첨번호 삭제 -->
 	<delete id="deleteWinData" parameterType="winDataDto">		
 		/* sysmng.deleteWinData */
-		DELETE FROM TB_LOTTO_INFO
+		DELETE FROM tb_lotto_info
 		<if test='win_count != null and win_count != ""'>
 		WHERE WIN_COUNT = #{win_count}
 		</if>
@@ -319,14 +319,14 @@
 	<!-- 회차합정보 등록 -->
 	<insert id="insertCountSumInfo" parameterType="countSumDto">
 		/* sysmng.insertCountSumInfo */
-		INSERT INTO TB_COUNT_SUM_INFO (WIN_COUNT,COUNT_SUM,CONT_CNT,NOT_CONT_CNT,CONT_NUM,NOT_CONT_NUM)
+		INSERT INTO tb_count_sum_info (WIN_COUNT,COUNT_SUM,CONT_CNT,NOT_CONT_CNT,CONT_NUM,NOT_CONT_NUM)
 		VALUES (#{win_count},#{count_sum},#{cont_cnt},#{not_cont_cnt},#{cont_num},#{not_cont_num})
 	</insert>
 	
 	<!-- 회차합정보 삭제 -->
 	<delete id="deleteCountSumInfo" parameterType="countSumDto">
 		/* sysmng.deleteCountSumInfo */
-		DELETE FROM TB_COUNT_SUM_INFO
+		DELETE FROM tb_count_sum_info
 		WHERE 1=1
 		<if test='win_count != null and win_count != ""'>
 		AND WIN_COUNT = #{win_count}
@@ -336,14 +336,14 @@
 	<!-- 제외수정보 등록 -->
 	<insert id="insertExcludeInfo" parameterType="excludeDto">
 		/* sysmng.insertExcludeInfo */
-		INSERT INTO TB_EXCLUDE_INFO (EX_COUNT,NUM1_RULE,NUM2_RULE,NUM3_RULE,NUM4_RULE,NUM5_RULE,NUM6_RULE,EXCLUDE_NUM)
+		INSERT INTO tb_exclude_info (EX_COUNT,NUM1_RULE,NUM2_RULE,NUM3_RULE,NUM4_RULE,NUM5_RULE,NUM6_RULE,EXCLUDE_NUM)
 		VALUES (#{ex_count},#{num1_rule},#{num2_rule},#{num3_rule},#{num4_rule},#{num5_rule},#{num6_rule},#{exclude_num})
 	</insert>
 	
 	<!-- 제외수정보 삭제 -->
 	<delete id="deleteExcludeInfo" parameterType="excludeDto">
 		/* sysmng.deleteExcludeInfo */
-		DELETE FROM TB_EXCLUDE_INFO
+		DELETE FROM tb_exclude_info
 		WHERE 1=1
 		<if test='ex_count != null and ex_count != ""'>
 		AND EX_COUNT = #{ex_count}
@@ -355,14 +355,14 @@
 		/* sysmng.getExcludeInfo */
 		SELECT
 			  EX_COUNT,NUM1_RULE,NUM2_RULE,NUM3_RULE,NUM4_RULE,NUM5_RULE,NUM6_RULE,EXCLUDE_NUM
-		FROM TB_EXCLUDE_INFO
+		FROM tb_exclude_info
 		WHERE EX_COUNT = #{ex_count}
 	</select>
 	
 	<!-- 총합정보 등록 -->
 	<insert id="insertTotalInfo" parameterType="totalDto">
 		/* sysmng.insertTotalInfo */
-		INSERT INTO TB_TOTAL_INFO (
+		INSERT INTO tb_total_info (
 			  WIN_COUNT
 			, LOW_TOTAL
 			, HIGH_TOTAL
@@ -379,7 +379,7 @@
 	<!-- 총합정보 삭제 -->
 	<delete id="deleteTotalInfo" parameterType="totalDto">
 		/* sysmng.deleteTotalInfo */
-		DELETE FROM TB_TOTAL_INFO
+		DELETE FROM tb_total_info
 		WHERE 1=1
 		<if test='win_count != null and win_count != ""'>
 		AND WIN_COUNT = #{win_count}
@@ -394,14 +394,14 @@
 			, LOW_TOTAL
 			, HIGH_TOTAL
 			, TOTAL_RANGE
-		FROM TB_TOTAL_INFO
+		FROM tb_total_info
 		WHERE WIN_COUNT = #{win_count}
 	</select>
 	
 	<!-- 끝수합정보 등록 -->
 	<insert id="insertEndNumInfo" parameterType="endNumDto">
 		/* sysmng.insertEndNumInfo */
-		INSERT INTO TB_ENDNUM_INFO (
+		INSERT INTO tb_endnum_info (
 			  WIN_COUNT
 			, LOW_ENDNUM
 			, HIGH_ENDNUM
@@ -418,7 +418,7 @@
 	<!-- 끝수합정보 삭제 -->
 	<delete id="deleteEndNumInfo" parameterType="endNumDto">
 		/* sysmng.deleteEndNumInfo */
-		DELETE FROM TB_ENDNUM_INFO
+		DELETE FROM tb_endnum_info
 		WHERE 1=1
 		<if test='win_count != null and win_count != ""'>
 		AND WIN_COUNT = #{win_count}
@@ -433,14 +433,14 @@
 			, LOW_ENDNUM
 			, HIGH_ENDNUM
 			, ENDNUM_RANGE
-		FROM TB_ENDNUM_INFO
+		FROM tb_endnum_info
 		WHERE WIN_COUNT = #{win_count}
 	</select>
 	
 	<!-- 궁합수정보 등록 -->
 	<insert id="insertMCNumInfo" parameterType="java.util.Map">
 		/* sysmng.insertMCNumInfo */
-		INSERT INTO TB_MCNUM_INFO
+		INSERT INTO tb_mcnum_info
 		(
 			  WIN_COUNT
 			, NUM
@@ -459,7 +459,7 @@
 	<!-- 궁합수정보 삭제 -->
 	<delete id="deleteMCNumInfo" parameterType="mcNumDto">
 		/* sysmng.deleteMCNumInfo */
-		DELETE FROM TB_MCNUM_INFO
+		DELETE FROM tb_mcnum_info
 		WHERE 1=1
 		<if test='win_count != null and win_count != ""'>
 		AND WIN_COUNT = #{win_count}
@@ -474,7 +474,7 @@
 			, NUM
 			, MC_NUM
 			, NOT_MC_NUM
-		FROM TB_MCNUM_INFO
+		FROM tb_mcnum_info
 		WHERE WIN_COUNT = #{win_count}
 		ORDER BY NUM
 	</select>
@@ -482,7 +482,7 @@
 	<!-- 저고비율정보 등록 -->
 	<insert id="insertLowHighInfo" parameterType="java.util.Map">
 		/* sysmng.insertLowHighInfo */
-		INSERT INTO TB_LOWHIGH_INFO
+		INSERT INTO tb_lowhigh_info
 		(
 			  WIN_COUNT
 			, LOWHIGH_TYPE
@@ -499,7 +499,7 @@
 	<!-- 저고비율정보 삭제 -->
 	<delete id="deleteLowHighInfo" parameterType="lowHighDto">
 		/* sysmng.deleteLowHighInfo */
-		DELETE FROM TB_LOWHIGH_INFO
+		DELETE FROM tb_lowhigh_info
 		WHERE 1=1
 		<if test='win_count != null and win_count != ""'>
 		AND WIN_COUNT = #{win_count}
@@ -509,7 +509,7 @@
 	<!-- 홀짝비율정보 등록 -->
 	<insert id="insertOddEvenInfo" parameterType="java.util.Map">
 		/* sysmng.insertOddEvenInfo */
-		INSERT INTO TB_ODDEVEN_INFO
+		INSERT INTO tb_oddeven_info
 		(
 			  WIN_COUNT
 			, ODDEVEN_TYPE
@@ -526,7 +526,7 @@
 	<!-- 홀짝비율정보 삭제 -->
 	<delete id="deleteOddEvenInfo" parameterType="oddEvenDto">
 		/* sysmng.deleteOddEvenInfo */
-		DELETE FROM TB_ODDEVEN_INFO
+		DELETE FROM tb_oddeven_info
 		WHERE 1=1
 		<if test='win_count != null and win_count != ""'>
 		AND WIN_COUNT = #{win_count}
@@ -536,7 +536,7 @@
 	<!-- 미출현구간대 정보 등록 -->
 	<insert id="insertZeroRangeInfo" parameterType="zeroRangeDto">
 		/* sysmng.insertZeroRangeInfo */
-		INSERT INTO TB_ZERO_RANGE_INFO (
+		INSERT INTO tb_zero_range_info (
 			  WIN_COUNT
 			, RANGE1
 			, RANGE2
@@ -561,7 +561,7 @@
 	<!-- 미출현구간대 정보 삭제 -->
 	<delete id="deleteZeroRangeInfo" parameterType="zeroRangeDto">
 		/* sysmng.deleteZeroRangeInfo */
-		DELETE FROM TB_ZERO_RANGE_INFO
+		DELETE FROM tb_zero_range_info
 		WHERE 1=1
 		<if test='win_count != null and win_count != ""'>
 		AND WIN_COUNT = #{win_count}
@@ -580,7 +580,7 @@
 			, RANGE5
 			, ZERO_CNT
 			, ZERO_RANGE
-		FROM TB_ZERO_RANGE_INFO
+		FROM tb_zero_range_info
 		WHERE WIN_COUNT = #{win_count}		
 	</select>
 	
@@ -596,7 +596,7 @@
 			, RANGE5
 			, ZERO_CNT
 			, ZERO_RANGE
-		FROM TB_ZERO_RANGE_INFO
+		FROM tb_zero_range_info
 		WHERE 1=1
 		<if test='win_count != null and win_count !=""'>
 		AND WIN_COUNT = #{win_count}
@@ -620,7 +620,7 @@
 			, ODD_EVEN
 			, AC
 			, PTRN_MATCH_CNT
-		FROM TB_EXPT_NUM		
+		FROM tb_expt_num		
 		WHERE 1=1
 		AND EX_COUNT = #{ex_count}
 		AND SEQ = #{seq}
@@ -647,7 +647,7 @@
 				, AC
 				, PTRN_MATCH_CNT
 				, @rownum := @rownum+1 AS row_num
-			FROM TB_EXPT_NUM, (SELECT @rownum :=0) AS R		
+			FROM tb_expt_num, (SELECT @rownum :=0) AS R		
 			WHERE 1=1
 			AND EX_COUNT = #{ex_count}
 			ORDER BY 
@@ -677,7 +677,7 @@
 	<select id="getExDataListCnt" parameterType="exDataDto" resultType="Integer">
 		/* sysmng.getExDataListCnt */
 		SELECT COUNT(*)				
-		FROM TB_EXPT_NUM
+		FROM tb_expt_num
 		WHERE 1=1
 		AND EX_COUNT = #{ex_count}
 	</select>
@@ -703,7 +703,7 @@
 				, AC
 				, PTRN_MATCH_CNT
 				, @rownum := @rownum+1 AS row_num
-			FROM TB_EXPT_NUM_NEW, (SELECT @rownum :=0) AS R		
+			FROM tb_expt_num_new, (SELECT @rownum :=0) AS R		
 			WHERE 1=1
 			AND EX_COUNT = #{ex_count}
 			ORDER BY 
@@ -733,7 +733,7 @@
 	<select id="getExDataNewListCnt" parameterType="exDataDto" resultType="Integer">
 		/* sysmng.getExDataNewListCnt */
 		SELECT COUNT(*)				
-		FROM TB_EXPT_NUM_NEW
+		FROM tb_expt_num_new
 		WHERE 1=1
 		AND EX_COUNT = #{ex_count}
 	</select>
@@ -741,7 +741,7 @@
 	<!-- 예상번호 목록 등록 -->
 	<insert id="insertExptNumList" parameterType="Map">
 		/* sysmng.insertExptNumList */
-		INSERT INTO TB_EXPT_NUM (
+		INSERT INTO tb_expt_num (
 			  EX_COUNT
 			, SEQ
 			, NUM1
@@ -781,7 +781,7 @@
 	<!-- 예상번호 NEW 등록 -->
 	<insert id="insertExptNumNew" parameterType="exDataDto">
 		/* sysmng.insertExptNumNew */
-		INSERT INTO TB_EXPT_NUM_NEW (
+		INSERT INTO tb_expt_num_new (
 			  EX_COUNT
 			, SEQ
 			, NUM1
@@ -819,7 +819,7 @@
 	<!-- 예상번호 NEW 검증로그 등록 -->
 	<insert id="insertExptNumNewVari" parameterType="java.util.Map">
 		/* sysmng.insertExptNumNewVari */
-		INSERT INTO TB_EXPT_NUM_NEW_VARI (
+		INSERT INTO tb_expt_num_new_VARI (
 			  NUMBERS
 			, COMMENTS			
 		)
@@ -833,21 +833,21 @@
 	<!-- 예상번호 NEW 삭제 -->
 	<delete id="deleteExptNumNew" parameterType="exDataDto">
 		/* sysmng.deleteExptNumNew */
-		DELETE FROM TB_EXPT_NUM_NEW
+		DELETE FROM tb_expt_num_new
 		WHERE EX_COUNT = #{ex_count}
 	</delete>
 	
 	<!-- 예상번호 NEW 검증 삭제 -->
 	<delete id="deleteExptNumNewVari" parameterType="exDataDto">
 		/* sysmng.deleteExptNumNewVari */
-		DELETE FROM TB_EXPT_NUM_NEW_VARI		
+		DELETE FROM tb_expt_num_new_VARI		
 	</delete>
 	
 	<!-- 과거 예상번호 목록 삭제 -->
 	<delete id="deletePastExptNumList" parameterType="Map">
 		/* sysmng.deletePastExptNumList */
 		<![CDATA[
-		DELETE FROM TB_EXPT_NUM
+		DELETE FROM tb_expt_num
 		WHERE EX_COUNT <= #{past_ex_count}
 		]]>
 	</delete>
@@ -856,7 +856,7 @@
 	<delete id="deleteExptNumList" parameterType="Map">
 		/* sysmng.deleteExptNumList */
 		<![CDATA[
-		DELETE FROM TB_EXPT_NUM
+		DELETE FROM tb_expt_num
 		WHERE EX_COUNT = #{ex_count}
 		]]>
 	</delete>
@@ -869,7 +869,7 @@
 		FROM
 		(
 			SELECT TOTAL, COUNT(TOTAL) CNT
-			FROM TB_LOTTO_INFO
+			FROM tb_lotto_info
 			GROUP BY TOTAL
 			HAVING COUNT(TOTAL) < #{cnt}
 			ORDER BY TOTAL
@@ -882,7 +882,7 @@
 		/* sysmng.getTotalGroupCntList */
 		<![CDATA[
 		SELECT TOTAL, COUNT(TOTAL) CNT
-		FROM TB_LOTTO_INFO
+		FROM tb_lotto_info
 		GROUP BY TOTAL
 		HAVING COUNT(TOTAL) >= #{cnt}
 		ORDER BY TOTAL
@@ -897,7 +897,7 @@
 		FROM
 		(
 			SELECT SUM_END_NUM, COUNT(SUM_END_NUM) CNT
-			FROM TB_LOTTO_INFO
+			FROM tb_lotto_info
 			GROUP BY SUM_END_NUM
 			HAVING COUNT(SUM_END_NUM) < #{cnt}
 			ORDER BY SUM_END_NUM
@@ -910,7 +910,7 @@
 		/* sysmng.getEndnumGroupCntList */
 		<![CDATA[
 		SELECT SUM_END_NUM, COUNT(SUM_END_NUM) CNT
-		FROM TB_LOTTO_INFO
+		FROM tb_lotto_info
 		GROUP BY SUM_END_NUM
 		HAVING COUNT(SUM_END_NUM) >= #{cnt}
 		ORDER BY SUM_END_NUM
@@ -920,7 +920,7 @@
 	<!-- AC정보 등록 -->
 	<insert id="insertAcInfo" parameterType="acDto">
 		/* sysmng.insertAcInfo */
-		INSERT INTO TB_AC_INFO (
+		INSERT INTO tb_ac_info (
 			  WIN_COUNT
 			, LOW_AC
 			, HIGH_AC
@@ -942,7 +942,7 @@
 			, LOW_AC
 			, HIGH_AC
 			, AC_RANGE
-		FROM TB_AC_INFO
+		FROM tb_ac_info
 		WHERE WIN_COUNT = #{win_count}
 	</select>
 	
@@ -953,7 +953,7 @@
 		FROM
 		(
 			SELECT AC, COUNT(TOTAL) CNT
-			FROM TB_LOTTO_INFO
+			FROM tb_lotto_info
 			WHERE 1=1
 			<if test='win_count != null and win_count !=""'>
 		<![CDATA[
@@ -972,7 +972,7 @@
 	<select id="getAcGroupCntList" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
 		/* sysmng.getAcGroupCntList */
 		SELECT AC, COUNT(AC) CNT
-		FROM TB_LOTTO_INFO
+		FROM tb_lotto_info
 		WHERE 1=1
 			<if test='win_count != null and win_count !=""'>
 		<![CDATA[
@@ -989,7 +989,7 @@
 	<!-- AC정보 삭제 -->
 	<delete id="deleteAcInfo" parameterType="acDto">
 		/* sysmng.deleteAcInfo */
-		DELETE FROM TB_AC_INFO
+		DELETE FROM tb_ac_info
 		WHERE 1=1
 		<if test='win_count != null and win_count != ""'>
 		AND WIN_COUNT = #{win_count}
@@ -1007,7 +1007,7 @@
 				, auth_nm
 				, use_yn
 				, @rownum := @rownum+1 AS row_num
-			FROM TB_AUTH_CODE, (SELECT @rownum :=0) AS R
+			FROM tb_auth_code, (SELECT @rownum :=0) AS R
 			WHERE 1=1
 			<if test='search_key!=""'>		
 				AND (auth_cd = #{search_key} or auth_nm like '%'+#{search_key}+'%')
@@ -1040,7 +1040,7 @@
 		/* sysmng.getAuthCodeListCnt */
 		SELECT 
 			  COUNT(*)
-		FROM TB_AUTH_CODE
+		FROM tb_auth_code
 		WHERE 1=1
 		<if test='search_key!=""'>		
 			AND (auth_cd = #{search_key} or auth_nm like '%'+#{search_key}+'%')
@@ -1064,12 +1064,12 @@
 			, 'N' as checked
 			</if>
 			, tti.use_yn
-		FROM TB_TASK_INFO tti		
+		FROM tb_task_info tti		
 		LEFT OUTER JOIN (
 			SELECT
 				task_1_cd				
 				, COUNT(task_1_cd) as cnt
-			FROM TB_TASK_INFO 
+			FROM tb_task_info 
 			GROUP BY task_1_cd
 			) ttig ON tti.task_1_cd = ttig.task_1_cd
 		ORDER BY tti.sort		
@@ -1080,7 +1080,7 @@
 		/* sysmng.dupCheckAuthCode */
 		SELECT 
 			  COUNT(*)
-		FROM TB_AUTH_CODE
+		FROM tb_auth_code
 		WHERE 1=1
 		AND auth_cd = #{auth_cd}			
 	</select>
@@ -1088,14 +1088,14 @@
 	<!-- 권한코드 등록 -->
 	<insert id="createAuthCode" parameterType="java.util.Map">		
 		/* sysmng.createAuthCode */
-		INSERT INTO TB_AUTH_CODE (auth_cd, auth_nm)
+		INSERT INTO tb_auth_code (auth_cd, auth_nm)
 		VALUES (#{auth_cd}, #{auth_nm})			
 	</insert>
 	
 	<!-- 권한코드 수정 -->
 	<update id="modifyAuthCode" parameterType="java.util.Map">		
 		/* sysmng.modifyAuthCode */
-		UPDATE TB_AUTH_CODE
+		UPDATE tb_auth_code
 		SET auth_cd = #{auth_cd}
 			, auth_nm = #{auth_nm}
 		WHERE auth_cd = #{bf_auth_cd}
@@ -1104,14 +1104,14 @@
 	<!-- 권한코드 삭제 -->
 	<delete id="deleteAuthCode" parameterType="java.util.Map">		
 		/* sysmng.deleteAuthCode */
-		DELETE FROM TB_AUTH_CODE
+		DELETE FROM tb_auth_code
 		WHERE auth_cd = #{auth_cd}
 	</delete>
 	
 	<!-- 기존 업무권한 매핑정보 삭제 -->
 	<delete id="deleteTaskAuthInfo" parameterType="java.util.Map">		
 		/* sysmng.deleteTaskAuthInfo */
-		DELETE FROM TB_TASK_AUTHINFO		
+		DELETE FROM tb_task_authinfo		
 		WHERE auth_cd = #{auth_cd}
 	</delete>
 	
@@ -1119,7 +1119,7 @@
 	<insert id="saveTaskAuthInfo" parameterType="java.util.Map">	
 		/* sysmng.saveTaskAuthInfo */
 		<foreach collection="list" item="item">
-		INSERT INTO TB_TASK_AUTHINFO (auth_cd, depth_1_cd, depth_2_cd, task_1_cd, task_2_cd)
+		INSERT INTO tb_task_authinfo (auth_cd, depth_1_cd, depth_2_cd, task_1_cd, task_2_cd)
 		VALUES (
 			#{item.auth_cd}
 			, LOWER(F_GETDEPTH1MENU(#{item.task_1_cd}))
@@ -1180,14 +1180,14 @@
 	<!-- 기존 메뉴권한 매핑정보 삭제 -->
 	<delete id="deleteMenuAuthInfo" parameterType="java.util.Map">		
 		/* sysmng.deleteMenuAuthInfo */
-		DELETE FROM TB_MENU_AUTHINFO		
+		DELETE FROM tb_menu_authinfo		
 		WHERE auth_cd = #{auth_cd}
 	</delete>
 	
 	<!-- 메뉴권한 매핑정보 저장 -->
 	<insert id="saveMenuAuthInfo" parameterType="java.util.Map">	
 		/* sysmng.saveMenuAuthInfo */
-		INSERT INTO TB_MENU_AUTHINFO (auth_cd, menu_id)
+		INSERT INTO tb_menu_authinfo (auth_cd, menu_id)
 		VALUES (#{auth_cd}, #{menu_id})
 	</insert>
 	
@@ -1195,7 +1195,7 @@
 	<insert id="saveMenuAuthInfoList" parameterType="java.util.Map">	
 		/* sysmng.saveMenuAuthInfoList */
 		<foreach collection="list" item="item">
-		INSERT INTO TB_MENU_AUTHINFO (auth_cd, menu_id)
+		INSERT INTO tb_menu_authinfo (auth_cd, menu_id)
 		VALUES (#{item.auth_cd}, #{item.menu_id})
 		
 		</foreach>	
@@ -1208,7 +1208,7 @@
 			  WIN_COUNT
 			, LOWHIGH_TYPE
 			, RATIO
-		FROM TB_LOWHIGH_INFO
+		FROM tb_lowhigh_info
 		WHERE WIN_COUNT = #{win_count}		
 	</select>
 	
@@ -1219,7 +1219,7 @@
 			  WIN_COUNT
 			, ODDEVEN_TYPE
 			, RATIO
-		FROM TB_ODDEVEN_INFO
+		FROM tb_oddeven_info
 		WHERE WIN_COUNT = #{win_count}		
 	</select>
 	
@@ -1233,7 +1233,7 @@
 			, NOT_CONT_CNT
 			, CONT_NUM
 			, NOT_CONT_NUM
-		FROM TB_COUNT_SUM_INFO
+		FROM tb_count_sum_info
 		WHERE WIN_COUNT = #{win_count}		
 	</select>
 	
@@ -1251,7 +1251,7 @@
 			, USE_YN
 			, DATE_FORMAT(CR_DT, '%Y%m%d%H%i%s') AS CR_DT
 			, DATE_FORMAT(UP_DT, '%Y%m%d%H%i%s') AS UP_DT
-		FROM TB_SERVICE_INFO		
+		FROM tb_service_info		
 		WHERE SVC_CD = #{svc_cd}
 	</select>
 	
@@ -1273,7 +1273,7 @@
 				, DATE_FORMAT(CR_DT, '%Y%m%d%H%i%s') AS CR_DT
 				, DATE_FORMAT(UP_DT, '%Y%m%d%H%i%s') AS UP_DT
 				, @rownum := @rownum+1 AS row_num
-			FROM TB_SERVICE_INFO, (SELECT @rownum :=0) AS R		
+			FROM tb_service_info, (SELECT @rownum :=0) AS R		
 			WHERE 1=1
 			<if test='svc_cd != null and svc_cd != ""'>
 			AND SVC_CD = #{svc_cd}
@@ -1308,7 +1308,7 @@
 	<select id="getServiceInfoListCnt" parameterType="serviceInfoDto" resultType="Integer">
 		/* sysmng.getServiceInfoListCnt */
 		SELECT COUNT(*)				
-		FROM TB_SERVICE_INFO
+		FROM tb_service_info
 		WHERE 1=1
 		<if test='svc_cd != null and svc_cd != ""'>
 		AND SVC_CD = #{svc_cd}
@@ -1323,14 +1323,14 @@
 		/* sysmng.dupCheckServiceCode */
 		SELECT 
 			  COUNT(*)
-		FROM TB_SERVICE_INFO
+		FROM tb_service_info
 		WHERE SVC_CD = #{svc_cd}			
 	</select>
 	
 	<!-- 서비스정보 등록 -->
 	<insert id="insertServiceInfo" parameterType="serviceInfoDto">
 		/* sysmng.insertServiceInfo */
-		INSERT INTO TB_SERVICE_INFO
+		INSERT INTO tb_service_info
 		(
 			SVC_CD,SVC_NM,SVC_TYPE,SVC_BASE_TYPE,SVC_BASE_VAL,AMOUNT,PRMT_CD,USE_YN,CR_DT
 		)
@@ -1343,7 +1343,7 @@
 	<!-- 서비스정보 수정 -->
 	<update id="modifyServiceInfo" parameterType="serviceInfoDto">		
 		/* sysmng.modifyServiceInfo */
-		UPDATE TB_SERVICE_INFO
+		UPDATE tb_service_info
 		SET   SVC_CD = #{svc_cd}
 			, SVC_NM = #{svc_nm}
 			, SVC_TYPE = #{svc_type}
@@ -1359,7 +1359,7 @@
 	<!-- 서비스정보 삭제 -->
 	<update id="deleteServiceInfo" parameterType="serviceInfoDto">		
 		/* sysmng.deleteServiceInfo */
-		UPDATE TB_SERVICE_INFO
+		UPDATE tb_service_info
 		SET USE_YN = 'N'
 			, UP_DT = NOW()
 		WHERE SVC_CD = #{svc_cd}

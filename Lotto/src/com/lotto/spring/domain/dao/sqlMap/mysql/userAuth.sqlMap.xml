@@ -29,7 +29,7 @@
 			, auth_menu
 			, cr_dt
 			, up_dt
-		FROM TB_USER_INFO		
+		FROM tb_user_info		
 		WHERE 1=1
 		<if test='email != null and email != ""'>
 		AND email = #{email}
@@ -59,7 +59,7 @@
 			where use_yn = 'Y'
 			and auth_cd = (
 							SELECT auth_task 
-		                    FROM TB_USER_INFO
+		                    FROM tb_user_info
 		                    WHERE user_no = #{userNo}
 							)
 		) tmai ON tmai.menu_id = tmi.menu_id
@@ -113,7 +113,7 @@
 	<!-- 이메일 중복 체크 -->
 	<select id="checkDuplEmail" parameterType="java.util.Map" resultType="int">
 		SELECT COUNT(*)
-		FROM TB_USER_INFO
+		FROM tb_user_info
 		WHERE email = #{email}
 	</select>
 	
@@ -121,11 +121,11 @@
 	<select id="checkAuth" parameterType="java.util.Map" resultType="int">
 		SELECT
 			COUNT(1)
-		FROM TB_MENU_AUTHINFO MA
-		LEFT OUTER JOIN TB_MENU_INFO MI ON MA.MENU_ID = MI.MENU_ID AND MI.USE_YN = 'Y'
+		FROM tb_menu_authinfo MA
+		LEFT OUTER JOIN tb_menu_info MI ON MA.MENU_ID = MI.MENU_ID AND MI.USE_YN = 'Y'
 		WHERE MA.AUTH_CD = (
 			SELECT AUTH_TASK
-			FROM TB_USER_INFO
+			FROM tb_user_info
 			WHERE USER_NO = #{userNo}
 			LIMIT 1
 		)
@@ -135,7 +135,7 @@
 	
 	<!-- 회원등록 -->
 	<insert id="join" parameterType="java.util.Map">
-		INSERT INTO TB_USER_INFO
+		INSERT INTO tb_user_info
 		(
 			EMAIL
 			, NICKNAME

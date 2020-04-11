@@ -12,7 +12,7 @@
 			, code_nm
 			, code_oder
 			, use_yn
-		FROM TB_CODE_INFO					
+		FROM tb_code_info					
 		WHERE 1=1
 		AND code_id = '0000000000'
 		<if test='code_type != null and code_type != ""'>		
@@ -31,7 +31,7 @@
 			, code_nm
 			, code_oder
 			, use_yn
-		FROM TB_CODE_INFO					
+		FROM tb_code_info					
 		WHERE 1=1
 		AND code_type = #{code_type}
 		AND code_id != '0000000000'
@@ -54,7 +54,7 @@
 			, etc01
 			, etc02
 			, etc03
-		FROM TB_LOG_INFO					
+		FROM tb_log_info					
 		WHERE 1=1
 		AND log_type = #{log_type}
 		ORDER BY idx DESC
@@ -63,14 +63,14 @@
 	<!-- 코드 정보 등록 -->
 	<insert id="createCodeInfo" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
 		/* common.createCodeInfo */		
-		INSERT INTO TB_CODE_INFO (code_type, code_id, code_nm, code_oder)
+		INSERT INTO tb_code_info (code_type, code_id, code_nm, code_oder)
 		VALUES (#{code_type}, #{code_id}, #{code_nm}, #{code_oder})	
 	</insert>
 	
 	<!-- 로그등록 -->
  	<insert id="logInsert" parameterType="java.util.Map">
  		/* common.logInsert */	
-		INSERT INTO TB_LOG_INFO (yyyymmdd, hhmmss, log_type, user_no, access_ip, etc01, etc02, etc03)
+		INSERT INTO tb_log_info (yyyymmdd, hhmmss, log_type, user_no, access_ip, etc01, etc02, etc03)
 		VALUES(DATE_FORMAT(NOW(), '%Y%m%d'), DATE_FORMAT(NOW(), '%H%i%s'), #{log_type}, #{user_no}, #{access_ip}, #{etc01}, #{etc02}, #{etc03})		 
 	</insert>
 </mapper>

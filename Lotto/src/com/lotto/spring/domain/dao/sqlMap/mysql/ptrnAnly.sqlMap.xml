@@ -6,7 +6,7 @@
 	<!-- 예상패턴분석 정보 삭제 -->
 	<delete id="deleteExptPtrnAnlyInfo" parameterType="exptPtrnAnlyDto">		
 		/* ptrnAnlyMapper.deleteExptPtrnAnlyInfo */
-		DELETE FROM TB_EXPT_PTRN_ANLY
+		DELETE FROM tb_expt_ptrn_anly
 		<if test='ex_count != null and ex_count != ""'>
 		WHERE EX_COUNT = #{ex_count}
 		</if>
@@ -15,7 +15,7 @@
 	<!-- 예상패턴분석 정보 등록 -->
 	<insert id="insertExptPtrnAnlyInfo" parameterType="exptPtrnAnlyDto">
 		/* ptrnAnlyMapper.insertExptPtrnAnlyInfo */
-		INSERT INTO TB_EXPT_PTRN_ANLY 
+		INSERT INTO tb_expt_ptrn_anly 
 		(
 			  EX_COUNT
 			, COUNT_SUM
@@ -87,22 +87,22 @@
 			, EPA.COMP_NUM_CNT
 			, EPA.AC
 			, EPA.MCNUM_CNT
-		FROM TB_EXPT_PTRN_ANLY EPA
-		LEFT OUTER JOIN TB_TOTAL_INFO TI ON EPA.EX_COUNT = TI.WIN_COUNT+1
-		LEFT OUTER JOIN TB_ENDNUM_INFO EI ON EPA.EX_COUNT = EI.WIN_COUNT+1
+		FROM tb_expt_ptrn_anly EPA
+		LEFT OUTER JOIN tb_total_info TI ON EPA.EX_COUNT = TI.WIN_COUNT+1
+		LEFT OUTER JOIN tb_endnum_info EI ON EPA.EX_COUNT = EI.WIN_COUNT+1
 		WHERE EPA.EX_COUNT = #{ex_count}
 	</select>
 	
 	<!-- 패턴정보 삭제 -->
 	<delete id="deletePtrnInfo">		
 		/* ptrnAnlyMapper.deletePtrnInfo */
-		DELETE FROM TB_PATTERN_INFO
+		DELETE FROM tb_pattern_info
 	</delete>
 	
 	<!-- 패턴정보 목록 등록 -->
 	<insert id="insertPtrnInfoList" parameterType="java.util.Map">
 		/* ptrnAnlyMapper.insertPtrnInfoList */
-		INSERT INTO TB_PATTERN_INFO 
+		INSERT INTO tb_pattern_info 
 		(
 			  PTRN_TYPE
 			, SEQ
