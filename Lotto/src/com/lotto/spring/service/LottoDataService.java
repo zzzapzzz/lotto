@@ -4972,7 +4972,7 @@ public class LottoDataService extends DefaultService {
 		for (int row = 0; row < arrNumbers.length; row++) {
 			for (int col = 0; col < arrNumbers[row].length; col++) {
 				// 3,4,5열 체크 제외
-				if (2 <= col || col <= 4) {
+				if (2 <= col && col <= 4) {
 					continue;
 				}
 				
