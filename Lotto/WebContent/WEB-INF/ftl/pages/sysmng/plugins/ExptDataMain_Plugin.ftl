@@ -119,8 +119,9 @@
 				$(".ui-icon.ui-icon-seek-end").removeClass().addClass("fa fa-fast-forward");
 				
 				$("#exDataExtraction").click(extractionGo);
-				$("#exDataNewExtraction").click(newExtractionGo);
 				$("#beforeExDataResult").click(changeExDataResultGo);
+				$("#exDataNewExtraction").click(newExtractionGo);
+				$("#beforeExDataNewResult").click(changeExDataNewResultGo);
 				$("#exDataAnalysis").click(changeAnalysisGo);
 			}
 			
@@ -208,6 +209,11 @@
 				changeContent(url);
 			}
 			
+			function changeExDataNewResultGo() {
+				var url = "${APP_ROOT}/sysmng/resultExDataNewajax.do";
+				changeContent(url);
+			}
+			
 			function searchGo() {
 				var param = {		
 					ex_count : $("#nextWinCount").val()
@@ -222,5 +228,4 @@
 		
 				$("#jqgrid").setGridParam({	url: '${APP_ROOT}/sysmng/getExDataList.do', datatype:'json', postData: param, page: page, sortname: '', sortorder: ''   }).trigger("reloadGrid");
 			}
-
 		</script>

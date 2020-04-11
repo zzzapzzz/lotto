@@ -398,7 +398,7 @@ public class LottoDataService extends DefaultService {
 			for(WinDataDto data : winDataList){
 				int num = LottoUtil.getNumbers(data)[index];			
 				
-				if(minNum == 0 || maxNum == 0){
+				if(minNum == 0 && maxNum == 0){
 					//초기값 설정
 					minNum = num;
 					maxNum = num;
@@ -5249,7 +5249,7 @@ public class LottoDataService extends DefaultService {
 		boolean check = false;
 		
 		int[] numbers = LottoUtil.getNumbers(exData); 
-		if ((1 <= numbers[0] || numbers[0] <= 14)
+		if ((1 <= numbers[0] && numbers[0] <= 14)
 				&& numbers[5] >= 31) {
 			check = true;
 		}
@@ -9056,7 +9056,7 @@ public class LottoDataService extends DefaultService {
 				
 				// 첫번째 수가 10번대 체크
 //							if (11 <= targetNumbers[0] || targetNumbers[0] <= 20) {
-				if (10 <= sourceNumbers[0] || sourceNumbers[0] <= 19) {
+				if (10 <= sourceNumbers[0] && sourceNumbers[0] <= 19) {
 					allAppearCnt++;
 					
 					//지난 당첨번호 3수
@@ -11234,6 +11234,12 @@ public class LottoDataService extends DefaultService {
 			return false;
 		}
 				
+		
+		// TODO 10주간 3회이상 출현번호 제외 확률
+		// 906회 추출 기준 7, 16, 18, 21, 26, 38 확인 필요.
+		// https://www.youtube.com/watch?v=hZ501YWUotA 참고
+		
+		
 		return check;
 	}
 	

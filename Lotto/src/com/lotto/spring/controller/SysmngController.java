@@ -1708,7 +1708,7 @@ public class SysmngController extends DefaultSMController {
 			int[] zeroCntRangeOfLastWinData = lottoDataService.getZeroCntRangeData(lastWinDataDto);
 			if (zeroCntRangeOfLastWinData[0] == 0) {
 				// 첫번째 수가 10번대 체크
-				if (10 <= lastWinNnumbers[0] || lastWinNnumbers[0] <= 19) {
+				if (10 <= lastWinNnumbers[0] && lastWinNnumbers[0] <= 19) {
 					isCheck = true;
 				}
 			}
@@ -2653,7 +2653,7 @@ public class SysmngController extends DefaultSMController {
 	 * @throws UnsupportedEncodingException
 	 */
 	@RequestMapping("/sysmng/resultExDataplugin")
-	public String plugin(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+	public String resultExDataplugin(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
 		
 		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
 		
@@ -2661,6 +2661,97 @@ public class SysmngController extends DefaultSMController {
 			
 			long loginUserId = userInfo.getUser_no();
 			log.info("["+loginUserId+"][C] 전회차 매칭결과 화면 호출(plugin)");
+			
+			setModelMapWithAuthCheck(modelMap, request);
+			
+			//CurrMenuInfo overwrite
+			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/exptdatamng"));
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/plugins/ExDataResult_Plugin");
+			
+			return POPUP;
+		} else {
+			return "redirect:/fhrmdlsapdls.do";
+			
+		}
+	}
+	
+	/**
+	 * 전회차 매칭결과 NEW 화면 호출(ajax)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/resultExDataNewajax")
+	public String resultExDataNewajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			long loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 전회차 매칭결과 New 화면 호출(ajax)");
+			
+			setModelMapWithAuthCheck(modelMap, request);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("DESC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			// 최근 당첨번호
+			WinDataDto lastData = winDataList.get(0);
+			modelMap.addAttribute("last_count", lastData.getWin_count());
+			
+			// 예상번호 목록 조회
+			ExDataDto dto = new ExDataDto();
+			dto.setEx_count(lastData.getWin_count());
+			dto.setSord("ASC");
+			dto.setPage("1");	// 전체조회 설정
+			List<ExDataDto> exDataNewList = sysmngService.getExDataNewList(dto);
+			
+			// 당첨결과 설정
+			lottoDataService.getExDataResult(modelMap, lastData, exDataNewList);
+			
+			//CurrMenuInfo overwrite
+			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/exptdatamng"));
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ExDataResult");
+			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
+			
+		} else {
+			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
+		}
+		return POPUP;
+	}
+	
+	/**
+	 * 전회차 매칭결과 NEW 화면 호출(plugin)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/resultExDataNewplugin")
+	public String resultExDataNewplugin(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			long loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 전회차 매칭결과 NEW 화면 호출(plugin)");
 			
 			setModelMapWithAuthCheck(modelMap, request);
 			

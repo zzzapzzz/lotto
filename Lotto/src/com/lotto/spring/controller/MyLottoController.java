@@ -1513,7 +1513,7 @@ public class MyLottoController extends DefaultSMController {
 			int[] zeroCntRangeOfLastWinData = lottoDataService.getZeroCntRangeData(lastWinDataDto);
 			if (zeroCntRangeOfLastWinData[0] == 0) {
 				// 첫번째 수가 10번대 체크
-				if (10 <= lastWinNnumbers[0] || lastWinNnumbers[0] <= 19) {
+				if (10 <= lastWinNnumbers[0] && lastWinNnumbers[0] <= 19) {
 					isCheck = true;
 				}
 			}
