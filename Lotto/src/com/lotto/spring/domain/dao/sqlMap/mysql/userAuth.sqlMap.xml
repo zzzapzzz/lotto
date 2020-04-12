@@ -133,6 +133,13 @@
 		AND MA.USE_YN = 'Y'
 	</select>
 	
+	<!-- User Key 중복 체크 -->
+	<select id="checkDuplUserKey" parameterType="java.util.Map" resultType="int">
+		SELECT COUNT(*)
+		FROM tb_user_info
+		WHERE user_key = #{userKey}
+	</select>
+	
 	<!-- 회원등록 -->
 	<insert id="join" parameterType="java.util.Map">
 		INSERT INTO tb_user_info
@@ -155,11 +162,11 @@
 		(
 			#{email}
 			, #{nickname}
-			, F_GETUSERKEY()
+			, #{userKey}
 			, 'N'
 			, 0
 			, 0
-			, SHA2(#{thwd}, 256)
+			, #{thwd}
 			, 'N'
 			, 0
 			, 'normal'

@@ -7,39 +7,48 @@
 	<select id="getUserInfo" parameterType="userInfoDto" resultType="userInfoDto">
 		/* sysmng.getUserInfo */
 		SELECT 
-			  user_no
-			, email
-			, nickname
-			, user_key
-			, grade
-			, point
-			, used_point
-			, mbtlnum
-			, thwd
-			, ifnull(thwd_q,'') thwd_q 
-			, ifnull(thwd_a,'') thwd_a
-			, ifnull(rcmd_user_no, 0) rcmd_user_no 
-			, svc_agree_yn
-			, login_fail_cnt
-			, auth_task
-			, F_GETAUTHNM(auth_task) auth_task_nm
-			, auth_menu
-			, F_GETAUTHNM(auth_menu) auth_menu_nm
-			, ifnull(use_yn, 'N') use_yn
+			  ui.user_no
+			, ui.email
+			, ui.nickname
+			, ui.user_key
+			, ui.grade
+			, ui.point
+			, ui.used_point
+			, ui.mbtlnum
+			, ui.thwd
+			, ifnull(ui.thwd_q,'') thwd_q 
+			, ifnull(ui.thwd_a,'') thwd_a
+			, ifnull(ui.rcmd_user_no, 0) rcmd_user_no 
+			, ui.svc_agree_yn
+			, ui.login_fail_cnt
+			, ui.auth_task
+			, IFNULL(ac1.auth_nm, '') auth_task_nm
+			, ui.auth_menu
+			, IFNULL(ac2.auth_nm, '') auth_menu_nm
+			, ifnull(ui.use_yn, 'N') use_yn
 			, CASE 
-				WHEN ifnull(use_yn, 'N') = 'Y' THEN '사용'
+				WHEN ifnull(ui.use_yn, 'N') = 'Y' THEN '사용'
 				ELSE '미사용'
 			  END use_yn_nm 
-			, cr_dt
-			, up_dt
-		FROM tb_user_info		
-		WHERE user_no = #{user_no}			
+			, ui.cr_dt
+			, ui.up_dt
+		FROM tb_user_info ui
+		left outer join tb_auth_code ac1 on ui.auth_task = ac1.auth_cd
+		left outer join tb_auth_code ac2 on ui.auth_menu = ac2.auth_cd		
+		WHERE ui,user_no = #{user_no}			
 	</select>
 			
 	<!-- 사용자 목록 조회 -->
 	<select id="getUserList" parameterType="java.util.Map" resultType="userInfoDto">
 		/* sysmng.getUserList */		
-		SELECT *
+		SELECT 
+			  AA.*
+			, IFNULL(ac1.auth_nm, '') auth_task_nm
+			, IFNULL(ac2.auth_nm, '') auth_menu_nm
+			, CASE 
+				WHEN AA.use_yn = 'Y' THEN '사용'
+				ELSE '미사용'
+			  END use_yn_nm			
 		FROM
 		(
 			SELECT 
@@ -57,14 +66,8 @@
 				, svc_agree_yn
 				, login_fail_cnt
 				, auth_task
-				, F_GETAUTHNM(auth_task) auth_task_nm
 				, auth_menu
-				, F_GETAUTHNM(auth_menu) auth_menu_nm
-				, ifnull(use_yn, 'N') use_yn
-				, CASE 
-					WHEN ifnull(use_yn, 'N') = 'Y' THEN '사용'
-					ELSE '미사용'
-				  END use_yn_nm 
+				, ifnull(use_yn, 'N') use_yn				 
 				, cr_dt
 				, up_dt
 				, @rownum := @rownum+1 AS row_num
@@ -103,6 +106,8 @@
 				</if>
 			</if>
 		) AA
+		left outer join tb_auth_code ac1 on AA.auth_task = ac1.auth_cd
+		left outer join tb_auth_code ac2 on AA.auth_menu = ac2.auth_cd
 		<if test='startNum!="" and endNum!=""'>
 		WHERE row_num BETWEEN #{startNum} AND #{endNum}
 		</if>
@@ -819,7 +824,7 @@
 	<!-- 예상번호 NEW 검증로그 등록 -->
 	<insert id="insertExptNumNewVari" parameterType="java.util.Map">
 		/* sysmng.insertExptNumNewVari */
-		INSERT INTO tb_expt_num_new_VARI (
+		INSERT INTO tb_expt_num_new_vari (
 			  NUMBERS
 			, COMMENTS			
 		)
@@ -840,7 +845,7 @@
 	<!-- 예상번호 NEW 검증 삭제 -->
 	<delete id="deleteExptNumNewVari" parameterType="exDataDto">
 		/* sysmng.deleteExptNumNewVari */
-		DELETE FROM tb_expt_num_new_VARI		
+		DELETE FROM tb_expt_num_new_vari		
 	</delete>
 	
 	<!-- 과거 예상번호 목록 삭제 -->
@@ -1058,7 +1063,13 @@
 			, ttig.cnt
 			, tti.sort
 			<if test='auth_cd!=""'>
-			, F_ISTASKAUTHINFO(#{auth_cd}, tti.task_1_cd, tti.task_2_cd) as checked
+			, if((
+					SELECT COUNT(AUTH_CD)
+					FROM tb_task_authinfo
+					WHERE AUTH_CD = #{auth_cd}
+					AND TASK_1_CD = tti.task_1_cd
+					AND TASK_2_CD = tti.task_2_cd
+				) > 0,'Y','N') as checked
 			</if>
 			<if test='auth_cd==""'>
 			, 'N' as checked
@@ -1119,14 +1130,43 @@
 	<insert id="saveTaskAuthInfo" parameterType="java.util.Map">	
 		/* sysmng.saveTaskAuthInfo */
 		<foreach collection="list" item="item">
-		INSERT INTO tb_task_authinfo (auth_cd, depth_1_cd, depth_2_cd, task_1_cd, task_2_cd)
+		INSERT INTO tb_task_authinfo
+		(auth_cd, depth_1_cd, depth_2_cd, task_1_cd, task_2_cd)
 		VALUES (
 			#{item.auth_cd}
-			, LOWER(F_GETDEPTH1MENU(#{item.task_1_cd}))
-			, LOWER(F_GETDEPTH2MENU(#{item.task_1_cd}))
+			, (
+				SELECT 
+					LOWER(
+					CASE 
+						WHEN INSTR(menu_url, #{item.task_1_cd}) = 2 THEN #{item.task_1_cd}
+						ELSE REPLACE(REPLACE(menu_url, CONCAT('/',''), ''), '/', '')
+					END
+					) depth1
+				FROM tb_menu_info
+				WHERE p_menu_id != 0
+				AND INSTR(menu_url, #{item.task_1_cd}) > 0
+				LIMIT 1
+			)
+			, (
+				SELECT 
+					LOWER(	
+					CASE 
+						WHEN INSTR(menu_url, #{item.task_1_cd}) = 2 THEN REPLACE(REPLACE(menu_url, CONCAT('/',#{item.task_1_cd}), ''), '/', '')
+						ELSE #{item.task_1_cd}
+					END
+					) depth2
+				FROM tb_menu_info
+				WHERE p_menu_id != 0
+				AND INSTR(menu_url, 'usermng') > 0
+				LIMIT 1
+			)
 			, LOWER(#{item.task_1_cd})
 			<if test='item.task_2_cd == null or item.task_2_cd == ""'>
-			, LOWER(F_GETTASK2CD(#{item.task_1_cd}))
+			, (
+				SELECT LOWER(TASK_2_CD)
+				FROM tb_task_info
+				WHERE TASK_1_CD = #{item.task_1_cd}
+			)
 			</if>
 			<if test='item.task_2_cd != null and item.task_2_cd != ""'>
 			, LOWER(#{item.task_2_cd})

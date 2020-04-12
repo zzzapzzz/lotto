@@ -18,41 +18,51 @@
 	<select id="getServiceApply" parameterType="serviceApplyDto" resultType="serviceApplyDto">
 		/* info.getServiceApply */		
 		SELECT 
-			  USER_NO
-			, SVC_CD
-			, F_GETCODENAME('SERVICE_INFO',SVC_CD) AS SVC_NM
-			, SEQ
-			, F_GETCODENAME('APPLY_TYPE',CAST(APPLY_TYPE as CHAR(10))) AS APPLY_TYPE_NM
-			, APPLY_TYPE 
-			, F_GETCODENAME('SVC_STAT',SVC_STAT) AS SVC_STAT_NM
-			, SVC_STAT
-			, DATE_FORMAT(APPLY_DATE, '%Y%m%d%H%i%s') AS APPLY_DATE
-			, DATE_FORMAT(START_DATE, '%Y%m%d%H%i%s') AS START_DATE
-			, DATE_FORMAT(END_DATE, '%Y%m%d%H%i%s') AS END_DATE
-		FROM tb_service_apply		
-		WHERE USER_NO = #{user_no}
-		AND SVC_STAT = 'approved' 
+			  tsa.USER_NO
+			, tsa.SVC_CD
+			, tsi.svc_nm AS SVC_NM
+			, tsa.SEQ			
+			, tci.code_nm AS APPLY_TYPE_NM
+			, tsa.APPLY_TYPE 
+			, tcis.code_nm AS SVC_STAT_NM
+			, tsa.SVC_STAT
+			, DATE_FORMAT(tsa.APPLY_DATE, '%Y%m%d%H%i%s') AS APPLY_DATE
+			, DATE_FORMAT(tsa.START_DATE, '%Y%m%d%H%i%s') AS START_DATE
+			, DATE_FORMAT(tsa.END_DATE, '%Y%m%d%H%i%s') AS END_DATE
+		FROM tb_service_apply tsa
+		left outer join tb_service_info tsi on tsi.svc_cd = tsa.svc_cd and tsi.use_yn = 'Y'
+		left outer join tb_code_info tci on tci.code_type = 'APPLY_TYPE' 
+										 and tci.code_id != '0000000000' 
+										 and tci.code_id = CAST(tsa.apply_type as CHAR(10)) 
+										 and tci.USE_YN = 'Y'		
+		left outer join tb_code_info tcis on tcis.code_type = 'SVC_STAT' 
+										  and tcis.code_id != '0000000000' 
+										  and tcis.code_id = tsa.svc_stat 
+										  and tcis.USE_YN = 'Y'
+		WHERE tsa.USER_NO = #{user_no}
+		AND tsa.SVC_STAT = 'approved' 
 		<if test='svc_cd != null and svc_cd != ""'>
-		AND SVC_CD = #{svc_cd}
+		AND tsa.SVC_CD = #{svc_cd}
 		</if>
-		ORDER BY START_DATE DESC
+		ORDER BY tsa.START_DATE DESC
 		LIMIT 1
 	</select>
 	
 	<!-- 서비스정보 목록 조회 -->
 	<select id="getServiceApplyList" parameterType="serviceApplyDto" resultType="serviceApplyDto">
 		/* info.getServiceApplyList */		
-		SELECT *
+		SELECT 
+			  AA.*
+			, tsi.svc_nm AS SVC_NM
+			, tci.code_nm AS APPLY_TYPE_NM
+			, tcis.code_nm AS SVC_STAT_NM
 		FROM
 		(
 			SELECT 
 				  USER_NO
 				, SVC_CD
-				, F_GETCODENAME('SERVICE_INFO',SVC_CD) AS SVC_NM
 				, SEQ
-				, F_GETCODENAME('APPLY_TYPE',CAST(APPLY_TYPE as CHAR(10))) AS APPLY_TYPE_NM
 				, APPLY_TYPE
-				, F_GETCODENAME('SVC_STAT',SVC_STAT) AS SVC_STAT_NM
 				, SVC_STAT 
 				, DATE_FORMAT(APPLY_DATE, '%Y%m%d%H%i%s') AS APPLY_DATE
 				, DATE_FORMAT(START_DATE, '%Y%m%d%H%i%s') AS START_DATE
@@ -81,6 +91,15 @@
 			    </otherwise>
   			</choose>
 		) AA
+		left outer join tb_service_info tsi on tsi.svc_cd = AA.svc_cd and tsi.use_yn = 'Y'
+		left outer join tb_code_info tci on tci.code_type = 'APPLY_TYPE' 
+										 and tci.code_id != '0000000000' 
+										 and tci.code_id = CAST(AA.apply_type as CHAR(10)) 
+										 and tci.USE_YN = 'Y'		
+		left outer join tb_code_info tcis on tcis.code_type = 'SVC_STAT' 
+										  and tcis.code_id != '0000000000' 
+										  and tcis.code_id = AA.svc_stat 
+										  and tcis.USE_YN = 'Y'
 		<if test='startNum!="" and endNum!=""'>
 		WHERE row_num BETWEEN #{startNum} AND #{endNum}
 		</if>

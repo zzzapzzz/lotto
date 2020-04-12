@@ -206,4 +206,62 @@ public class UserInfoService extends DefaultService {
 		}
 	}
 
+	/**
+	 * USER KEY 생성 (Random Key 16자리)
+	 * 2020.04.12
+	 * 
+	 * @return
+	 */
+	public String getUserKey() {
+		String key = "";
+		
+		String[][] arrTempKey = {
+			/* 대문자 포함 (I,O 제외) */
+			/* upper case - 26 (24개)*/
+	        {"A","1"},{"B","1"},{"C","1"},{"D","1"},{"E","1"},{"F","1"},{"G","1"},{"H","1"},{"J","1"},
+	        {"K","1"},{"L","1"},{"M","1"},{"N","1"},{"P","1"},{"Q","1"},{"R","1"},{"S","1"},{"T","1"},
+	        {"U","1"},{"V","1"},{"W","1"},{"X","1"},{"Y","1"},{"Z","1"},
+	        /* 소문자 포함 (i,l,o 제외) */
+	        /* lower case - 26 (23개) */
+	        {"a","2"},{"b","2"},{"c","2"},{"d","2"},{"e","2"},{"f","2"},{"g","2"},{"h","2"},{"j","2"},
+	        {"k","2"},{"m","2"},{"n","2"},{"p","2"},{"q","2"},{"r","2"},{"s","2"},{"t","2"},{"u","2"},
+	        {"v","2"},{"w","2"},{"x","2"},{"y","2"},{"z","2"},
+	        /* 숫자 포함 (0, 1 제외) */
+	        /* number - 10 (8개) */
+	        {"2","3"},{"3","3"},{"4","3"},{"5","3"},{"6","3"},{"7","3"},{"8","3"},{"9","3"}
+		};
+		
+		// 1. 첫글자는 문자로 설정
+		int randomSeq = (int) (Math.random() * (24 + 23));
+		key += arrTempKey[randomSeq][0];
+		
+		// 2. 남은 글자 추출
+		while (key.length() < 16) {
+			randomSeq = (int) (Math.random() * (24 + 23 + 8));
+			key += arrTempKey[randomSeq][0];
+		}
+			
+		return key;
+	}
+
+	/**
+	 * User Key 중복 체크
+	 * 2020.04.12
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public boolean checkDuplUserKey(String key) {
+		boolean exist = false;
+		
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("userKey", key);
+		int cnt = (int) baseDao.getSingleRow("userAuthMapper.checkDuplUserKey", map);
+		if (cnt > 0) {
+			exist = true;
+		}
+		
+		return exist;
+	}
+
 }

@@ -25,6 +25,7 @@ import org.springframework.web.bind.support.SessionStatus;
 
 import com.chello.base.common.resource.ResourceManager;
 import com.lotto.common.AuthInfo;
+import com.lotto.common.CommonUtils;
 import com.lotto.common.LottoUtil;
 import com.lotto.common.WebUtil;
 import com.lotto.spring.core.DefaultSMController;
@@ -930,12 +931,20 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 		
 		log.info("[" + userip + "][C] 회원가입");
 		
+		String thwd = joinThwd;
+		try {
+			thwd = CommonUtils.sha256(joinThwd);			
+		} catch (Exception e) {
+			log.info("[" + userip + "]\tSHA256 Exception : " + e.getMessage());	
+		}
+		
 		Map map = new HashMap();
 		map.put("email", joinEmail);
-		map.put("thwd", joinThwd);
+		map.put("thwd", thwd);
 		map.put("nickname", joinNickname);
 		map.put("access_ip", userip);
 		
+		log.debug("[" + userip + "]\tEmail 중복체크");
 		int isExist = userInfoService.checkDuplEmail(map);
 		if (isExist > 0) {
 			
@@ -943,6 +952,24 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 			jsonObj.put("msg", "등록된 이메일이 존재합니다.");
 			log.info("[" + userip + "]\t" + "등록된 이메일이 존재합니다.");
 		} else {
+			
+			boolean exist = true;
+			
+			// GetUserKey 2020.04.12
+			String key = "";
+			do {
+				// 키 생성
+				log.debug("[" + userip + "]\tUser Key 생성");
+				key = userInfoService.getUserKey();
+				
+				// 존재여부 확인 (true:존재, false:존재하지 않음)
+				log.debug("[" + userip + "]\tUser Key 중복체크");
+				exist = userInfoService.checkDuplUserKey(key);
+				
+			} while (exist);
+			map.put("userKey", key);
+			
+			log.debug("[" + userip + "]\t회원가입 처리");
 			int i = userInfoService.join(map);
 			if (i > 0) {
 				log.info("[" + userip + "]\t" + "회원가입 완료");

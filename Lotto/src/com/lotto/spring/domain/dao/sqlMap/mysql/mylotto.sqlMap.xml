@@ -131,7 +131,12 @@
 		VALUES 
 		<foreach collection="list" item="item" open="" separator="," close="">
 		(#{item.ex_count},#{item.user_no},
-		 F_GETMYLOTTOSEQ(#{item.ex_count},#{item.user_no}),
+		 (
+		 	SELECT COUNT(*)+1 
+			FROM tb_my_save_num 
+			WHERE EX_COUNT = #{item.ex_count}
+			AND USER_NO = #{item.user_no}
+		 ),
 		 #{item.num1},#{item.num2},#{item.num3},#{item.num4},#{item.num5},#{item.num6},NULL,'N','N',NOW(),NOW())
 		</foreach>
 	</insert>
@@ -151,7 +156,7 @@
 	<!-- MY로또저장번호 매핑데이터 등록 -->
 	<insert id="insertMyNewMpngData" parameterType="java.util.Map">
 		/* mylotto.insertMyNewMpngData */
-		INSERT INTO tb_expt_num_new_MPNG (EX_COUNT,USER_NO,SEQ)
+		INSERT INTO tb_expt_num_new_mpng (EX_COUNT,USER_NO,SEQ)
 		VALUES 
 		<foreach collection="list" item="item" open="" separator="," close="">
 		(#{item.ex_count},#{item.user_no},#{item.seq})
