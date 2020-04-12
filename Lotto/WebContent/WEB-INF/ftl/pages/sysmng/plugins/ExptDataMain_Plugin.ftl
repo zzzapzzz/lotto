@@ -56,7 +56,7 @@
 					rowNum : 30,
 					rowList : [10, 20, 30, 100],
 					pager : '#pjqgrid',
-					sortname : 'EX_COUNT',
+					sortname : 'SEQ',
 					sortorder : 'ASC',
 					toolbarfilter : true,
 					viewrecords : true,
@@ -118,6 +118,7 @@
 				$(".ui-icon.ui-icon-seek-end").wrap("<div class='btn btn-sm btn-default'></div>");
 				$(".ui-icon.ui-icon-seek-end").removeClass().addClass("fa fa-fast-forward");
 				
+				$("#combinationExtraction").click(combinationGo);
 				$("#exDataExtraction").click(extractionGo);
 				$("#beforeExDataResult").click(changeExDataResultGo);
 				$("#exDataNewExtraction").click(newExtractionGo);
@@ -137,6 +138,38 @@
 				
 				var url = "${APP_ROOT}/sysmng/analysisExDataajax.do";
 				changeContent(url, param);
+			}
+			
+			function combinationGo() {
+				var param = {
+					ex_count : $("#nextWinCount").val()
+				};
+				
+				$.ajax({
+					type: "POST",
+					url: "${APP_ROOT}/sysmng/insertLottoCombination.do",
+					data: param,
+					dataType: "json",
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+		               		location.href = "/index.do";
+		               		return;
+		            	}
+
+						showSmallBox(result.msg);
+						
+						if (result.status == "success") {
+			    			searchGo();	
+		            	} else {
+		            		alert(result.msg);
+		            	}
+					}
+				});
 			}
 			
 			function extractionGo() {

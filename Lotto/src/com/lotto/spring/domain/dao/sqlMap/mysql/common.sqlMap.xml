@@ -73,4 +73,11 @@
 		INSERT INTO tb_log_info (yyyymmdd, hhmmss, log_type, user_no, access_ip, etc01, etc02, etc03)
 		VALUES(DATE_FORMAT(NOW(), '%Y%m%d'), DATE_FORMAT(NOW(), '%H%i%s'), #{log_type}, #{user_no}, #{access_ip}, #{etc01}, #{etc02}, #{etc03})		 
 	</insert>
+	
+	<!-- 로그인 로그등록 -->
+ 	<insert id="insertLoginAccess" parameterType="java.util.Map">
+ 		/* common.insertLoginAccess */	
+		INSERT INTO tb_log_access (yyyymmdd, hhmmss, log_type, user_no, access_ip, msg_s, msg_l)
+		VALUES(DATE_FORMAT(NOW(), '%Y%m%d'), DATE_FORMAT(NOW(), '%H%i%s'), #{log_type}, #{user_no}, #{access_ip}, #{msg_s}, #{msg_l})		 
+	</insert>
 </mapper>

@@ -11,6 +11,7 @@ public class UserSession {
 	public static final String[][] RESULT_ARR = {
 			{"F01","아이디 또는 비밀번호 누락"},
 			{"F02","아이디 또는 비밀번호가 일치하지 않습니다."},
+			{"F03","미사용 회원입니다. 계정을 활성화 하시겠습니까?"},
 			{"F05","비밀번호 오류 횟수가 5회 초과하였습니다. 비밀번호를 다시 설정하시겠습니까?"},
 			{"F06","접근이 허용되지 않은 IP입니다."},
 			{"T01","초기화되거나 유효기간이 만료된 비밀번호입니다."},
@@ -18,6 +19,7 @@ public class UserSession {
 			{"T04","암호를 변경한 지 3개월이 경과되었거나 변경한 이력이 없습니다. 비밀번호를 다시 설정하시겠습니까?"},
 			{"T05","사용 권한이 없습니다. 관리자에게 문의바랍니다."},
 			{"T06","접속 권한이 없습니다. 관리자에게 문의바랍니다."},
+			{"T99","로그인 실패. 관리자에게 문의바랍니다."},
 			{"T","로그인 성공"}
 	};
 	
@@ -25,6 +27,9 @@ public class UserSession {
 	public static final String GRADE_N = "normal";
 	public static final String GRADE_P = "paiduser";
 	public static final String GRADE_S = "system";
+	
+	public static final String SNS_NAVER = "naver";
+	public static final String SNS_KAKAO = "kakao";
 	
 	private int user_no;
 	private long access_no;
@@ -38,6 +43,7 @@ public class UserSession {
 	private String rcmd_nick;
 	private String svc_agreen_yn;
 	private int login_fail_cnt;
+	private String use_yn;
 	private String auth_task;
 	private String auth_menu;
 	private String cr_dt;
@@ -281,6 +287,14 @@ public class UserSession {
 
 	public void setIsLogin(String isLogin) {
 		this.isLogin = isLogin;
+	}
+
+	public String getUse_yn() {
+		return use_yn;
+	}
+
+	public void setUse_yn(String use_yn) {
+		this.use_yn = use_yn;
 	}
     
 

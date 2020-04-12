@@ -53,4 +53,22 @@ public class CommonService extends DefaultService {
 		//}
 		return flag;				
 	}
+	
+	/**
+	 * 로그인 로그등록
+	 * 2020.04.12
+	 * 
+	 * @param map
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public boolean insertLoginAccess(Map map) {
+		boolean flag = false;
+		int i = (Integer) baseDao.insert("commonMapper.insertLoginAccess", map);
+		//2018.04.25 리턴값 버그로 true 처리
+		//if(i > 0) {
+		flag = true;		
+		//}
+		return flag;				
+	}
 }

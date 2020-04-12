@@ -175,4 +175,12 @@
 			, DATE(NOW())
 		)
 	</insert>
+	
+	<!-- SMS 사용자 등록여부 체크 -->
+	<select id="checkDuplSnsNaver" parameterType="java.util.Map" resultType="int">
+		SELECT COUNT(*)
+		FROM tb_user_info_naver
+		WHERE user_id = #{user_id}
+	</select>
+	
 </mapper>

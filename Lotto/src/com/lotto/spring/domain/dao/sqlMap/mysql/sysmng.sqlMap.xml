@@ -694,8 +694,7 @@
 		FROM
 		(
 			SELECT 
-				  EX_COUNT
-				, NUM1
+				  NUM1
 				, NUM2
 				, NUM3
 				, NUM4
@@ -705,12 +704,10 @@
 				, SUM_END_NUM
 				, LOW_HIGH
 				, ODD_EVEN
-				, AC
-				, PTRN_MATCH_CNT
+				, AC				
 				, @rownum := @rownum+1 AS row_num
 			FROM tb_expt_num_new, (SELECT @rownum :=0) AS R		
 			WHERE 1=1
-			AND EX_COUNT = #{ex_count}
 			ORDER BY 
 			<choose>
     			<when test='sidx!=null and sidx != ""'>
@@ -739,8 +736,6 @@
 		/* sysmng.getExDataNewListCnt */
 		SELECT COUNT(*)				
 		FROM tb_expt_num_new
-		WHERE 1=1
-		AND EX_COUNT = #{ex_count}
 	</select>
 	
 	<!-- 예상번호 목록 등록 -->
@@ -787,8 +782,7 @@
 	<insert id="insertExptNumNew" parameterType="exDataDto">
 		/* sysmng.insertExptNumNew */
 		INSERT INTO tb_expt_num_new (
-			  EX_COUNT
-			, SEQ
+			  SEQ
 			, NUM1
 			, NUM2
 			, NUM3
@@ -800,12 +794,10 @@
 			, LOW_HIGH
 			, ODD_EVEN
 			, AC
-			, PTRN_MATCH_CNT
 		)
 		VALUES
 		(
-			  #{ex_count}
-			, #{seq}
+			  #{seq}
 			, #{num1}
 			, #{num2}
 			, #{num3}
@@ -817,7 +809,6 @@
 			, #{low_high}
 			, #{odd_even}
 			, #{ac}
-			, #{ptrn_match_cnt}
 		)
 	</insert>
 	
@@ -839,7 +830,6 @@
 	<delete id="deleteExptNumNew" parameterType="exDataDto">
 		/* sysmng.deleteExptNumNew */
 		DELETE FROM tb_expt_num_new
-		WHERE EX_COUNT = #{ex_count}
 	</delete>
 	
 	<!-- 예상번호 NEW 검증 삭제 -->
@@ -1404,4 +1394,74 @@
 			, UP_DT = NOW()
 		WHERE SVC_CD = #{svc_cd}
 	</update>
+	
+	<!-- 로또번호조합 목록 등록 -->
+	<insert id="insertLottoCombinationList" parameterType="java.util.Map">
+		/* sysmng.insertWinDataList */
+		INSERT INTO tb_lotto_combination (NUM1,NUM2,NUM3,NUM4,NUM5,NUM6,TOTAL,SUM_END_NUM,LOW_HIGH,ODD_EVEN,AC)
+		VALUES 
+		<foreach collection="list" item="item" open="" separator="," close="">
+		(#{item.num1},#{item.num2},#{item.num3},#{item.num4},#{item.num5},#{item.num6},#{item.total},#{item.sum_end_num},#{item.low_high},#{item.odd_even},#{item.ac})
+		</foreach>
+	</insert>
+	
+	<!-- 로또번호조합 목록 조회 -->
+	<select id="getCombinationList" parameterType="java.util.Map" resultType="exDataDto">
+		/* sysmng.getCombinationList */
+		SELECT 
+			  #{exCount}
+			, seq
+			, NUM1
+			, NUM2
+			, NUM3
+			, NUM4
+			, NUM5
+			, NUM6
+			, TOTAL
+			, SUM_END_NUM
+			, LOW_HIGH
+			, ODD_EVEN
+			, AC
+			, @rownum := @rownum+1 AS row_num
+		FROM tb_lotto_combination, (SELECT @rownum :=0) AS R		
+		WHERE 1=1
+		ORDER BY SEQ
+		LIMIT #{startSeq}, #{selectCnt}
+	</select>
+	
+	<!-- 예상번호 NEW 목록 등록 -->
+	<insert id="insertExptNumNewList" parameterType="java.util.Map">
+		/* sysmng.insertExptNumNewList */
+		INSERT INTO tb_expt_num_new (
+			  SEQ
+			, NUM1
+			, NUM2
+			, NUM3
+			, NUM4
+			, NUM5
+			, NUM6
+			, TOTAL
+			, SUM_END_NUM
+			, LOW_HIGH
+			, ODD_EVEN
+			, AC
+		)
+		VALUES 
+		<foreach collection="list" item="item" open="" separator="," close="">
+		(
+			  #{item.seq}
+			, #{item.num1}
+			, #{item.num2}
+			, #{item.num3}
+			, #{item.num4}
+			, #{item.num5}
+			, #{item.num6}
+			, #{item.total}
+			, #{item.sum_end_num}
+			, #{item.low_high}
+			, #{item.odd_even}
+			, #{item.ac}
+		)
+		</foreach>
+	</insert>
 </mapper>

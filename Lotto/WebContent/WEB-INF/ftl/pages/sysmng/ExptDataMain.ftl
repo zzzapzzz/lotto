@@ -32,6 +32,7 @@
 						</div>
 					</div>
 					
+					<span id="combinationExtraction" class="btn btn-success"><i class="fa fa-edit"></i> 전체조합 추출</span>
 					<span id="exDataExtraction" class="btn btn-success"><i class="fa fa-edit"></i> 예상번호 추출</span>
 					<span id="beforeExDataResult" class="btn btn-warning"><i class="fa fa-edit"></i> 전회차 매칭결과</span>
 					<span id="exDataNewExtraction" class="btn btn-success"><i class="fa fa-edit"></i> 예상번호 NEW 추출</span>

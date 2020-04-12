@@ -1162,6 +1162,23 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
+	 * 예상번호 NEW 목록 등록
+	 * 2020.04.12
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public boolean insertExptNumNewList(Map map) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.insert("sysmngMapper.insertExptNumNewList", map);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+		flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
 	 * 예상번호 NEW 검증 등록
 	 * 2020.04.04
 	 * 
@@ -2115,5 +2132,82 @@ public class SysmngService extends DefaultService {
 			flag = true;
 //		}
 		return flag;
+	}
+	
+	/**
+	 * 로또번호조합 전체 등록
+	 * 2020.04.12
+	 * 
+	 * @return
+	 */
+	public int insertLottoCombination() {
+		
+		/** 추출한 예상데이터 목록 */
+		List<ExDataDto> exDataList = new ArrayList<ExDataDto>();
+		
+		int seq = 0;
+		int saveCheckCnt = 10000;
+		int saveCnt = 0;
+		
+		for (int i = 1; i <= 45 - 5; i++) {
+			for (int j = i + 1; j <= 45 - 4; j++) {
+				for (int k = j + 1; k <= 45 - 3; k++) {
+					for (int l = k + 1; l <= 45 - 2; l++) {
+						for (int m = l + 1; m <= 45 - 1; m++) {
+							for (int n = m + 1; n <= 45; n++) {
+								
+								int[] numbers = new int[6];
+								numbers[0] = i;
+								numbers[1] = j;
+								numbers[2] = k;
+								numbers[3] = l;
+								numbers[4] = m;
+								numbers[5] = n;
+								numbers = (int[]) LottoUtil.dataSort(numbers);
+								
+								ExDataDto exData = lottoDataService.getExData(0, ++seq, numbers);
+								exDataList.add(exData);
+								
+								if (exDataList.size() == saveCheckCnt) {
+									Map<String, List> map = new HashMap<String, List>();
+									map.put("list", exDataList);
+									int cnt = (Integer) baseDao.insert("sysmngMapper.insertLottoCombinationList", map);
+									saveCnt += exDataList.size();
+									
+									log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 등록건수 = " + saveCnt);
+									
+									// 리스트 초기화
+									exDataList = new ArrayList<ExDataDto>();
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		// 나머지 건수 처리
+		if (seq > saveCnt && exDataList.size() > 0) {
+			Map<String, List> map = new HashMap<String, List>();
+			map.put("list", exDataList);
+			int cnt = (Integer) baseDao.insert("sysmngMapper.insertLottoCombinationList", map);
+			saveCnt += exDataList.size();
+			
+			log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 나머지건수 = " + exDataList.size());
+		}		
+		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 전체 등록건수 = " + saveCnt);
+		
+		return seq;
+	}
+
+	/**
+	 * 로또번호조합 목록 조회
+	 * 2020.04.12
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public List<ExDataDto> getCombinationList(Map<String, Integer> map) {
+		return (ArrayList<ExDataDto>) baseDao.getList("sysmngMapper.getCombinationList", map);
 	}
 }

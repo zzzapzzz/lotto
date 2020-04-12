@@ -251,7 +251,8 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 		// 아이디 재설정 후 로그인 아이디로 설정
 		log.info("[" + email + "] >  로그인 수행");
 			
-		CaseInsensitiveMap resultInfo = userInfoService.loginProc(email, thwd, userIp);
+//		CaseInsensitiveMap resultInfo = userInfoService.loginProc(email, thwd, userIp);
+		Map resultInfo = userInfoService.login(email, thwd, userIp, isAdmin);
         if (resultInfo != null) {
         	String loginResult  = (String) resultInfo.get("result");
         	int userNo  = (int) resultInfo.get("user_no");
@@ -426,6 +427,10 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 				
 			} else {
 				jsonObj.put("status", "fail");
+				
+				if ("F03".equals(loginResult)) {
+					jsonObj.put("status", "isActivate");
+				}
 			}
         	
         	
@@ -465,6 +470,7 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 		Map map = new HashMap();
 		map.put("email", email);
 		map.put("email_varify_yn", emailVarifyYn);
+		map.put("user_id", "");
 		if (!"".equals(userId)) {
 			map.put("user_id", Integer.parseInt(userId));
 		}
@@ -497,7 +503,8 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 		// 아이디 재설정 후 로그인 아이디로 설정
 		log.info("[" + email + "] > SNS 로그인 수행");
 		
-		CaseInsensitiveMap resultInfo = userInfoService.snsLoginProc(map);
+//		CaseInsensitiveMap resultInfo = userInfoService.snsLoginProc(map);
+		Map resultInfo = userInfoService.snsLogin(map);
 		if (resultInfo != null) {
 			String loginResult  = (String) resultInfo.get("result");
 			log.debug("result::" + loginResult);
