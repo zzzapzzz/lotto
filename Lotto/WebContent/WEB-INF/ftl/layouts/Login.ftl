@@ -422,7 +422,6 @@
 		<script type="text/javascript">
 			runAllForms();
 
-			Kakao.init('1342d57c2672941f535211c80bf2b025');
 
 			// 네이버 로그인 버튼 생성
 			var naverLogin = new naver.LoginWithNaverId(
@@ -436,6 +435,13 @@
 			);
 			
 			// 카카오 로그인 버튼 생성
+			
+			// Kakao.init('1342d57c2672941f535211c80bf2b025');
+			
+			
+			// TODO 다시 연동 테스트 할 것 
+			// https://developers.kakao.com/docs/latest/ko/kakaologin/js#login
+			/*
 		    Kakao.Auth.createLoginButton({
 		    	container: '#kakao-login-btn',
 		      	success: function(authObj) {
@@ -447,6 +453,7 @@
 		        	console.log('kakao login fail=',JSON.stringify(err));
 		      	}
 		    });
+		    */
 		    
 	
 			$(function() {

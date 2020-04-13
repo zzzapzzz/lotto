@@ -2,8 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">  
   
 <mapper namespace="userAuthMapper">
+	<select id="userLogin" statementType="CALLABLE" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		{CALL PW_LOGIN (#{email}, #{thwd}, #{access_ip})} 
+	</select>
 	
-	<!-- 사용자정보 조회 -->	
+	<select id="userSnsLogin" statementType="CALLABLE" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		{CALL PW_LOGIN_SNS (#{sns_type}, #{user_id}, #{email}, #{email_varify_yn}, #{nickname}, #{thumbnail_image}, #{access_ip})} 
+	</select>
+	
 	<select id="getUserInfo" parameterType="java.util.Map" resultType="com.lotto.spring.domain.dao.UserSession">
 		/* userAuth.getUserInfo */
 		SELECT 
@@ -15,8 +21,6 @@
 			, used_point
 			, mbtlnum
 			, thwd			
-			, thwd_q			
-			, thwd_a			
 			, rcmd_user_no
 			, svc_agree_yn
 			, login_fail_cnt
@@ -87,47 +91,24 @@
 	</select>
 	
 	<!-- 사용자 로그 등록 -->
-	<insert id="insertLogAgent" parameterType="java.util.Map">
-		INSERT INTO TB_LOG_ACCESS
-		(
-			yyyymmdd, 
-			hhmmss, 
-			log_type, 
-			user_no,
-			access_ip, 
-			msg_s, 
-			msg_l
-		)
-		VALUES
-		(
-			DATE_FORMAT(NOW(), '%Y%m%d'), 
-			DATE_FORMAT(NOW(), '%H%i%s'), 
-			#{log_type}, 
-			#{user_no},
-			#{user_ip},
-			#{msg_s},
-			#{msg_l}
-		)
+	<insert id="insertLogAgent" statementType="CALLABLE" parameterType="java.util.Map">
+		{CALL PW_LOGACCESS_I (#{log_type}, #{user_no}, #{user_ip}, #{msg_s}, #{msg_l})} 
 	</insert>
 	
 	<!-- 사용자 초기정보 등록 -->
-	<update id="setUserInfo" parameterType="java.util.Map">
-		UPDATE tb_user_info
-		SET up_dt = DATE(NOW()),
-			thwd = #{thwd},
-			thwd_q = #{thwd_q},
-			thwd_a = #{thwd_a}
-		WHERE email = #{email}
-	</update>
+	<select id="setUserInfo" statementType="CALLABLE" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		{CALL PW_USERINFO_INIT (#{email}, #{thwd}, #{access_ip}, #{thwd_q}, #{thwd_a})}
+	</select>
 	
 	<!-- 사용자 비밀번호 변경 -->
-	<update id="changeThwd" parameterType="java.util.Map">
-		UPDATE tb_user_info
-		SET up_dt = DATE(NOW()),
-			thwd = #{thwd},
-			login_fail_cnt = 0
-		WHERE email = #{email}
-	</update>
+	<select id="changeThwd" statementType="CALLABLE" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		{CALL PW_USERINFO_PWCHG (#{email}, #{thwd}, #{access_ip}, #{thwd_a})}
+	</select>
+	
+	<!-- 사용자 비밀번호 초기화 -->
+	<select id="initThwd" statementType="CALLABLE" parameterType="java.util.Map" resultType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		{CALL pw_UserInfo_PwInit (#{email}, #{access_ip})}
+	</select>
 	
 	<!-- 이메일 중복 체크 -->
 	<select id="checkDuplEmail" parameterType="java.util.Map" resultType="int">

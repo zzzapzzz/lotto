@@ -26,11 +26,11 @@ import org.springframework.web.bind.support.SessionStatus;
 import com.chello.base.common.resource.ResourceManager;
 import com.lotto.common.AuthInfo;
 import com.lotto.common.CommonUtils;
-import com.lotto.common.LottoUtil;
 import com.lotto.common.WebUtil;
 import com.lotto.spring.core.DefaultSMController;
 import com.lotto.spring.domain.dao.SystemSession;
 import com.lotto.spring.domain.dao.UserSession;
+import com.lotto.spring.service.CommonService;
 import com.lotto.spring.service.UserInfoService;
 
 import net.sf.json.JSONArray;
@@ -42,6 +42,9 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 	
 	@Autowired(required = true)
     private UserInfoService userInfoService;
+	
+	@Autowired(required = true)
+	private CommonService commonService;
 	
     private static LoginController loginController = null;
 	private static Hashtable loginUsers = new Hashtable();
@@ -755,6 +758,9 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 	/**
 	 * 사용자 초기정보 설정
 	 * 
+	 * 2020.04.14
+	 * 프로시저 호출 제거
+	 * 
 	 * @param modelMap
 	 * @param request
 	 * @param response
@@ -774,24 +780,45 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 		String thwdA       = WebUtil.replaceParam(request.getParameter("thwd_a"), "");
 		String userip = request.getRemoteHost();
 			
-		Map map = new HashMap();
-		map.put("email", email);
-		map.put("access_ip", userip);
-		map.put("thwd", newThwd);
-		map.put("thwd_q", thwdQ);
-		map.put("thwd_a", thwdA);
-		
-		
-		
-		//사용자 초기정보 설정
-		log.info("[" + email + "] > 사용자 초기정보 설정");
-		CaseInsensitiveMap resultInfo = userInfoService.setUserInfo(map);
-		String status = (String) resultInfo.get("result");
-		String msg = (String) resultInfo.get("msg");
-		
-		log.info("[" + email + "]\t" + msg);
-		jsonObj.put("status", status);
-		jsonObj.put("msg", msg);
+		try {
+			Map map = new HashMap();
+			map.put("email", email);
+			map.put("access_ip", userip);
+//			map.put("thwd", newThwd);	// 프로시저 호출 시 사용
+			map.put("thwd", CommonUtils.sha256(newThwd));
+			map.put("thwd_q", thwdQ);
+			map.put("thwd_a", thwdA);
+			
+			//사용자 초기정보 설정
+			log.info("[" + email + "] > 사용자 초기정보 설정");
+			CaseInsensitiveMap resultInfo = userInfoService.setUserInfo(map);
+			String status = (String) resultInfo.get("result");
+			String msg = (String) resultInfo.get("msg");
+			
+			
+			// 프로시저 미사용시 호출하도록 추가 2020.04.14
+			// 사용자 정보 조회
+			UserSession userSession = userInfoService.getUserInfo(email);
+			if (userSession != null) {
+				map.put("user_no", userSession.getUser_no());
+				
+				map.put("log_type","USERCHANGE");
+				map.put("etc01","사용자정보 설정");
+				map.put("etc02","");
+				map.put("etc03","");
+				commonService.logInsert(map);
+			}
+			
+			
+			
+			log.info("[" + email + "]\t" + msg);
+			jsonObj.put("status", status);
+			jsonObj.put("msg", msg);
+		} catch (Exception e) {
+			log.info("[" + email + "]\t\tEncoding Exception =" + e.getMessage());
+			jsonObj.put("status", "fail");
+			jsonObj.put("msg", "비밀번호 암호화 실패");
+		}
 				
 		log.debug("JSONObject::"+jsonObj.toString());
 		writeJSON(response, jsonObj);
@@ -800,6 +827,9 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 	
 	/**
 	 * 사용자 비밀번호 변경
+	 * 
+	 * 2020.04.14
+	 * 프로시저 호출 제거
 	 * 
 	 * @param modelMap
 	 * @param request
@@ -819,21 +849,53 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 		String changeThwd       = WebUtil.replaceParam(request.getParameter("change_thwd"), "");
 		String userip = request.getRemoteHost();
 		
-		Map map = new HashMap();
-		map.put("email", email);
-		map.put("access_ip", userip);
-		map.put("thwd", changeThwd);
-		map.put("thwd_a", thwdA);
+		try {
+			// 사용자 정보 조회
+			UserSession userSession = userInfoService.getUserInfo(email);
+			if (userSession != null) {
+				// 질문정답 확인
+				if (userSession.getThwd_a().equals(thwdA)) {
+					Map map = new HashMap();
+					map.put("email", email);
+					map.put("access_ip", userip);
+//					map.put("thwd", changeThwd);// 프로시저 호출 시 사용
+					map.put("thwd", CommonUtils.sha256(changeThwd));
+					map.put("thwd_a", thwdA);
+					
+					//사용자 비밀번호 변경
+					log.info("[" + email + "] > 사용자 비밀번호 변경");
+					CaseInsensitiveMap resultInfo = userInfoService.changeThwd(map);
+					String status = (String) resultInfo.get("result");
+					String msg = (String) resultInfo.get("msg");
+					
+					
+					// 프로시저 미사용시 호출하도록 추가 2020.04.14
+					map.put("user_no", userSession.getUser_no());
+					
+					map.put("log_type","USERCHANGE");
+					map.put("etc01","사용자 비밀번호 변경");
+					map.put("etc02","");
+					map.put("etc03","");
+					commonService.logInsert(map);
+					
+					
+					log.info("[" + email + "]\t" + msg);
+					jsonObj.put("status", status);
+					jsonObj.put("msg", msg);	
+				} else {
+					jsonObj.put("status", "fail");
+					jsonObj.put("msg", "질문정답 불일치");
+				}
+			} else {
+				jsonObj.put("status", "fail");
+				jsonObj.put("msg", "사용자 정보 불일치");
+			}
+		} catch (Exception e) {
+			log.info("[" + email + "]\t\tEncoding Exception =" + e.getMessage());
+			jsonObj.put("status", "fail");
+			jsonObj.put("msg", "비밀번호 암호화 실패");
+		}
 		
-		//사용자 비밀번호 변경
-		log.info("[" + email + "] > 사용자 비밀번호 변경");
-		CaseInsensitiveMap resultInfo = userInfoService.changeThwd(map);
-		String status = (String) resultInfo.get("result");
-		String msg = (String) resultInfo.get("msg");
-		
-		log.info("[" + email + "]\t" + msg);
-		jsonObj.put("status", status);
-		jsonObj.put("msg", msg);
 		
 		log.debug("JSONObject::"+jsonObj.toString());
 		writeJSON(response, jsonObj);
@@ -882,6 +944,12 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 	
 	/**
 	 * 비밀번호 초기화
+	 *
+	 * 2020.04.14
+	 * 프로시저 호출 제거
+	 * 
+	 * TODO 2020.04.14
+	 * Email 또는 메신저?로 연동하도록 변경해야함.
 	 * 
 	 * @param modelMap
 	 * @param request
@@ -899,18 +967,39 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 		
 		String userip = request.getRemoteHost();
 		
-		//비밀번호 초기화
-		Map map = new HashMap();
-		map.put("email", email);
-		map.put("access_ip", userip);
-		
-		CaseInsensitiveMap resultInfo = userInfoService.initThwd(map);
-		String status = (String) resultInfo.get("result");
-		String msg = (String) resultInfo.get("msg");
-		
-		log.info("[" + email + "]\t" + msg);
-		jsonObj.put("status", status);
-		jsonObj.put("msg", msg);
+		try {
+			//비밀번호 초기화
+			Map map = new HashMap();
+			map.put("email", email);
+			map.put("access_ip", userip);
+			map.put("thwd", CommonUtils.sha256(email));
+			
+			CaseInsensitiveMap resultInfo = userInfoService.initThwd(map);
+			String status = (String) resultInfo.get("result");
+			String msg = (String) resultInfo.get("msg");
+			
+			
+			// 프로시저 미사용시 호출하도록 추가 2020.04.14
+			// 사용자 정보 조회
+			UserSession userSession = userInfoService.getUserInfo(email);
+			if (userSession != null) {
+				map.put("user_no", userSession.getUser_no());
+				
+				map.put("log_type","USERCHANGE");
+				map.put("etc01","비밀번호 초기화");
+				map.put("etc02","");
+				map.put("etc03","");
+				commonService.logInsert(map);
+			}
+			
+			log.info("[" + email + "]\t" + msg);
+			jsonObj.put("status", status);
+			jsonObj.put("msg", msg);
+		} catch (Exception e) {
+			log.info("[" + email + "]\t\tEncoding Exception =" + e.getMessage());
+			jsonObj.put("status", "fail");
+			jsonObj.put("msg", "비밀번호 암호화 실패");
+		}
 		
 		log.debug("JSONObject::"+jsonObj.toString());
 		writeJSON(response, jsonObj);

@@ -192,7 +192,7 @@
 
 
 	<!-- KAKAO -->
-	<script src="//developers.kakao.com/sdk/js/kakao.min.js"></script>
+	<script src="https://developers.kakao.com/sdk/js/kakao.min.js"></script>
 
 	<!--[if IE 8]>
 			
@@ -204,7 +204,7 @@
 	<script>
 
 		Kakao.init('1342d57c2672941f535211c80bf2b025');
-
+		
 		/* Callback의 처리.  */
 		Kakao.API.request({
 			url: '/v1/user/me',

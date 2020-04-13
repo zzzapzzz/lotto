@@ -25,23 +25,24 @@ public class UserInfoService extends DefaultService {
 	/**
 	 * 로그인 호출 (DB 프로시저)
 	 * 
+	 * @unused 2020.04.14
 	 * @param email
 	 * @param thwd
 	 * @param access_ip
 	 * @return
 	 */
-	public CaseInsensitiveMap loginProc(String email, String thwd, String access_ip) {
-		log.info("[" + email + "]\t[S] 로그인 호출 (DB 프로시저)");
-		log.info("[" + email + "]\t\temail=" + email);
-		log.info("[" + email + "]\t\taccess_ip=" + access_ip);
-		
-		HashMap<String, String> map = new HashMap<String, String>();
-		map.put("email", email);
-		map.put("thwd", thwd);
-		map.put("access_ip", access_ip);
-		
-		return (CaseInsensitiveMap) baseDao.getSingleRow("userAuthMapper.userLogin", map);
-	}
+//	public CaseInsensitiveMap loginProc(String email, String thwd, String access_ip) {
+//		log.info("[" + email + "]\t[S] 로그인 호출 (DB 프로시저)");
+//		log.info("[" + email + "]\t\temail=" + email);
+//		log.info("[" + email + "]\t\taccess_ip=" + access_ip);
+//		
+//		HashMap<String, String> map = new HashMap<String, String>();
+//		map.put("email", email);
+//		map.put("thwd", thwd);
+//		map.put("access_ip", access_ip);
+//		
+//		return (CaseInsensitiveMap) baseDao.getSingleRow("userAuthMapper.userLogin", map);
+//	}
 	
 	/**
 	 * 로그인
@@ -185,21 +186,22 @@ public class UserInfoService extends DefaultService {
 	/**
 	 * SNS 로그인 호출
 	 * 
+	 * @unused 2020.04.14
 	 * @param email
 	 * @param thwd
 	 * @param access_ip
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	public CaseInsensitiveMap snsLoginProc(Map map) {
-		String email = (String) map.get("email");
-		String access_ip = (String) map.get("access_ip");
-		log.info("[" + email + "]\t[S] SNS 로그인 호출");
-		log.info("[" + email + "]\t\temail=" + email);
-		log.info("[" + email + "]\t\taccess_ip=" + access_ip);
-		
-		return (CaseInsensitiveMap) baseDao.getSingleRow("userAuthMapper.userSnsLogin", map);
-	}
+//	@SuppressWarnings("rawtypes")
+//	public CaseInsensitiveMap snsLoginProc(Map map) {
+//		String email = (String) map.get("email");
+//		String access_ip = (String) map.get("access_ip");
+//		log.info("[" + email + "]\t[S] SNS 로그인 호출");
+//		log.info("[" + email + "]\t\temail=" + email);
+//		log.info("[" + email + "]\t\taccess_ip=" + access_ip);
+//		
+//		return (CaseInsensitiveMap) baseDao.getSingleRow("userAuthMapper.userSnsLogin", map);
+//	}
 	
 	/**
 	 * SNS 로그인
@@ -284,12 +286,21 @@ public class UserInfoService extends DefaultService {
 			// 미등록사용자 등록 처리
 			if (UserSession.SNS_NAVER.equals(sns_type)) {
 				
-				// TODO 네이버 등록 처리
+				// 네이버 등록 확인
+				exist = this.checkDuplNaver(map);
+				if (exist == 0) {
+					this.insertNaverUser(map);
+					log.info("[" + email + "]\t\t>" + sns_type + " 회원가입 완료");
+				}
 				
 			} else if (UserSession.SNS_KAKAO.equals(sns_type)) {
 				
-				// TODO 카카오 등록 처리
-				
+				// 카카오 등록 확인
+				exist = this.checkDuplKakao(map);
+				if (exist == 0) {
+					this.insertKakaoUser(map);
+					log.info("[" + email + "]\t\t>" + sns_type + " 회원가입 완료");
+				}
 			}
 		}
 		
@@ -427,7 +438,15 @@ public class UserInfoService extends DefaultService {
 	 * @return
 	 */
 	public CaseInsensitiveMap setUserInfo(Map map) {
-		return (CaseInsensitiveMap) baseDao.getSingleRow("userAuthMapper.setUserInfo", map);
+		// 프로시저 호출
+//		return (CaseInsensitiveMap) baseDao.getSingleRow("userAuthMapper.setUserInfo", map);
+		int i = baseDao.update("userAuthMapper.setUserInfo", map);
+		log.debug("\t\t사용자 초기정보 등록 결과 = " + i);
+		
+		CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap();
+		caseInsensitiveMap.put("result", "success");
+		caseInsensitiveMap.put("msg", "사용자 초기정보 등록 완료");
+		return caseInsensitiveMap;
 	}
 	
 	/**
@@ -437,7 +456,15 @@ public class UserInfoService extends DefaultService {
 	 * @return
 	 */
 	public CaseInsensitiveMap changeThwd(Map map) {
-		return (CaseInsensitiveMap) baseDao.getSingleRow("userAuthMapper.changeThwd", map);
+		// 프로시저 호출
+//		return (CaseInsensitiveMap) baseDao.getSingleRow("userAuthMapper.changeThwd", map);
+		int i = baseDao.update("userAuthMapper.changeThwd", map);
+		log.debug("\t\t사용자 비밀번호 변경 결과 = " + i);
+		
+		CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap();
+		caseInsensitiveMap.put("result", "success");
+		caseInsensitiveMap.put("msg", "사용자 초기정보 등록 완료");
+		return caseInsensitiveMap;
 	}
 	
 	/**
@@ -447,7 +474,15 @@ public class UserInfoService extends DefaultService {
 	 * @return
 	 */
 	public CaseInsensitiveMap initThwd(Map map) {
-		return (CaseInsensitiveMap) baseDao.getSingleRow("userAuthMapper.initThwd", map);
+		// 프로시저 호출
+//		return (CaseInsensitiveMap) baseDao.getSingleRow("userAuthMapper.initThwd", map);
+		int i = baseDao.update("userAuthMapper.changeThwd", map);
+		log.debug("\t\t사용자 초기정보 등록 결과 = " + i);
+		
+		CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap();
+		caseInsensitiveMap.put("result", "success");
+		caseInsensitiveMap.put("msg", "사용자 초기정보 등록 완료");
+		return caseInsensitiveMap;
 	}
 	
 	/**
@@ -458,6 +493,28 @@ public class UserInfoService extends DefaultService {
 	 */
 	public int checkDuplEmail(Map map) {
 		return (int) baseDao.getSingleRow("userAuthMapper.checkDuplEmail", map);
+	}
+	
+	/**
+	 * 사용자 등록여부 체크 (naver)
+	 * 2020.04.13
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public int checkDuplNaver(Map map) {
+		return (int) baseDao.getSingleRow("userAuthMapper.checkDuplNaver", map);
+	}
+	
+	/**
+	 * 사용자 등록여부 체크 (kakao)
+	 * 2020.04.13
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public int checkDuplKakao(Map map) {
+		return (int) baseDao.getSingleRow("userAuthMapper.checkDuplKakao", map);
 	}
 	
 	/**
@@ -493,6 +550,28 @@ public class UserInfoService extends DefaultService {
 		return (int) baseDao.insert("userAuthMapper.join", map);
 	}
 
+	/**
+	 * 회원등록 (naver)
+	 * 2020.04.13
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public int insertNaverUser(Map map) {
+		return (int) baseDao.insert("userAuthMapper.insertNaverUser", map);
+	}
+	
+	/**
+	 * 회원등록 (kakao)
+	 * 2020.04.13
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public int insertKakaoUser(Map map) {
+		return (int) baseDao.insert("userAuthMapper.insertKakaoUser", map);
+	}
+	
 	/**
 	 * 접속권한 체크
 	 * @param map email : 접속자 이메일, authCd : 접속자 권한코드, menuUrl : 현재 접속 URL

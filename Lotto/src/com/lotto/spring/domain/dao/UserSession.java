@@ -40,6 +40,8 @@ public class UserSession {
 	private int used_point;
 	private String mbtlnum;
 	private String thwd;
+	private String thwd_q;
+	private String thwd_a;
 	private String rcmd_nick;
 	private String svc_agreen_yn;
 	private int login_fail_cnt;
@@ -295,6 +297,22 @@ public class UserSession {
 
 	public void setUse_yn(String use_yn) {
 		this.use_yn = use_yn;
+	}
+
+	public String getThwd_q() {
+		return thwd_q;
+	}
+
+	public void setThwd_q(String thwd_q) {
+		this.thwd_q = thwd_q;
+	}
+
+	public String getThwd_a() {
+		return thwd_a;
+	}
+
+	public void setThwd_a(String thwd_a) {
+		this.thwd_a = thwd_a;
 	}
     
 
