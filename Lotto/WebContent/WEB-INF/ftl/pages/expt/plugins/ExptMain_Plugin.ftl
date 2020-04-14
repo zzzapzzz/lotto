@@ -19,8 +19,9 @@
 				search10();
 				
 				$("#search10").click(search10);
-				$("#search20").click(search20);
-				$("#search30").click(search30);
+				// TODO 회원만 가능하도록 처리필요
+				//$("#search20").click(search20);
+				//$("#search30").click(search30);
 			});
 
 			function initPlugin() {

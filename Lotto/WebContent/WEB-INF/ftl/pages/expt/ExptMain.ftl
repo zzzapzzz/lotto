@@ -27,8 +27,7 @@
 					-->
 					
 					<span id="search10" class="btn btn-success" onclick="javascript:search10();"><i class="fa fa-search"></i> 10조합</span>
-					<span id="search20" class="btn btn-success" onclick="javascript:search20();"><i class="fa fa-search"></i> 20조합</span>
-					<span id="search30" class="btn btn-success" onclick="javascript:search30();"><i class="fa fa-search"></i> 30조합</span>
+					
 					
 					<!-- row -->
 					<div class="row">
