@@ -720,10 +720,6 @@
 					joinProcGo();
 			    });
 				
-				//TEST
-				$("#email").val("smlotto@naver.com");
-				$("#thwd").val("Qudrkfl!3023");
-				
 				// 로그인체크 메세지 표시
 				if ("N" == $("#isLogin").val()) {
 					showSmallBox("로그인이 필요합니다.");
