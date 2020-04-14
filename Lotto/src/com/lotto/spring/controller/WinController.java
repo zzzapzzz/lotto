@@ -194,6 +194,10 @@ public class WinController extends DefaultSMController {
 			}
 			log.info("["+loginUserId+"][C] 당첨번호 조회");
 			
+			// 검색조건 설정
+			int winCount = dto.getWin_count();
+			log.info("["+loginUserId+"]\t> 회차 : " + winCount);
+			
 			// 당첨번호 전체 목록 조회
 			WinDataDto winDataDto = new WinDataDto();
 			winDataDto.setSord("DESC");
@@ -201,8 +205,10 @@ public class WinController extends DefaultSMController {
 			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
 						
 			if (winDataList != null && winDataList.size() > 0) {
-				// 최근 당첨번호정보 조회
 				WinDataDto winData = winDataList.get(0);
+				if (winCount != 0) {
+					winData = sysmngService.getWinData(dto);
+				}
 				jsonObj.put("data", winData);
 				
 				// 회차합 조회
