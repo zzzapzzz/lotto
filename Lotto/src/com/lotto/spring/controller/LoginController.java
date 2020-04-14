@@ -803,7 +803,7 @@ public class LoginController extends DefaultSMController implements HttpSessionB
 				map.put("user_no", userSession.getUser_no());
 				
 				map.put("log_type","USERCHANGE");
-				map.put("etc01","사용자정보 설정");
+				map.put("etc01","회원정보 설정");
 				map.put("etc02","");
 				map.put("etc03","");
 				commonService.logInsert(map);

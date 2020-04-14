@@ -3,7 +3,7 @@
   
 <mapper namespace="userAuthMapper">
 	
-	<!-- 사용자정보 조회 -->	
+	<!-- 회원정보 조회 -->	
 	<select id="getUserInfo" parameterType="java.util.Map" resultType="com.lotto.spring.domain.dao.UserSession">
 		/* userAuth.getUserInfo */
 		SELECT 

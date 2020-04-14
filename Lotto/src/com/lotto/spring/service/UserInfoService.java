@@ -80,7 +80,7 @@ public class UserInfoService extends DefaultService {
 			return map;
 		}
 		
-		/* 3. 로그인 사용자정보 조회 */
+		/* 3. 로그인 회원정보 조회 */
 		UserSession userSession = this.getUserInfo(email);
 		map.put("user_no", userSession.getUser_no());			
 		
@@ -276,7 +276,7 @@ public class UserInfoService extends DefaultService {
 				
 		}
 		
-		/* 3. 로그인 사용자정보 조회 */
+		/* 3. 로그인 회원정보 조회 */
 		UserSession userSession = this.getUserInfo(email);
 		map.put("user_no", userSession.getUser_no());			
 		

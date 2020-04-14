@@ -289,7 +289,7 @@
 			
 			
 			function createUserInfoGo() {
-				$("#userInfoTitle").text('사용자정보 등록');
+				$("#userInfoTitle").text('회원정보 등록');
 				$("#usr_id").val("");
 				$("#usr_id").removeAttr("disabled");
 				$("#usr_nm").val("");
@@ -435,7 +435,7 @@
 					$(this).removeClass("state-success");
 				});
 				
-				$("#userInfoTitle").text('사용자정보 수정');
+				$("#userInfoTitle").text('회원정보 수정');
 				$("#usr_id").val(usr_id);
 				$("#usr_id").attr("disabled", "disabled");
 				$("#usr_nm").val(usr_nm);

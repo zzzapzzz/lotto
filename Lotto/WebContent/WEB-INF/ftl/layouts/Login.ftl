@@ -224,10 +224,10 @@
 							</form>
 							<!-- end 비밀번호 변경 -->
 							
-							<!-- 사용자정보 설정 -->
+							<!-- 회원정보 설정 -->
 							<form action="javascript:resetProc();" id="reset-form" class="smart-form client-form hide">
 								<header>
-									사용자정보 설정
+									회원정보 설정
 								</header>
 
 								<fieldset>
@@ -277,7 +277,7 @@
 									</button>
 								</footer>
 							</form>
-							<!-- end 사용자정보 설정 -->
+							<!-- end 회원정보 설정 -->
 							
 							<!-- 비밀번호 찾기 -->
 							<form action="javascript:forgetProc();" id="forget-form" class="smart-form client-form hide">

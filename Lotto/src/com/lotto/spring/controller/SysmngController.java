@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
+import com.lotto.common.CommonUtils;
 import com.lotto.common.FileUtils;
 import com.lotto.common.LottoUtil;
 import com.lotto.common.WebUtil;
@@ -50,10 +51,12 @@ import com.lotto.spring.domain.dto.UserInfoDto;
 import com.lotto.spring.domain.dto.WinDataAnlyDto;
 import com.lotto.spring.domain.dto.WinDataDto;
 import com.lotto.spring.domain.dto.ZeroRangeDto;
+import com.lotto.spring.service.CommonService;
 import com.lotto.spring.service.ExcelService;
 import com.lotto.spring.service.LottoDataService;
 import com.lotto.spring.service.PatternAnalysisService;
 import com.lotto.spring.service.SysmngService;
+import com.lotto.spring.service.UserInfoService;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -73,6 +76,12 @@ public class SysmngController extends DefaultSMController {
 	
 	@Autowired(required = true)
 	private PatternAnalysisService patternAnalysisService;
+	
+	@Autowired(required = true)
+    private UserInfoService userInfoService;
+	
+	@Autowired(required = true)
+	private CommonService commonService;
 	
 	private Logger log = Logger.getLogger(this.getClass());
 	
@@ -276,16 +285,45 @@ public class SysmngController extends DefaultSMController {
 			dto.setReg_user_no(loginUserNo);
 			dto.setAccess_ip(accessip);
 			
-			//회원정보 등록
-			log.info("[" + loginUserNo + "] > 회원정보 등록");
-			CaseInsensitiveMap resultInfo = sysmngService.createUserInfo(dto);
-			String status = (String) resultInfo.get("result");
-			String msg = (String) resultInfo.get("msg");
+			try {
+				dto.setThwd(CommonUtils.sha256(dto.getEmail()));
+			} catch (Exception e) {
+				log.info("[" + dto.getEmail() + "]\t\tEncoding Exception =" + e.getMessage());
+				dto.setThwd("");
+			}
 			
-			log.info("[" + loginUserNo + "]\t" + msg);
-			jsonObj.put("status", status);
-			jsonObj.put("msg", msg);
-			
+			// 회원정보 중복확인
+			UserSession userSession = userInfoService.getUserInfo(dto.getEmail());
+			if (userSession == null) {
+				//회원정보 등록
+				log.info("[" + loginUserNo + "] > 회원정보 등록");
+				CaseInsensitiveMap resultInfo = sysmngService.createUserInfo(dto);
+				String status = (String) resultInfo.get("result");
+				String msg = (String) resultInfo.get("msg");
+				
+				
+				// 프로시저 미사용시 호출하도록 추가 2020.04.14
+				// 사용자 정보 조회
+				userSession = userInfoService.getUserInfo(dto.getEmail());
+				if (userSession != null) {
+					Map map = new HashMap();
+					map.put("log_type","USERCHANGE");
+					map.put("user_no", userSession.getUser_no());
+					map.put("access_ip", accessip);
+					map.put("etc01","회원정보 등록");
+					map.put("etc02","");
+					map.put("etc03","");
+					commonService.logInsert(map);
+				}
+				
+				
+				log.info("[" + loginUserNo + "]\t" + msg);
+				jsonObj.put("status", status);
+				jsonObj.put("msg", msg);
+			} else {
+				jsonObj.put("status", "fail");
+				jsonObj.put("msg", "이미 등록된 회원입니다.");
+			}
 		} else {
 			jsonObj.put("status", "usernotfound");
 			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
@@ -326,6 +364,22 @@ public class SysmngController extends DefaultSMController {
 			CaseInsensitiveMap resultInfo = sysmngService.modifyUserInfo(dto);
 			String status = (String) resultInfo.get("result");
 			String msg = (String) resultInfo.get("msg");
+			
+			
+			// 프로시저 미사용시 호출하도록 추가 2020.04.14
+			// 사용자 정보 조회
+			UserSession userSession = userInfoService.getUserInfo(dto.getEmail());
+			if (userSession != null) {
+				Map map = new HashMap();
+				map.put("log_type","USERCHANGE");
+				map.put("user_no", userSession.getUser_no());
+				map.put("access_ip", accessip);
+				map.put("etc01","회원정보 수정");
+				map.put("etc02","");
+				map.put("etc03","");
+				commonService.logInsert(map);
+			}
+			
 			
 			log.info("[" + loginUserNo + "]\t" + msg);
 			jsonObj.put("status", status);
@@ -372,6 +426,18 @@ public class SysmngController extends DefaultSMController {
 			String status = (String) resultInfo.get("result");
 			String msg = (String) resultInfo.get("msg");
 			
+			
+			// 프로시저 미사용시 호출하도록 추가 2020.04.14
+			Map map = new HashMap();
+			map.put("log_type","USERCHANGE");
+			map.put("user_no", dto.getUser_no());
+			map.put("access_ip", accessip);
+			map.put("etc01","회원정보 삭제");
+			map.put("etc02","");
+			map.put("etc03","");
+			commonService.logInsert(map);
+						
+						
 			log.info("[" + loginUserNo + "]\t" + msg);
 			jsonObj.put("status", status);
 			jsonObj.put("msg", msg);

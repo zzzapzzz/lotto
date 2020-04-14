@@ -91,33 +91,58 @@ public class SysmngService extends DefaultService {
 	}
 
 	/**
-	 * 사용자정보 등록
+	 * 회원정보 등록
 	 * 
 	 * @param dto
 	 * @return
 	 */
 	public CaseInsensitiveMap createUserInfo(UserInfoDto dto) {
-		return (CaseInsensitiveMap) baseDao.getSingleRow("sysmngMapper.createUserInfo", dto);
+		// 프로시저 호출
+//		return (CaseInsensitiveMap) baseDao.getSingleRow("sysmngMapper.createUserInfo", dto);
+		int i = baseDao.insert("sysmngMapper.createUserInfo", dto);
+		log.debug("\t\t회원정보 등록 결과 = " + i);
+		
+		CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap();
+		caseInsensitiveMap.put("result", "success");
+		caseInsensitiveMap.put("msg", "등록 되었습니다.");
+		return caseInsensitiveMap;
 	}
 	
 	/**
-	 * 사용자정보 수정
+	 * 회원정보 수정
 	 * 
 	 * @param dto
 	 * @return
 	 */
 	public CaseInsensitiveMap modifyUserInfo(UserInfoDto dto) {
-		return (CaseInsensitiveMap) baseDao.getSingleRow("sysmngMapper.modifyUserInfo", dto);
+		// 프로시저 호출
+//		return (CaseInsensitiveMap) baseDao.getSingleRow("sysmngMapper.modifyUserInfo", dto);
+		int i = baseDao.update("sysmngMapper.modifyUserInfo", dto);
+		log.debug("\t\t회원정보 수정 결과 = " + i);
+		
+		CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap();
+		caseInsensitiveMap.put("result", "success");
+		caseInsensitiveMap.put("msg", "수정 되었습니다.");
+		return caseInsensitiveMap;
 	}
 	
 	/**
-	 * 사용자정보 삭제
+	 * 회원정보 삭제
 	 * 
 	 * @param dto
 	 * @return
 	 */
 	public CaseInsensitiveMap deleteUserInfo(UserInfoDto dto) {
-		return (CaseInsensitiveMap) baseDao.getSingleRow("sysmngMapper.deleteUserInfo", dto);
+		// 프로시저 호출
+//		return (CaseInsensitiveMap) baseDao.getSingleRow("sysmngMapper.deleteUserInfo", dto);
+		// FK연결 관계로 인한 하위정보까지 삭제 처리함.
+		int i = baseDao.delete("sysmngMapper.deleteUserInfo", dto);
+		log.debug("\t\t회원정보 삭제 결과 = " + i);
+		
+		CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap();
+		caseInsensitiveMap.put("result", "success");
+		caseInsensitiveMap.put("msg", "삭제 되었습니다.");
+		return caseInsensitiveMap;
 	}
 	
 	/**

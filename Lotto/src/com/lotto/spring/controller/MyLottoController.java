@@ -2755,7 +2755,7 @@ public class MyLottoController extends DefaultSMController {
 	}
 	
 	/**
-	 * 사용자정보 화면 호출
+	 * 회원정보 화면 호출
 	 * 
 	 * @param modelMap
 	 * @param request
@@ -2774,7 +2774,7 @@ public class MyLottoController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			int loginUserId = userInfo.getUser_no();
-			log.info("["+loginUserId+"][C] 사용자정보 화면 호출");
+			log.info("["+loginUserId+"][C] 회원정보 화면 호출");
 			
 			setModelMap(modelMap, request);
 			
@@ -2792,7 +2792,7 @@ public class MyLottoController extends DefaultSMController {
 	}
 	
 	/**
-	 * 사용자정보 화면 호출(ajax)
+	 * 회원정보 화면 호출(ajax)
 	 * 
 	 * @param modelMap
 	 * @param request
@@ -2810,14 +2810,14 @@ public class MyLottoController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			int loginUserId = userInfo.getUser_no();
-			log.info("["+loginUserId+"][C] 사용자정보 화면 호출(ajax)");
+			log.info("["+loginUserId+"][C] 회원정보 화면 호출(ajax)");
 			
 			setModelMap(modelMap, request);
 			
 			modelMap.addAttribute(CONTENT_PAGE, "mylotto/ProfileMain");
 			modelMap.addAttribute("isAjax", "Y");
 			
-			// 사용자정보 조회
+			// 회원정보 조회
 			UserInfoDto userInfoDto = new UserInfoDto();
 			userInfoDto.setUser_no(loginUserId);
 			userInfoDto =  sysmngService.getUserInfo(userInfoDto);
@@ -2829,7 +2829,7 @@ public class MyLottoController extends DefaultSMController {
 	}
 	
 	/**
-	 * 사용자정보 화면 호출(plugin)
+	 * 회원정보 화면 호출(plugin)
 	 * 
 	 * @param modelMap
 	 * @param request
@@ -2847,7 +2847,7 @@ public class MyLottoController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			int loginUserId = userInfo.getUser_no();
-			log.info("["+loginUserId+"][C] 사용자정보 화면 호출(plugin)");
+			log.info("["+loginUserId+"][C] 회원정보 화면 호출(plugin)");
 			
 			setModelMap(modelMap, request);
 			
