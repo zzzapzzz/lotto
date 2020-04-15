@@ -698,7 +698,8 @@
 		FROM
 		(
 			SELECT 
-				  NUM1
+				  SEQ
+				, NUM1
 				, NUM2
 				, NUM3
 				, NUM4

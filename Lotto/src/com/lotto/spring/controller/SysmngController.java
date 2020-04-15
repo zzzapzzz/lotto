@@ -2208,6 +2208,147 @@ public class SysmngController extends DefaultSMController {
 	}
 	
 	/**
+	 * 예상번호 30목록 NEW 조회
+	 * 2020.04.15
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws SQLException
+	 */
+	@RequestMapping("/sysmng/getExData30NewList")
+	public void getExData30NewList(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute ExDataDto dto) throws SQLException {
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
+		JSONObject json = new JSONObject();
+		
+		//2016.05.23 cremazer
+		//ORACLE 인 경우 대문자 설정
+		if ("ORACLE".equals(systemInfo.getDatabase())) {
+			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
+		}
+		
+		// 로그인 아이디
+		int loginUserNo = userInfo.getUser_no();
+		log.info("[" + loginUserNo + "][C] 예상번호 30목록 조회");
+		String accessip = request.getRemoteHost();
+		
+		dto.setReg_user_no(loginUserNo);
+		dto.setAccess_ip(accessip);
+		
+		// 예상번호 NEW 검증 삭제
+		log.info("[" + loginUserNo + "]\t예상번호 NEW 검증 삭제");
+		sysmngService.deleteExptNumNewVari();
+
+		
+		int maxSaveCnt = 30; 	// 기본값 설정
+					
+		List<ExDataDto> exList = new ArrayList<ExDataDto>(); // 추출한 목록
+		
+		/*
+		 * 예상번호 NEW 조합 매핑에 사용되지 않은 번호가 있는지 확인
+		 * NEW조합을 사용자가 중복해서 사용하지 않도록 하기 위함.
+		 * 모든 번호가 매핑될 경우 무시하고 매핑할 수 있도록 해야함.
+		 */
+		
+		// 번호 저장 시 추가 필터를 통해 실행회수 개념을 추가함. 2020.04.08
+		// 실행회수
+		int excuteCnt = 0;
+		// 랜덤조회 실행기준 회수
+		int START_RANDOM_BASE_COUNT = 100;
+		// 실행 제한 횟수
+		int limitCnt = 500000;
+		// 저장건수
+		int saveCnt = 0;
+		// 중복확인 Map
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		
+		// 당첨번호 전체 목록 조회
+		WinDataDto winDataDto = new WinDataDto();
+		winDataDto.setSord("ASC");
+		List<WinDataAnlyDto> winDataList = sysmngService.getWinDataAnlyList(winDataDto);
+		
+		// 예상번호 30조합 추출
+		int exDataListCnt = sysmngService.getExDataNewListCnt(dto);
+		log.info("예상번호 총 건수 = " + exDataListCnt);
+		
+		List<ExDataDto> exDataAllList = sysmngService.getExDataNewList(dto);
+		log.info("예상번호 조회 건수 = " + exDataAllList.size());
+		if (exDataAllList != null) {
+			
+			// 조회건수가 랜덤조회 실행기준 회수보다 크다면 랜덤조합 실행
+			if (exDataAllList.size() > START_RANDOM_BASE_COUNT) {
+				do {
+					int randomSeq = (int) (Math.random() * exDataAllList.size());
+					ExDataDto exDataDto = exDataAllList.get(randomSeq);
+					int exDataSeq = exDataDto.getSeq();					
+					
+					if (!map.containsKey(exDataSeq)) {
+						map.put(exDataSeq, exDataSeq);
+						
+						// 추가 필터 체크
+						boolean check = lottoDataService.checkAddFilter(exDataDto, winDataList);
+						if (check) {
+							exDataDto.setUser_no(loginUserNo);
+							exList.add(exDataDto);
+							saveCnt++;
+						}
+					}
+					
+					excuteCnt++;
+					if (excuteCnt == limitCnt) {
+						break;
+					}
+					
+				} while (maxSaveCnt > saveCnt);
+				log.info("[" + loginUserNo + "]\t\t> 전체 중 랜덤조합 포함 건수=" + exList.size());	
+			}
+			
+			// 실행제한으로 종료되면 미추출 대상으로 추가조회 2020.04.11
+			if (maxSaveCnt > saveCnt) {					
+				log.info("[" + loginUserNo + "]\t2-1. 순차조합 추출");
+				
+				for (ExDataDto exDataDto : exDataAllList) {
+					int exDataSeq = exDataDto.getSeq();
+					
+					if (!map.containsKey(exDataSeq)) {
+						map.put(exDataSeq, exDataSeq);
+						
+						// 추가 필터 체크
+						boolean check = lottoDataService.checkAddFilter(exDataDto, winDataList);
+						if (check) {
+							exDataDto.setUser_no(loginUserNo);
+							exList.add(exDataDto);
+							saveCnt++;
+						}
+					}
+					
+					if (maxSaveCnt == saveCnt) {
+						break;
+					}
+					
+				}
+				
+				log.info("[" + loginUserNo + "]\t\t> 순차조합 포함 추출건수=" + exList.size());
+			}
+		} //end if exDataAllList null check 
+		
+		
+		if (exList != null && exList.size() > 0) {
+			json.put("ex_numbers_cnt", exList.size());
+//			JSONArray jsonArr = JSONArray.fromObject(userList);
+			json.put("ex_numbers", exList);
+		} else {
+			json.put("ex_numbers_cnt", 0);
+		}
+		
+		json.put("status", "success");		
+		writeJSON(response, json); 
+	}
+	
+	/**
 	 * 최근 당첨회차 저고비율 조회
 	 * 
 	 * @param modelMap

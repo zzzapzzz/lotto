@@ -83,7 +83,8 @@
 				
 				$.ajax({
 					type: "POST",
-					url: "${APP_ROOT}/sysmng/getExData30List.do",
+					// url: "${APP_ROOT}/sysmng/getExData30List.do",
+					url: "${APP_ROOT}/sysmng/getExData30NewList.do",
 					data: param,
 					dataType: "json",
 					contentType: "application/x-www-form-urlencoded; charset=UTF-8",

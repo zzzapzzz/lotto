@@ -3358,6 +3358,9 @@ public class LottoDataService extends DefaultService {
 	 * @description <div id=description><b>등수확인</b></div >
 	 *              <div id=detail>예상데이터와 실제데이터를 비교하여 등수를 계산한다.</div >
 	 *              
+	 * 2020.04.15
+	 * 2등 체크로직 개선
+	 *              
 	 * @param exData 예상번호 정보
 	 * @param lastWinData 당첨번호 정보
 	 * @return
@@ -3368,7 +3371,6 @@ public class LottoDataService extends DefaultService {
 		int[] checkNumbers = LottoUtil.getNumbers(exData);
 		int[] lastWinDataNumbers = LottoUtil.getNumbers(lastWinData);
 		int bonusNumber = lastWinData.getBonus_num();
-		boolean isSecond = false;
 		
 		int matchNumbers = 0;
 
@@ -3378,27 +3380,38 @@ public class LottoDataService extends DefaultService {
 			winNumberMap.put(lastWinDataNumbers[i], lastWinDataNumbers[i]);
 		}
 		
+		String numbers = "";
+		
+		
 		// 번호 비교
+		Map<Integer, Integer> exNumberMap = new HashMap<Integer, Integer>();		
 		for (int i = 0; i < checkNumbers.length; i++) {
 			if (winNumberMap.containsKey(checkNumbers[i])) {
 				matchNumbers++;
+				exNumberMap.put(checkNumbers[i], 1);
 			}
+			
+			if (i > 0) {
+				numbers += ",";
+			}
+			numbers += checkNumbers[i];
 		}
 		
 		if (matchNumbers == 6) {
 			result = "1등";
-			
-//			logger.info("1등 예상번호 = " + exData.toString());
+		} else if (matchNumbers == 5) {			
+			result = "3등";
 			
 			// 보너스 포함여부 확인
-			for (int index = 0; index < checkNumbers.length; index++) {
-				if (checkNumbers[index] == bonusNumber) {
-					result = "2등";
-					break;
-				}
+			if (!exNumberMap.containsKey(bonusNumber)
+					&& winNumberMap.containsKey(bonusNumber)) {
+				result = "2등";
 			}
-		} else if (matchNumbers == 5) {
-			result = "3등";
+		
+			if (numbers.indexOf(bonusNumber) > -1) {
+				log.info(">>>>>>>>>>>>>>>>>>>>>> 2등 : " + numbers);
+			}
+			
 		} else if (matchNumbers == 4) {
 			result = "4등";
 		} else if (matchNumbers == 3) {
@@ -10739,6 +10752,18 @@ public class LottoDataService extends DefaultService {
 		
 		boolean result = false;
 		
+		// 27. 최근 10회 이내 포함개수 부적합 제외
+		result = this.checkLast10WinDatas(exData, winDataList);
+		if(!result) {
+			String comments = "추가 필터 : 최근 10회 이내 포함개수 부적합 제외";
+			log.info(comments);
+
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumNewVari(exData, comments);
+			
+			return false;
+		}
+				
 		// 29. 소수 0개, 4개 이상 포함 제외
 		// https://namu.wiki/w/소수(수론)
 		result = this.checkPrimeNumberCount(exData);
