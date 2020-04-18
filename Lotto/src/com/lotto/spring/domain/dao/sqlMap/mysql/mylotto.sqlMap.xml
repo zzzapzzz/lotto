@@ -116,7 +116,7 @@
 	<!-- 등록된 매핑 데이터 삭제 for New -->
 	<delete id="deleteMyNewMpngData" parameterType="myLottoSaveNumDto">		
 		/* mylotto.deleteMyNewMpngData */
-		DELETE FROM tb_expt_num_new_MPNG
+		DELETE FROM tb_expt_num_new_mpng
 		WHERE EX_COUNT = #{ex_count}
 		AND USER_NO = #{user_no}
 		<if test='seq != null and seq != 0'>
@@ -191,14 +191,13 @@
 		SELECT 
 			COUNT(N.SEQ)
 		FROM tb_expt_num_new N
-		WHERE N.EX_COUNT = #{ex_count}
+		WHERE 1=1
 		<if test='onlyUnused != null and onlyUnused == "Y"'>
 		AND NOT EXISTS (
 			SELECT
 				SEQ
-			FROM tb_expt_num_new_MPNG M
+			FROM tb_expt_num_new_mpng M
 			WHERE EX_COUNT = #{ex_count}
-			AND M.EX_COUNT = N.EX_COUNT
 			AND M.SEQ = N.SEQ
 		)
 		</if>
@@ -208,8 +207,7 @@
 	<select id="getExptNumNewList" parameterType="myLottoSaveNumDto" resultType="exDataDto">
 		/* mylotto.getExptNumNewList */		
 		SELECT 
-			  ex_count
-			, seq
+			  seq
 			, num1
 			, num2
 			, num3
@@ -221,17 +219,15 @@
 			, low_high 
 			, odd_even
 			, ac
-			, ptrn_match_cnt
 			, @rownum := @rownum+1 AS row_num
 		FROM tb_expt_num_new N, (SELECT @rownum :=0) AS R		
-		WHERE ex_count = #{ex_count}
+		WHERE 1=1
 		<if test='onlyUnused != null and onlyUnused == "Y"'>
 		AND NOT EXISTS (
 			SELECT
 				SEQ
-			FROM tb_expt_num_new_MPNG M
+			FROM tb_expt_num_new_mpng M
 			WHERE EX_COUNT = #{ex_count}
-			AND M.EX_COUNT = N.EX_COUNT
 			AND M.SEQ = N.SEQ
 		)
 		</if>

@@ -10904,7 +10904,19 @@ public class LottoDataService extends DefaultService {
 			
 			return false;
 		}
-				
+		
+		// 99. 로또9단 금주필터 적용
+//		result = this.checkLottoNineFilter(exData, winDataList);
+//		if (result) {
+//			String comments = "추가 필터 : 로또9단 " + exData.getEx_count() + "회 추천필터 적용 제외";
+//			log.info(comments);
+//			
+//			// TODO 실제 반영시에는 제거할 것
+//			sysmngService.insertExptNumNewVari(exData, comments);
+//			
+//			return false;
+//		}
+		
 		
 		// TODO 10주간 3회이상 출현번호 제외 확률
 		// 906회 추출 기준 7, 16, 18, 21, 26, 38 확인 필요.
@@ -10914,6 +10926,103 @@ public class LottoDataService extends DefaultService {
 		return check;
 	}
 	
+	/**
+	 * 로또9단의 금주 추천번호 필터를 적용한다.
+	 * 
+	 * @param exData
+	 * @param winDataList
+	 * @return true: 제외조합, false : 선택조합
+	 */
+	private boolean checkLottoNineFilter(ExDataDto exData, List<WinDataAnlyDto> winDataList) {
+		boolean check = false;
+		
+		int checkCnt = 0;
+		// 예상회차 조합번호
+		int[] numbers = LottoUtil.getNumbers(exData);
+		
+		/*
+		 * 0. 기본 제외수 포함 제외
+		 * - 1개라도 확인되면 제외
+		 */
+		int[] checkNumbers0 = {2,4,5,10,14,16,18,19,20,21,23,26,28,30,31,32,37,39,40,42,45};
+		Map<Integer, Integer> checkMap0 = new HashMap<Integer, Integer>();
+		for (int i = 0; i < checkNumbers0.length; i++) {
+			checkMap0.put(checkNumbers0[i], 1);
+		}
+		for (int i = 0; i < numbers.length; i++) {
+			if (checkMap0.containsKey(numbers[i])) {
+				// 제외조합 처리
+				return true;
+			}
+		}
+		
+		/*
+		 * 1. 특정구간 포함 체크
+		 * - 1개 이상 출현하면 통과
+		 * - 기본제외수 미포함 처리
+		 */
+		int[] checkNumbers1 = {9,11,12,13,17,22,24,25,33,34,35,36};
+		Map<Integer, Integer> checkMap1 = new HashMap<Integer, Integer>();
+		for (int i = 0; i < checkNumbers1.length; i++) {
+			checkMap1.put(checkNumbers1[i], 1);
+		}
+		for (int i = 0; i < numbers.length; i++) {
+			if (checkMap1.containsKey(numbers[i])) {
+				checkCnt++;
+			}
+		}
+		if (checkCnt == 0) {
+			//제외조합 처리
+			return true;
+		} else {
+			// 체크건수 초기화
+			checkCnt = 0;
+		}
+		
+		/*
+		 * 2. 약한구간 포함 체크
+		 * - 1개 이상 출현하면 통과
+		 */
+		int[] checkNumbers2 = {1,3,6,12,22,24,34,35,36,41,44};
+		Map<Integer, Integer> checkMap2 = new HashMap<Integer, Integer>();
+		for (int i = 0; i < checkNumbers2.length; i++) {
+			checkMap2.put(checkNumbers2[i], 1);
+		}
+		for (int i = 0; i < numbers.length; i++) {
+			if (checkMap2.containsKey(numbers[i])) {
+				checkCnt++;
+			}
+		}
+		if (checkCnt == 0) {
+			//제외조합 처리
+			return true;
+		} else {
+			// 체크건수 초기화
+			checkCnt = 0;
+		}
+		
+		/*
+		 * 3. 강한구간 포함 체크
+		 * - 1개 이상 출현하면 통과
+		 */
+		int[] checkNumbers3 = {9,11,13,17,25,27,29,33};
+		Map<Integer, Integer> checkMap3 = new HashMap<Integer, Integer>();
+		for (int i = 0; i < checkNumbers3.length; i++) {
+			checkMap3.put(checkNumbers3[i], 1);
+		}
+		for (int i = 0; i < numbers.length; i++) {
+			if (checkMap3.containsKey(numbers[i])) {
+				checkCnt++;
+			}
+		}
+		if (checkCnt == 0) {
+			//제외조합 처리
+			return true;
+		}
+		
+		return check;
+	}
+
 	/**
 	 * 이월수 2개이상 제외
 	 * 2020.04.11
