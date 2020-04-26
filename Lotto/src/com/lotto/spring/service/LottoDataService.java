@@ -6425,7 +6425,7 @@ public class LottoDataService extends DefaultService {
 	 * @param range 특정구간 <br>0: 1~9<br>1: 10~19<br>2: 20~29<br>3: 30~39<br>4: 40~45
 	 * @return
 	 */
-	public int[] getRange3Numbers(int[] numbers) { 
+	public int[] get5RangeNumbers(int[] numbers) { 
 		// 체크
 		int[] rangeCnt = {0,0,0,0,0};
 		for (int i = 0; i < numbers.length; i++) {
@@ -6439,6 +6439,30 @@ public class LottoDataService extends DefaultService {
 				rangeCnt[3] += 1;
 			} else {
 				rangeCnt[4] += 1;
+			}
+		}
+		
+		return rangeCnt;
+	}
+	
+	/**
+	 * 구간별 출현회수 목록 조회
+	 * 2020.04.25
+	 * 
+	 * @param numbers
+	 * @param range 특정구간 <br>0: 1~15<br>1: 16~30<br>2: 31~45
+	 * @return
+	 */
+	public int[] get3RangeNumbers(int[] numbers) { 
+		// 체크
+		int[] rangeCnt = {0,0,0};
+		for (int i = 0; i < numbers.length; i++) {
+			if (1 <= numbers[i] && numbers[i] <= 15) {
+				rangeCnt[0] += 1; 
+			} else if (16 <= numbers[i] && numbers[i] <= 30) {
+				rangeCnt[1] += 1;
+			} else if (31 <= numbers[i] && numbers[i] <= 45) {
+				rangeCnt[2] += 1;
 			}
 		}
 		
@@ -6848,7 +6872,7 @@ public class LottoDataService extends DefaultService {
 			
 			if (isAppear) {
 				// 구간별 출현회수 목록 조회
-				int[] rangeCnt = this.getRange3Numbers(targetNumbers);
+				int[] rangeCnt = this.get5RangeNumbers(targetNumbers);
 				for (int i = 0; i < rangeCnt.length; i++) {
 					if (rangeCnt[i] == 3) {
 						matchedCnt++;
@@ -7083,7 +7107,7 @@ public class LottoDataService extends DefaultService {
 			
 			if (isAppear) {
 				// 구간별 출현회수 목록 조회
-				int[] rangeCnt = this.getRange3Numbers(targetNumbers);
+				int[] rangeCnt = this.get5RangeNumbers(targetNumbers);
 				// 단번대(1~9) 미출 체크
 				if (rangeCnt[0] == 0) {
 					matchedCnt++;
@@ -9835,7 +9859,7 @@ public class LottoDataService extends DefaultService {
 		boolean isMatched = false;
 		
 		// 구간별 출현회수 목록 조회
-		int[] rangeCnt = this.getRange3Numbers(targetNumbers);
+		int[] rangeCnt = this.get5RangeNumbers(targetNumbers);
 		// 단번대(1~9) 미출 체크
 		if (rangeCnt[0] == 0) {
 			isMatched = true;
@@ -9928,7 +9952,7 @@ public class LottoDataService extends DefaultService {
 		boolean isMatched = false;
 		
 		// 구간별 출현회수 목록 조회
-		int[] rangeCnt = this.getRange3Numbers(targetNumbers);
+		int[] rangeCnt = this.get5RangeNumbers(targetNumbers);
 		for (int i = 0; i < rangeCnt.length; i++) {
 			if (rangeCnt[i] == 3) {
 				isMatched = true;
@@ -10617,21 +10641,52 @@ public class LottoDataService extends DefaultService {
 		Map<Integer, Integer> map1 = new HashMap<Integer, Integer>();
 		Map<Integer, Integer> map2 = new HashMap<Integer, Integer>();
 		Map<Integer, Integer> map3 = new HashMap<Integer, Integer>();
+		Map<Integer, Integer> findNumberMap = new HashMap<Integer, Integer>();
+		
+		// 마지막 행 수 찾기
+		int checkCnt = 0;
+		int LAST_ROW_COUNT = 0;
+		for (int i = winDataList.size() - 1; i >= 0; i--) {
+			WinDataDto winDataDto = winDataList.get(i);
+			int[] numbers = LottoUtil.getNumbers(winDataDto);
+			for (int j = 0; j < numbers.length; j++) {
+				int number = numbers[j];
+				if (!findNumberMap.containsKey(number)) {
+					checkCnt++;
+					findNumberMap.put(number, 1);
+				}
+			}
+			
+			if (checkCnt == 45) {
+				// 모두 찾으면 break
+				break;
+			} else {
+				LAST_ROW_COUNT++;
+			}
+		}
+		log.debug("최근회차순 출현번호 배열 마지막 행 = " + (LAST_ROW_COUNT+1));
 		
 		// 번호집계 배열
-		int[][] arrayLastWin = new int[30][6];	// 최근회차 기준
-		int[][] arrayBeforeWin = new int[30][6];// 직전회차 기준
-		
+		int[][] arrayLastWin = new int[LAST_ROW_COUNT][6];	// 최근회차 기준
+		int[][] arrayBeforeWin = new int[LAST_ROW_COUNT][6];// 직전회차 기준
+		// 초기화
+		for (int i = 0; i < arrayLastWin.length; i++) {
+			for (int j = 0; j < arrayLastWin[i].length; j++) {
+				arrayLastWin[i][j] = 0;
+				arrayBeforeWin[i][j] = 0;
+			}
+		}
+				
 		//등록하는 index
 		int targetRow = 0;
 		int targetCol = 0;
 		
 		/*
 		 * 최근회차 기준
-		 * 30회 이내 출현번호 배열 집계
+		 * 출현번호 배열 집계
 		 * 중복된 번호는 0 처리한다.
 		 */
-		for (int i = winDataList.size() - 1; i > winDataList.size() - 1 - 30; i--) {
+		for (int i = winDataList.size() - 1; i > winDataList.size() - 1 - LAST_ROW_COUNT; i--) {
 			WinDataDto winDataDto = winDataList.get(i);
 			int[] numbers = LottoUtil.getNumbers(winDataDto);
 			// 열번호 초기화 (한 행이 집계가 끝나면 열번호를 초기화한다.)
@@ -10643,7 +10698,7 @@ public class LottoDataService extends DefaultService {
 					continue;
 				} else {
 					map1.put(checkNumber, 1);
-					arrayLastWin[targetRow][targetCol] = checkNumber;
+					arrayLastWin[targetRow][targetCol++] = checkNumber;
 				}
 			}
 			// 행번호 증가
@@ -10656,10 +10711,10 @@ public class LottoDataService extends DefaultService {
 				
 		/*
 		 * 직전회차 기준
-		 * 30회 이내 출현번호 배열 집계
+		 * 출현번호 배열 집계
 		 * 중복된 번호는 0 처리한다.
 		 */
-		for (int i = winDataList.size() - 1 - 1; i > winDataList.size() - 1 - 30 - 1; i--) {
+		for (int i = winDataList.size() - 1 - 1; i > winDataList.size() - 1 - LAST_ROW_COUNT - 1; i--) {
 			WinDataDto winDataDto = winDataList.get(i);
 			int[] numbers = LottoUtil.getNumbers(winDataDto);
 			// 열번호 초기화 (한 행이 집계가 끝나면 열번호를 초기화한다.)
@@ -10671,7 +10726,7 @@ public class LottoDataService extends DefaultService {
 					continue;
 				} else {
 					map2.put(checkNumber, 1);
-					arrayBeforeWin[targetRow][targetCol] = checkNumber;
+					arrayBeforeWin[targetRow][targetCol++] = checkNumber;
 				}
 			}
 			// 행번호 증가
@@ -10740,7 +10795,7 @@ public class LottoDataService extends DefaultService {
 	}
 
 	/**
-	 * 자동번호 추출 시 추가 필터체크 (Reference 닥터존)
+	 * 자동번호 추출 시 추가 필터체크
 	 * 2020.04.08
 	 * 
 	 * @param exDataDto
@@ -10905,10 +10960,57 @@ public class LottoDataService extends DefaultService {
 			return false;
 		}
 		
+		
 		// 99. 로또9단 금주필터 적용
 //		result = this.checkLottoNineFilter(exData, winDataList);
 //		if (result) {
 //			String comments = "추가 필터 : 로또9단 " + exData.getEx_count() + "회 추천필터 적용 제외";
+//			log.info(comments);
+//			
+//			// TODO 실제 반영시에는 제거할 것
+//			sysmngService.insertExptNumNewVari(exData, comments);
+//			
+//			return false;
+//		}
+		
+		// TODO 10주간 3회이상 출현번호 제외 확률
+		// 906회 추출 기준 7, 16, 18, 21, 26, 38 확인 필요.
+		// https://www.youtube.com/watch?v=hZ501YWUotA 참고
+		
+		
+		return check;
+	}
+	
+	/**
+	 * 전문분석가 필터체크
+	 * 2020.04.08
+	 * 
+	 * @param exDataDto
+	 * @param winDataList
+	 * @return true : 통과, false : 조합제외
+	 */
+	public boolean checkExpertFilter(ExDataDto exData, List<WinDataAnlyDto> winDataList) {
+		boolean check = true;
+		
+		boolean result = false;
+		
+		// 99. 로또9단 금주필터 적용
+		result = this.checkLottoNineFilter(exData, winDataList);
+		if (result) {
+			String comments = "추가 필터 : 로또9단 " + exData.getEx_count() + "회 추천필터 적용 제외";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumNewVari(exData, comments);
+			
+			return false;
+		}
+		
+		
+		// 99-1. 청노새 금주필터 적용
+//		result = this.checkBlueYellowBirdFilter(exData, winDataList);
+//		if (result) {
+//			String comments = "추가 필터 : 청노새 " + exData.getEx_count() + "회 추천필터 적용 제외";
 //			log.info(comments);
 //			
 //			// TODO 실제 반영시에는 제거할 것
@@ -10936,32 +11038,186 @@ public class LottoDataService extends DefaultService {
 	private boolean checkLottoNineFilter(ExDataDto exData, List<WinDataAnlyDto> winDataList) {
 		boolean check = false;
 		
+		// 출현번호집계 배열
+		int[][] winNumbersMatrix = this.getWinNumbersMatrix(winDataList);
+		
 		int checkCnt = 0;
 		// 예상회차 조합번호
 		int[] numbers = LottoUtil.getNumbers(exData);
 		
-		/*
-		 * 0. 기본 제외수 포함 제외
-		 * - 1개라도 확인되면 제외
-		 */
-		int[] checkNumbers0 = {2,4,5,10,14,16,18,19,20,21,23,26,28,30,31,32,37,39,40,42,45};
-		Map<Integer, Integer> checkMap0 = new HashMap<Integer, Integer>();
+		// 제외수 포함 limit count
+		int EXCLUDE_LIMIT_COUNT = 4;
+		// 최근 10 이후 미출수 포함 limit count
+		int NOT_CONTAIN_LIMIT_COUNT = 2;
+
+		// 표준 제외수 그룹
+		int[] checkNumbers0 = {
+				2,4,5,7,
+				14,16,17,18,19,
+				21,23,24,26,27,28,29,
+				31,32,35,37,38,39,40,
+				42,44,45};
+		Map<Integer, Integer> standardExcludeMap = new HashMap<Integer, Integer>();		
 		for (int i = 0; i < checkNumbers0.length; i++) {
-			checkMap0.put(checkNumbers0[i], 1);
+			standardExcludeMap.put(checkNumbers0[i], 1);
+		}
+		
+		// 표준 출현수 그룹
+		Map<Integer, Integer> standardIncludeMap = new HashMap<Integer, Integer>();
+		for (int i = 1; i <= 45; i++) {
+			if (standardExcludeMap.containsKey(i)) {
+				standardIncludeMap.put(i, 1);	
+			}
+		}
+		
+		
+		// 미출수 그룹 (matrix 10회 이후)
+		int notContainCnt = 0;
+		Map<Integer, Integer> notContainMap = new HashMap<Integer, Integer>();
+		for (int i = 10; i < winNumbersMatrix.length; i++) {
+			for (int j = 0; j < winNumbersMatrix[i].length; j++) {
+				if (winNumbersMatrix[i][j] > 0) {
+					notContainCnt++;
+					notContainMap.put(winNumbersMatrix[i][j], 1);
+				}
+			}
+		}
+		log.debug("미출구간 포함 수 = " + notContainCnt);
+		
+		
+		/*
+		 * 우선제외!!!
+		 * 출현 시 제외처리
+		 */
+		int[] check0 = {2, 27, 28, 38};
+		Map<Integer, Integer> checkMap0 = new HashMap<Integer, Integer>();
+		for (int i = 0; i < check0.length; i++) {
+			checkMap0.put(check0[i], 1);
 		}
 		for (int i = 0; i < numbers.length; i++) {
 			if (checkMap0.containsKey(numbers[i])) {
-				// 제외조합 처리
+				String comments = "로또9단 " + exData.getEx_count() + "회 우선제외수 포함";
+				log.info(comments);
+				
+				// TODO 실제 반영시에는 제거할 것
+				sysmngService.insertExptNumExpertVari(exData, comments);
+				
+				//제외조합 처리
 				return true;
 			}
 		}
 		
 		/*
-		 * 1. 특정구간 포함 체크
-		 * - 1개 이상 출현하면 통과
-		 * - 기본제외수 미포함 처리
+		 * 추천 고정수 체크
+		 * 미출현 시 제외처리
 		 */
-		int[] checkNumbers1 = {9,11,12,13,17,22,24,25,33,34,35,36};
+		int[] fixedNumbers = {13, 33, 37};
+		Map<Integer, Integer> fixedMap = new HashMap<Integer, Integer>();
+		for (int i = 0; i < fixedNumbers.length; i++) {
+			fixedMap.put(fixedNumbers[i], 1);
+		}
+		for (int i = 0; i < numbers.length; i++) {
+			if (fixedMap.containsKey(numbers[i])) {
+				checkCnt++;
+			}
+		}
+		// 미출시 제외처리
+		if (checkCnt == 0) {
+			String comments = "로또9단 " + exData.getEx_count() + "회 추천 고정수 미포함 제외";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumExpertVari(exData, comments);
+			
+			//제외조합 처리
+			return true;
+		} else {
+			// 체크건수 초기화
+			checkCnt = 0;
+		}
+				
+		
+		/*
+		 * 0. 표준 제외수 그룹 체크
+		 * TODO 기본제외수 생성 규칙 확인 후 설정할 수 있도록 개발 필요
+		 * - 4수 이상 제외
+		 */		
+		for (int i = 0; i < numbers.length; i++) {
+			if (standardExcludeMap.containsKey(numbers[i])) {
+				checkCnt++;
+			}
+		}
+		// 4수이상 포함시 제외처리
+		if (checkCnt >= EXCLUDE_LIMIT_COUNT) {
+			String comments = "로또9단 " + exData.getEx_count() + "회 표준제외수 4수이상 포함";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumExpertVari(exData, comments);
+			
+			//제외조합 처리
+			return true;
+		} else {
+			// 체크건수 초기화
+			checkCnt = 0;
+		}
+		
+		
+		/*
+		 * 미출구간 포함 체크
+		 * - 2수 이상 출현시 제외처리
+		 */
+		for (int i = 0; i < numbers.length; i++) {
+			if (notContainMap.containsKey(numbers[i])) {
+				checkCnt++;
+			}
+		}
+		// 2수 이상 출현시 제외처리
+		if (checkCnt >= NOT_CONTAIN_LIMIT_COUNT) {
+			String comments = "로또9단 " + exData.getEx_count() + "회 미출구간 2수이상 포함";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumExpertVari(exData, comments);
+			
+			//제외조합 처리
+			return true;
+		} else {
+			// 체크건수 초기화
+			checkCnt = 0;
+		}
+		
+		
+		/*
+		 * 출현수 그룹 포함 체크
+		 * - 2~3수 출현 수 없을시 제외처리
+		 */
+		for (int i = 0; i < numbers.length; i++) {
+			if (standardIncludeMap.containsKey(numbers[i])) {
+				checkCnt++;
+			}
+		}
+		// 2~3수 출현 수 없을시 제외처리
+		if (!(checkCnt == 2 || checkCnt == 3)) {
+			String comments = "로또9단 " + exData.getEx_count() + "회 출현그룹 2~3수 미포함";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumExpertVari(exData, comments);
+			
+			//제외조합 처리
+			return true;
+		} else {
+			// 체크건수 초기화
+			checkCnt = 0;
+		}
+		
+		
+		/*
+		 * 1. 관심구간 포함 체크
+		 * - 2개 이하 포함 시 제외처리
+		 */
+		int[] checkNumbers1 = {7,13,15,18,19,20,22,23,24,30,33,34,35,36,37,39,42};
 		Map<Integer, Integer> checkMap1 = new HashMap<Integer, Integer>();
 		for (int i = 0; i < checkNumbers1.length; i++) {
 			checkMap1.put(checkNumbers1[i], 1);
@@ -10971,7 +11227,14 @@ public class LottoDataService extends DefaultService {
 				checkCnt++;
 			}
 		}
-		if (checkCnt == 0) {
+		// 2개 이하 포함 시 제외처리
+		if (checkCnt <= 2) {
+			String comments = "로또9단 " + exData.getEx_count() + "회 관심구간 2개이하 포함";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumExpertVari(exData, comments);
+			
 			//제외조합 처리
 			return true;
 		} else {
@@ -10979,33 +11242,12 @@ public class LottoDataService extends DefaultService {
 			checkCnt = 0;
 		}
 		
-		/*
-		 * 2. 약한구간 포함 체크
-		 * - 1개 이상 출현하면 통과
-		 */
-		int[] checkNumbers2 = {1,3,6,12,22,24,34,35,36,41,44};
-		Map<Integer, Integer> checkMap2 = new HashMap<Integer, Integer>();
-		for (int i = 0; i < checkNumbers2.length; i++) {
-			checkMap2.put(checkNumbers2[i], 1);
-		}
-		for (int i = 0; i < numbers.length; i++) {
-			if (checkMap2.containsKey(numbers[i])) {
-				checkCnt++;
-			}
-		}
-		if (checkCnt == 0) {
-			//제외조합 처리
-			return true;
-		} else {
-			// 체크건수 초기화
-			checkCnt = 0;
-		}
 		
 		/*
 		 * 3. 강한구간 포함 체크
-		 * - 1개 이상 출현하면 통과
+		 * - 2개 이하 포함 시 제외처리
 		 */
-		int[] checkNumbers3 = {9,11,13,17,25,27,29,33};
+		int[] checkNumbers3 = {13,15,20,22,30,33,34,36};
 		Map<Integer, Integer> checkMap3 = new HashMap<Integer, Integer>();
 		for (int i = 0; i < checkNumbers3.length; i++) {
 			checkMap3.put(checkNumbers3[i], 1);
@@ -11015,12 +11257,525 @@ public class LottoDataService extends DefaultService {
 				checkCnt++;
 			}
 		}
-		if (checkCnt == 0) {
+		// 2개 이하 포함 시 제외처리
+		if (checkCnt <= 2) {
+			String comments = "로또9단 " + exData.getEx_count() + "회 강한구간 2개이하 포함";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumExpertVari(exData, comments);
+			
 			//제외조합 처리
 			return true;
+		} else {
+			// 체크건수 초기화
+			checkCnt = 0;
 		}
 		
+				
+		/*
+		 * 2. 세로3라인 포함 체크
+		 * - 4개 이상 출현하면 통과
+		 */
+		Map<Integer, Integer> checkMap2 = new HashMap<Integer, Integer>();
+		for (int i = 0; i < winNumbersMatrix.length; i++) {
+			for (int j = 0; j < 3; j++) {
+				if (winNumbersMatrix[i][j] > 0) {
+					checkMap2.put(winNumbersMatrix[i][j], 1);
+				}
+			}
+		}
+		for (int i = 0; i < numbers.length; i++) {
+			if (checkMap2.containsKey(numbers[i])) {
+				checkCnt++;
+			}
+		}
+		if (checkCnt < 4) {
+			String comments = "로또9단 " + exData.getEx_count() + "회 세로3라인 3개이하 포함";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumExpertVari(exData, comments);
+			
+			//제외조합 처리
+			return true;
+		} else {
+			// 체크건수 초기화
+			checkCnt = 0;
+		}
+
+		
+		/*
+		 * 4. 추천 이웃수 체크
+		 * - 2개 이상 출현하면 제외처리
+		 */
+		int[] checkNumbers4 = {29,30,37,39,41};
+		Map<Integer, Integer> checkMap4 = new HashMap<Integer, Integer>();
+		for (int i = 0; i < checkNumbers4.length; i++) {
+			checkMap4.put(checkNumbers4[i], 1);
+		}
+		for (int i = 0; i < numbers.length; i++) {
+			if (checkMap4.containsKey(numbers[i])) {
+				checkCnt++;
+			}
+		}
+		// 2개 이상 출현하면 제외처리
+		if (checkCnt >= 2) {
+			String comments = "로또9단 " + exData.getEx_count() + "회 추천 이웃수 2개이상 포함";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumExpertVari(exData, comments);
+			
+			//제외조합 처리
+			return true;
+		} else {
+			// 체크건수 초기화
+			checkCnt = 0;
+		}
+		
+		
+		/*
+		 * 5. 쌍수 체크
+		 * - 2개 이상 출현하면 제외처리
+		 */
+		int[] checkNumbers5 = {11,22,33,44};
+		Map<Integer, Integer> checkMap5 = new HashMap<Integer, Integer>();
+		for (int i = 0; i < checkNumbers5.length; i++) {
+			checkMap5.put(checkNumbers5[i], 1);
+		}
+		for (int i = 0; i < numbers.length; i++) {
+			if (checkMap5.containsKey(numbers[i])) {
+				checkCnt++;
+			}
+		}
+		// 2개 이상 출현하면 제외처리
+		if (checkCnt >= 2) {
+			String comments = "로또9단 " + exData.getEx_count() + "회 쌍수 2개이상 포함";
+			log.info(comments);
+			
+			// TODO 실제 반영시에는 제거할 것
+			sysmngService.insertExptNumExpertVari(exData, comments);
+			
+			//제외조합 처리
+			return true;
+		} else {
+			// 체크건수 초기화
+			checkCnt = 0;
+		}
+		
+		
 		return check;
+	}
+	
+	/**
+	 * 청노새의 금주 추천번호 필터를 적용한다.
+	 * 
+	 * @param exData
+	 * @param winDataList
+	 * @return true: 제외조합, false : 선택조합
+	 */
+	private boolean checkBlueYellowBirdFilter(ExDataDto exData, List<WinDataAnlyDto> winDataList) {
+		boolean check = false;
+		
+		int checkCnt = 0;
+		// 예상회차 조합번호
+		int[] numbers = LottoUtil.getNumbers(exData);
+		int[] range5Numbers = this.get5RangeNumbers(numbers);
+		int[] range3Numbers = this.get3RangeNumbers(numbers);
+		
+		/********************************************************************
+		 * 번호대 체크
+		 ********************************************************************/
+		
+		/*
+		 * 1. 단번대 체크
+		 */
+		if (range5Numbers[0] > 0) {
+			boolean check1 = false;
+			boolean check2 = false;
+			
+			for (int i = 0; i < numbers.length; i++) {
+				if (numbers[i] == 6
+						|| numbers[i] == 7
+						|| numbers[i] == 8
+						) {
+					check1 = true;
+				}
+				
+				if (numbers[i] == 9) {
+					check2 = true;
+				}
+			}
+			
+			// 1수 체크
+			if (range5Numbers[0] == 1) {
+				if (!check1) {
+					// 제외처리
+					return true;
+				}
+			} else if (range5Numbers[0] == 2) {
+				if (!(check1 && check2)) {
+					// 제외처리
+					return true;
+				}
+			} else {
+				// 제외처리
+				return true;
+			}
+		}
+		
+		/*
+		 * 2. 10번대 체크
+		 */
+		if (range5Numbers[1] > 0) {
+			boolean check1 = false;
+			boolean check2 = false;
+			
+			for (int i = 0; i < numbers.length; i++) {
+				if (numbers[i] == 12
+						|| numbers[i] == 18
+						) {
+					check1 = true;
+				}
+				
+				if (numbers[i] == 11
+						|| numbers[i] == 14
+						) {
+					check2 = true;
+				}
+			}
+			
+			// 1수 체크
+			if (range5Numbers[1] == 1) {
+				if (!check1) {
+					// 제외처리
+					return true;
+				}
+			} else if (range5Numbers[1] == 2) {
+				if (!(check1 && check2)) {
+					// 제외처리
+					return true;
+				}
+			} else {
+				// 제외처리
+				return true;
+			}
+		}
+		
+		/*
+		 * 3. 20번대 체크
+		 */
+		if (range5Numbers[2] > 0) {
+			boolean check1 = false;
+			boolean check2 = false;
+			
+			for (int i = 0; i < numbers.length; i++) {
+				if (numbers[i] == 23
+						|| numbers[i] == 24
+						|| numbers[i] == 25
+						) {
+					check1 = true;
+				}
+				
+				if (numbers[i] == 21
+						|| numbers[i] == 22
+						|| numbers[i] == 26
+						) {
+					check2 = true;
+				}
+			}
+			
+			// 1수 체크
+			if (range5Numbers[2] == 1) {
+				if (!check1) {
+					if (!check2) {
+						// 제외처리
+						return true;	
+					}
+				}
+			} else if (range5Numbers[2] == 2) {
+				if (!(check1 && check2)) {
+					// 제외처리
+					return true;
+				}
+			} else {
+				// 제외처리
+				return true;
+			}
+		}
+		
+		/*
+		 * 4. 30번대 체크
+		 */
+		if (range5Numbers[3] > 0) {
+			boolean check1 = false;
+			boolean check2 = false;
+			
+			for (int i = 0; i < numbers.length; i++) {
+				if (numbers[i] == 36
+						|| numbers[i] == 39
+						) {
+					check1 = true;
+				}
+				
+				if (numbers[i] == 33
+						|| numbers[i] == 34
+						) {
+					check2 = true;
+				}
+			}
+			
+			// 1수 체크
+			if (range5Numbers[3] == 1) {
+				if (!check1) {
+					// 제외처리
+					return true;	
+				}
+			} else if (range5Numbers[3] == 2) {
+				if (!(check1 && check2)) {
+					// 제외처리
+					return true;
+				}
+			} else {
+				// 제외처리
+				return true;
+			}
+		}
+		
+		
+		/********************************************************************
+		 * 3구간 체크
+		 ********************************************************************/
+		/*
+		 * 1. 1~15 번대 체크
+		 */
+		if (range3Numbers[0] > 0) {
+			boolean check1 = false;
+			boolean check2 = false;
+			
+			for (int i = 0; i < numbers.length; i++) {
+				if (numbers[i] == 9
+						|| numbers[i] == 11
+						) {
+					check1 = true;
+				}
+				
+				if (numbers[i] == 13
+						|| numbers[i] == 14
+						|| numbers[i] == 15
+						) {
+					check2 = true;
+				}
+			}
+			
+			// 1수 체크
+			if (range3Numbers[0] == 1) {
+				if (!check1) {
+					// 제외처리
+					return true;
+				}
+			} else if (range3Numbers[0] == 2) {
+				if (!(check1 && check2)) {
+					// 제외처리
+					return true;
+				}
+			} else {
+				// 제외처리
+				return true;
+			}
+		}
+		
+		/*
+		 * 2. 16~30 번대 체크
+		 */
+		if (range3Numbers[1] > 0) {
+			boolean check1 = false;
+			boolean check2 = false;
+			
+			for (int i = 0; i < numbers.length; i++) {
+				if (numbers[i] == 21
+						|| numbers[i] == 26
+						) {
+					check1 = true;
+				}
+				
+				if (numbers[i] == 24
+						|| numbers[i] == 25
+						|| numbers[i] == 30
+						) {
+					check2 = true;
+				}
+			}
+			
+			// 1수 체크
+			if (range3Numbers[1] == 1) {
+				if (!check1) {
+					// 제외처리
+					return true;
+				}
+			} else if (range3Numbers[1] == 2) {
+				if (!(check1 && check2)) {
+					// 제외처리
+					return true;
+				}
+			} else {
+				// 제외처리
+				return true;
+			}
+		}
+		
+		/*
+		 * 2-1. 3~4수 체크
+		 */
+		for (int i = 0; i < numbers.length; i++) {
+			if (numbers[i] == 9
+					|| numbers[i] == 11
+					|| numbers[i] == 13
+					|| numbers[i] == 14
+					|| numbers[i] == 21
+					|| numbers[i] == 26
+					) {
+				checkCnt++;
+			}
+		}
+		if (checkCnt != 3) {
+			checkCnt = 0;
+			
+			for (int i = 0; i < numbers.length; i++) {
+				if (numbers[i] == 9
+						|| numbers[i] == 11
+						|| numbers[i] == 13
+						|| numbers[i] == 14
+						|| numbers[i] == 21
+						|| numbers[i] == 24
+						|| numbers[i] == 25
+						|| numbers[i] == 26
+						) {
+					checkCnt++;
+				}
+			}
+			
+			if (checkCnt != 4) {
+				// 제외처리
+				return true;
+			}
+		}
+		
+		/*
+		 * 3. 31~45 번대 체크
+		 */
+		if (range3Numbers[2] > 0) {
+			boolean check1 = false;
+			boolean check2 = false;
+			
+			for (int i = 0; i < numbers.length; i++) {
+				if (numbers[i] == 38
+						|| numbers[i] == 39
+						) {
+					check1 = true;
+				}
+				
+				if (numbers[i] == 42
+						|| numbers[i] == 43
+						) {
+					check2 = true;
+				}
+			}
+			
+			// 1수 체크
+			if (range3Numbers[2] == 1) {
+				if (!check1) {
+					// 제외처리
+					return true;
+				}
+			} else if (range3Numbers[2] == 2) {
+				if (!(check1 && check2)) {
+					// 제외처리
+					return true;
+				}
+			} else {
+				// 제외처리
+				return true;
+			}
+		}
+		
+		
+		return check;		
+	}
+
+	/**
+	 * 최근회차순 출현번호 배열 조회
+	 * 2020.04.25
+	 * 
+	 * @param winDataList
+	 * @return
+	 */
+	private int[][] getWinNumbersMatrix(List<WinDataAnlyDto> winDataList) {
+		// 중복체크
+		Map<Integer, Integer> map1 = new HashMap<Integer, Integer>();
+		Map<Integer, Integer> findNumberMap = new HashMap<Integer, Integer>();
+		
+		// 마지막 행 수 찾기
+		int checkCnt = 0;
+		int LAST_ROW_COUNT = 1;
+		for (int i = winDataList.size() - 1; i >= 0; i--) {
+			WinDataAnlyDto winDataDto = winDataList.get(i);
+			int[] numbers = LottoUtil.getNumbers(winDataDto);
+			for (int j = 0; j < numbers.length; j++) {
+				int number = numbers[j];
+				if (!findNumberMap.containsKey(number)) {
+					checkCnt++;
+					findNumberMap.put(number, 1);
+				}
+			}
+			
+			if (checkCnt == 45) {
+				// 모두 찾으면 break
+				break;
+			} else {
+				LAST_ROW_COUNT++;
+			}
+		}
+		log.debug("최근회차순 출현번호 배열 마지막 행 = " + (LAST_ROW_COUNT+1));
+		
+		// 번호집계 배열
+		int[][] arrayWinNumbersMatrix = new int[LAST_ROW_COUNT][6];
+		// 초기화
+		for (int i = 0; i < arrayWinNumbersMatrix.length; i++) {
+			for (int j = 0; j < arrayWinNumbersMatrix[i].length; j++) {
+				arrayWinNumbersMatrix[i][j] = 0;
+			}
+		}
+		
+		//등록하는 index
+		int targetRow = 0;
+		int targetCol = 0;
+		
+		/*
+		 * 출현번호 배열 집계
+		 * 중복된 번호는 0 처리한다.
+		 */
+		for (int i = winDataList.size() - 1; i > winDataList.size() - 1 - LAST_ROW_COUNT; i--) {
+			WinDataAnlyDto winDataDto = winDataList.get(i);
+			int[] numbers = LottoUtil.getNumbers(winDataDto);
+			// 열번호 초기화 (한 행이 집계가 끝나면 열번호를 초기화한다.)
+			targetCol = 0;
+					
+			for (int j = 0; j < numbers.length; j++) {
+				int checkNumber = numbers[j];
+				if (map1.containsKey(checkNumber)) {
+					continue;
+				} else {
+					map1.put(checkNumber, 1);
+					arrayWinNumbersMatrix[targetRow][targetCol++] = checkNumber;
+				}
+			}
+			// 행번호 증가
+			targetRow++;
+		}
+				
+		return arrayWinNumbersMatrix;
 	}
 
 	/**

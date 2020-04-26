@@ -927,6 +927,28 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
+	 * 예상번호 필터 목록 조회 (Dto)
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<ExDataDto> getExDataFilterList(ExDataDto dto) {
+		return (ArrayList<ExDataDto>) baseDao.getList("sysmngMapper.getExDataFilterList", dto);
+	}
+	
+	/**
+	 * 예상번호 필터 전문가 조회 (Dto)
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<ExDataDto> getExDataExpertList(ExDataDto dto) {
+		return (ArrayList<ExDataDto>) baseDao.getList("sysmngMapper.getExDataExpertList", dto);
+	}
+	
+	/**
 	 * 예상번호 NEW 목록 건수 조회
 	 * 
 	 * @param dto
@@ -934,6 +956,16 @@ public class SysmngService extends DefaultService {
 	 */
 	public int getExDataNewListCnt(ExDataDto dto) {
 		return (Integer) baseDao.getSingleRow("sysmngMapper.getExDataNewListCnt", dto);
+	}
+	
+	/**
+	 * 예상번호 필터 목록 건수 조회
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	public int getExDataFilterListCnt(ExDataDto dto) {
+		return (Integer) baseDao.getSingleRow("sysmngMapper.getExDataFilterListCnt", dto);
 	}
 	
 	/**
@@ -1204,6 +1236,40 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
+	 * 예상번호 Filter 목록 등록
+	 * 2020.04.25
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public boolean insertExptNumFilterList(Map map) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.insert("sysmngMapper.insertExptNumFilterList", map);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+		flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * 예상번호 전문가 목록 등록
+	 * 2020.04.25
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public boolean insertExptNumExpertList(Map map) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.insert("sysmngMapper.insertExptNumExpertList", map);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+		flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
 	 * 예상번호 NEW 검증 등록
 	 * 2020.04.04
 	 * 
@@ -1235,6 +1301,37 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
+	 * 예상번호 전문가 검증 등록
+	 * 2020.04.25
+	 * 
+	 * @param exData
+	 */
+	public boolean insertExptNumExpertVari(ExDataDto exData, String comments) {
+		boolean flag = false;		
+		
+		int[] arrNumbers = LottoUtil.getNumbers(exData);
+		String numbers = "";
+		for (int i = 0; i < arrNumbers.length; i++) {
+			if (i > 0) {
+				numbers += ",";
+			}
+			numbers += arrNumbers[i];
+		}
+		
+		Map map = new HashMap();
+		map.put("numbers", numbers);
+		map.put("comments", comments);
+		
+		
+		int i = (Integer) baseDao.insert("sysmngMapper.insertExptNumExpertVari", map);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+		flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
 	 * 예상번호 NEW 삭제
 	 * 2020.04.04
 	 * 
@@ -1251,6 +1348,38 @@ public class SysmngService extends DefaultService {
 	}
 	
 	/**
+	 * 예상번호 필터 삭제
+	 * 2020.04.25
+	 * 
+	 * @param exData
+	 */
+	public boolean deleteExptNumFilter(ExDataDto exData) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.delete("sysmngMapper.deleteExptNumFilter", exData);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+		flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * 예상번호 전문가 삭제
+	 * 2020.04.25
+	 * 
+	 * @param exData
+	 */
+	public boolean deleteExptNumExpert(ExDataDto exData) {
+		boolean flag = false;		
+		int i = (Integer) baseDao.delete("sysmngMapper.deleteExptNumExpert", exData);
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+		flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
 	 * 예상번호 NEW 검증 삭제
 	 * 2020.04.04
 	 * 
@@ -1259,6 +1388,22 @@ public class SysmngService extends DefaultService {
 	public boolean deleteExptNumNewVari() {
 		boolean flag = false;		
 		int i = (Integer) baseDao.delete("sysmngMapper.deleteExptNumNewVari");
+		//2018.04.25 리턴값 버그로 true 처리
+//		if(i > 0) {
+		flag = true;
+//		}
+		return flag;
+	}
+	
+	/**
+	 * 예상번호 전문가 검증 삭제
+	 * 2020.04.25
+	 * 
+	 * @param exData
+	 */
+	public boolean deleteExptNumExpertVari() {
+		boolean flag = false;		
+		int i = (Integer) baseDao.delete("sysmngMapper.deleteExptNumExpertVari");
 		//2018.04.25 리턴값 버그로 true 처리
 //		if(i > 0) {
 		flag = true;
@@ -2234,5 +2379,27 @@ public class SysmngService extends DefaultService {
 	 */
 	public List<ExDataDto> getCombinationList(Map<String, Integer> map) {
 		return (ArrayList<ExDataDto>) baseDao.getList("sysmngMapper.getCombinationList", map);
+	}
+	
+	/**
+	 * 로또번호조합 NEW 목록 조회
+	 * 2020.04.25
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public List<ExDataDto> getNewCombinationList(Map<String, Integer> map) {
+		return (ArrayList<ExDataDto>) baseDao.getList("sysmngMapper.getNewCombinationList", map);
+	}
+	
+	/**
+	 * 로또번호조합 필터 목록 조회
+	 * 2020.04.25
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public List<ExDataDto> getFilterCombinationList(Map<String, Integer> map) {
+		return (ArrayList<ExDataDto>) baseDao.getList("sysmngMapper.getFilterCombinationList", map);
 	}
 }

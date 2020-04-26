@@ -233,4 +233,66 @@
 		</if>
 		ORDER BY seq
 	</select>
+	
+	<!-- MY로또저장번호 필터 목록 조회 -->
+	<select id="getExptNumFilterList" parameterType="myLottoSaveNumDto" resultType="exDataDto">
+		/* mylotto.getExptNumFilterList */		
+		SELECT 
+			  seq
+			, num1
+			, num2
+			, num3
+			, num4
+			, num5
+			, num6
+			, total
+			, sum_end_num
+			, low_high 
+			, odd_even
+			, ac
+			, @rownum := @rownum+1 AS row_num
+		FROM tb_expt_num_filter N, (SELECT @rownum :=0) AS R		
+		WHERE 1=1
+		<if test='onlyUnused != null and onlyUnused == "Y"'>
+		AND NOT EXISTS (
+			SELECT
+				SEQ
+			FROM tb_expt_num_new_mpng M
+			WHERE EX_COUNT = #{ex_count}
+			AND M.SEQ = N.SEQ
+		)
+		</if>
+		ORDER BY seq
+	</select>
+	
+	<!-- MY로또저장번호 전문가 목록 조회 -->
+	<select id="getExptNumExpertList" parameterType="myLottoSaveNumDto" resultType="exDataDto">
+		/* mylotto.getExptNumExpertList */		
+		SELECT 
+			  seq
+			, num1
+			, num2
+			, num3
+			, num4
+			, num5
+			, num6
+			, total
+			, sum_end_num
+			, low_high 
+			, odd_even
+			, ac
+			, @rownum := @rownum+1 AS row_num
+		FROM tb_expt_num_expert N, (SELECT @rownum :=0) AS R		
+		WHERE 1=1
+		<if test='onlyUnused != null and onlyUnused == "Y"'>
+		AND NOT EXISTS (
+			SELECT
+				SEQ
+			FROM tb_expt_num_new_mpng M
+			WHERE EX_COUNT = #{ex_count}
+			AND M.SEQ = N.SEQ
+		)
+		</if>
+		ORDER BY seq
+	</select>
 </mapper>

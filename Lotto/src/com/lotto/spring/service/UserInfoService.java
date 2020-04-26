@@ -351,7 +351,7 @@ public class UserInfoService extends DefaultService {
 	/**
 	 * 사용자 정보 조회
 	 * 
-	 * @param user_id
+	 * @param email
 	 * @return
 	 */
 	public UserSession getUserInfo(String email) {
@@ -385,8 +385,7 @@ public class UserInfoService extends DefaultService {
 	/**
 	 * 일반 사용자 메뉴접근 URL 정보 조회
 	 * 
-	 * @param userid
-	 *            로그인ID
+	 * @param map
 	 * @return
 	 */
 	public List<CaseInsensitiveMap>  getMenuAuthUrlListForUser(Map map) {
@@ -396,8 +395,7 @@ public class UserInfoService extends DefaultService {
 	/**
 	 * 사용자별 메뉴접근 URL 정보 조회
 	 * 
-	 * @param userid
-	 *            로그인ID
+	 * @param map
 	 * @return
 	 */
 	public List<CaseInsensitiveMap>  getMenuAuthUrlList(Map map) {

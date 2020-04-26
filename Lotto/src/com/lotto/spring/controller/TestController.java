@@ -5212,7 +5212,7 @@ public class TestController extends DefaultSMController {
 				
 				if (isAppear) {
 					// 구간별 출현회수 목록 조회
-					int[] rangeCnt = lottoDataService.getRange3Numbers(targetNumbers);
+					int[] rangeCnt = lottoDataService.get5RangeNumbers(targetNumbers);
 					// 단번대(1~9) 미출 체크
 					if (rangeCnt[0] == 0) {
 						matchedCnt++;
@@ -5689,7 +5689,7 @@ public class TestController extends DefaultSMController {
 				
 				if (isAppear) {
 					// 구간별 출현회수 목록 조회
-					int[] rangeCnt = lottoDataService.getRange3Numbers(targetNumbers);
+					int[] rangeCnt = lottoDataService.get5RangeNumbers(targetNumbers);
 					for (int i = 0; i < rangeCnt.length; i++) {
 						if (rangeCnt[i] == 3) {
 							matchedCnt++;

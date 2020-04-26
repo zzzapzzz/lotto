@@ -122,7 +122,11 @@
 				$("#exDataExtraction").click(extractionGo);
 				$("#beforeExDataResult").click(changeExDataResultGo);
 				$("#exDataNewExtraction").click(newExtractionGo);
+				$("#exDataFilterExtraction").click(filterExtractionGo);
+				$("#exDataExpertExtraction").click(expertExtractionGo);
 				$("#beforeExDataNewResult").click(changeExDataNewResultGo);
+				$("#beforeExDataFilterResult").click(changeExDataFilterResultGo);
+				$("#beforeExDataExpertResult").click(changeExDataExpertResultGo);
 				$("#exDataAnalysis").click(changeAnalysisGo);
 			}
 			
@@ -237,6 +241,72 @@
 				});
 			}
 			
+			function filterExtractionGo() {
+				var param = {
+					ex_count : $("#nextWinCount").val()
+				};
+				
+				$.ajax({
+					type: "POST",
+					url: "${APP_ROOT}/sysmng/insertFilterExpectNumbers.do",
+					data: param,
+					dataType: "json",
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					async: true,
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+		               		location.href = "/index.do";
+		               		return;
+		            	}
+
+						showSmallBox(result.msg);
+
+						if (result.status == "success") {
+			    			searchGo();
+		            	} else {
+		            		alert(result.msg);
+		            	}
+					}
+				});
+			}
+			
+			function expertExtractionGo() {
+				var param = {
+					ex_count : $("#nextWinCount").val()
+				};
+				
+				$.ajax({
+					type: "POST",
+					url: "${APP_ROOT}/sysmng/insertExpertExpectNumbers.do",
+					data: param,
+					dataType: "json",
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					async: true,
+					error:function(xhr, textStatus, errorThrown){
+						alert(xhr.responseText);				
+					},
+					success: function(result){
+						// 세션에 사용자 정보가 존재하지 않을때 메인으로 이동
+						if (result.status == "usernotfound") {
+		               		location.href = "/index.do";
+		               		return;
+		            	}
+
+						showSmallBox(result.msg);
+
+						if (result.status == "success") {
+			    			searchGo();
+		            	} else {
+		            		alert(result.msg);
+		            	}
+					}
+				});
+			}
+			
 			function changeExDataResultGo() {
 				var url = "${APP_ROOT}/sysmng/resultExDataajax.do";
 				changeContent(url);
@@ -244,6 +314,16 @@
 			
 			function changeExDataNewResultGo() {
 				var url = "${APP_ROOT}/sysmng/resultExDataNewajax.do";
+				changeContent(url);
+			}
+			
+			function changeExDataFilterResultGo() {
+				var url = "${APP_ROOT}/sysmng/resultExDataFilterajax.do";
+				changeContent(url);
+			}
+			
+			function changeExDataExpertResultGo() {
+				var url = "${APP_ROOT}/sysmng/resultExDataExpertajax.do";
 				changeContent(url);
 			}
 			

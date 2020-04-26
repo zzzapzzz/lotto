@@ -184,4 +184,24 @@ public class MyLottoService extends DefaultService {
 	public ArrayList<ExDataDto> getExptNumNewList(MyLottoSaveNumDto dto) {
 		return (ArrayList<ExDataDto>) baseDao.getList("myLottoMapper.getExptNumNewList", dto);
 	}
+	
+	/**
+	 * MY로또저장번호 필터 목록 조회
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public ArrayList<ExDataDto> getExptNumFilterList(MyLottoSaveNumDto dto) {
+		return (ArrayList<ExDataDto>) baseDao.getList("myLottoMapper.getExptNumFilterList", dto);
+	}
+	
+	/**
+	 * MY로또저장번호 전문가 목록 조회
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public ArrayList<ExDataDto> getExptNumExpertList(MyLottoSaveNumDto dto) {
+		return (ArrayList<ExDataDto>) baseDao.getList("myLottoMapper.getExptNumExpertList", dto);
+	}
 }

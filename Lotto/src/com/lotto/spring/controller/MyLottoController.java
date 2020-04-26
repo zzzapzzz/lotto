@@ -2362,6 +2362,8 @@ public class MyLottoController extends DefaultSMController {
 			// TODO 실제 반영시에는 제거할 것
 			log.info("[" + loginUserNo + "]\t예상번호 NEW 검증 삭제");
 			sysmngService.deleteExptNumNewVari();
+			log.info("[" + loginUserNo + "]\t예상번호 전문가 검증 삭제");
+			sysmngService.deleteExptNumExpertVari();
 			
 			
 			int maxSaveCnt = 10; 	// 기본값 설정
@@ -2402,6 +2404,8 @@ public class MyLottoController extends DefaultSMController {
 			log.info("[" + loginUserNo + "]\t1. 미사용조합 조회 후 랜덤조합 추출");
 			dto.setOnlyUnused("Y");
 			List<ExDataDto> exDataList = myLottoService.getExptNumNewList(dto);
+//			List<ExDataDto> exDataList = myLottoService.getExptNumFilterList(dto);
+//			List<ExDataDto> exDataList = myLottoService.getExptNumExpertList(dto);
 			if (exDataList != null) {
 				log.info("[" + loginUserNo + "]\t\t> 미사용 조회 건수=" + exDataList.size());
 				
@@ -2415,10 +2419,9 @@ public class MyLottoController extends DefaultSMController {
 						
 						if (!map.containsKey(exDataSeq)) {
 							map.put(exDataSeq, exDataSeq);
-							
-							// 추가 필터 체크
-							boolean check = lottoDataService.checkAddFilter(exDataDto, winDataList);
-							if (check) {
+							boolean result = lottoDataService.checkAddFilter(exDataDto, winDataList);
+//							boolean result = lottoDataService.checkExpertFilter(exDataDto, winDataList);
+							if (result) {
 								exDataDto.setUser_no(loginUserNo);
 								exList.add(exDataDto);
 								saveCnt++;
@@ -2439,10 +2442,10 @@ public class MyLottoController extends DefaultSMController {
 					for (ExDataDto exDataDto : exDataList) {
 						int exDataSeq = exDataDto.getSeq();					
 						map.put(exDataSeq, exDataSeq);
-						
-						// 추가 필터 체크
-						boolean check = lottoDataService.checkAddFilter(exDataDto, winDataList);
-						if (check) {
+
+						boolean result = lottoDataService.checkAddFilter(exDataDto, winDataList);
+//						boolean result = lottoDataService.checkExpertFilter(exDataDto, winDataList);
+						if (result) {
 							exDataDto.setUser_no(loginUserNo);
 							exList.add(exDataDto);
 							saveCnt++;
@@ -2461,6 +2464,8 @@ public class MyLottoController extends DefaultSMController {
 				// 전체 조합 조회
 				dto.setOnlyUnused("N");
 				List<ExDataDto> exDataAllList = myLottoService.getExptNumNewList(dto);
+//				List<ExDataDto> exDataAllList = myLottoService.getExptNumFilterList(dto);
+//				List<ExDataDto> exDataAllList = myLottoService.getExptNumExpertList(dto);
 				if (exDataAllList != null) {
 				
 					// 조회건수가 랜덤조회 실행기준 회수보다 크다면 랜덤조합 실행
@@ -2472,10 +2477,10 @@ public class MyLottoController extends DefaultSMController {
 							
 							if (!map.containsKey(exDataSeq)) {
 								map.put(exDataSeq, exDataSeq);
-								
-								// 추가 필터 체크
-								boolean check = lottoDataService.checkAddFilter(exDataDto, winDataList);
-								if (check) {
+							
+								boolean result = lottoDataService.checkAddFilter(exDataDto, winDataList);
+//								boolean result = lottoDataService.checkExpertFilter(exDataDto, winDataList);
+								if (result) {
 									exDataDto.setUser_no(loginUserNo);
 									exList.add(exDataDto);
 									saveCnt++;
@@ -2501,9 +2506,9 @@ public class MyLottoController extends DefaultSMController {
 							if (!map.containsKey(exDataSeq)) {
 								map.put(exDataSeq, exDataSeq);
 								
-								// 추가 필터 체크
-								boolean check = lottoDataService.checkAddFilter(exDataDto, winDataList);
-								if (check) {
+								boolean result = lottoDataService.checkAddFilter(exDataDto, winDataList);
+//								boolean result = lottoDataService.checkExpertFilter(exDataDto, winDataList);
+								if (result) {
 									exDataDto.setUser_no(loginUserNo);
 									exList.add(exDataDto);
 									saveCnt++;

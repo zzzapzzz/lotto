@@ -1772,6 +1772,298 @@ public class SysmngController extends DefaultSMController {
 	}
 	
 	/**
+	 * 예상번호 필터 등록
+	 * 
+	 * 2020.04.25
+	 * MY로또에서 번호조합을 추출하도록 필터된 목록을 등록함.
+	 * from NEW 테이블
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/sysmng/insertFilterExpectNumbers")
+	public void insertFilterExpectNumbers(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 예상번호 필터 등록");
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			List<WinDataAnlyDto> winDataList = sysmngService.getWinDataAnlyList(winDataDto);
+			
+			// 예상번호
+			int lastWinCount = winDataList.get(winDataList.size()-1).getWin_count(); 
+			int exCount = lastWinCount + 1;
+			
+			log.info("[" + loginUserNo + "]\t예상번호 필터 삭제");
+			ExDataDto delExData = new ExDataDto();
+			delExData.setEx_count(exCount);
+			sysmngService.deleteExptNumFilter(delExData);
+			
+			// 예상번호 NEW 검증 삭제
+			log.info("[" + loginUserNo + "]\t예상번호 NEW 검증 삭제");
+			sysmngService.deleteExptNumNewVari();
+			log.info("[" + loginUserNo + "]\t예상번호 전문가 검증 삭제");
+			sysmngService.deleteExptNumExpertVari();
+			
+			// 예상번호 NEW 건수 조회
+			int exptNewListCnt = sysmngService.getExDataNewListCnt(delExData);
+			
+			/** 조합숫자 목록 */
+			// 전체 건수
+			int totalCombinationCnt = exptNewListCnt;
+			// 조회 건수
+			int selectCnt = 100000;
+			// 처리횟수
+			int repeatCnt = totalCombinationCnt / selectCnt + 1;
+			// 조회범위 시작
+			int startSeq = 0;
+			// 실행횟수
+			int excuteCnt = 0;
+			// 저장확인건수
+			int saveCheckCnt = 10000;
+			// 총등록건수
+			int saveCnt = 0;
+			
+			for (int i = 0; i < repeatCnt; i++) {
+				// 조회범위 설정
+				Map<String, Integer> map = new HashMap<String, Integer>();
+				map.put("startSeq", (i * selectCnt));
+				map.put("selectCnt", selectCnt);				
+				map.put("exCount", exCount);
+				// 로또번호조합 목록 조회
+				List<ExDataDto> expectDataList = sysmngService.getNewCombinationList(map);
+				
+				/** 추출한 예상데이터 목록 */
+				List<ExDataDto> exDataList = new ArrayList<ExDataDto>();
+				
+				// 예상번호 제외패턴(로또9단) 체크 후 등록
+				for (int k = 0; k < expectDataList.size(); k++) {
+					ExDataDto exData = expectDataList.get(k);
+					exData.setNumbers(LottoUtil.getNumbers(exData));
+					int[] arrNumbers = exData.getNumbers();
+					String numbers = "";
+					for (int j = 0; j < arrNumbers.length; j++) {
+						if (j > 0) {
+							numbers += ",";
+						}
+						numbers += arrNumbers[j];
+					}
+					
+//					log.info(excuteCnt + ") 예상번호 조합 >>> " + numbers);
+					
+					boolean result = lottoDataService.checkAddFilter(exData, winDataList);
+					if (result) {
+						exDataList.add(exData);
+					}
+					
+					// 저장확인건수에 도달하면 등록 처리
+					if (exDataList.size() == saveCheckCnt) {
+						Map<String, List> dataMap = new HashMap<String, List>();
+						dataMap.put("list", exDataList);
+						sysmngService.insertExptNumFilterList(dataMap);
+						
+						saveCnt += exDataList.size();
+						
+						log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 등록건수 = " + saveCnt);
+						
+						// 리스트 초기화
+						exDataList = new ArrayList<ExDataDto>();
+					}
+					
+					excuteCnt++;	// 실행횟수 추가
+					
+					// 진행도 출력
+					int d_cnt = excuteCnt;
+					int d_total = totalCombinationCnt;
+					double percent = LottoUtil.getPercent(d_cnt, d_total);
+					
+					log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> [" + numbers + "] " + (k+1) + " / " + expectDataList.size() + " / 전체 진행도 = " + excuteCnt + " (" + (percent) + "%, " + (i+1) + " / " + repeatCnt + "Phase)");
+				}
+				
+				// 나머지 등록처리
+				if (exDataList.size() > 0) {
+					Map<String, List> dataMap = new HashMap<String, List>();
+					dataMap.put("list", exDataList);
+					sysmngService.insertExptNumFilterList(dataMap);
+					saveCnt =+ exDataList.size();
+					
+					log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 나머지건수 = " + exDataList.size());
+				}
+				
+				log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 현재까지 등록건수 = " + saveCnt);
+			}
+			log.info("\t>예상번호 필터 대상건수를 총 " + saveCnt + "건 등록했습니다.");
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("msg", "예상번호 필터 대상건수를 총 " + saveCnt + "건 등록했습니다.");
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString()); 
+		writeJSON(response, jsonObj);
+		
+	}
+	
+	/**
+	 * 예상번호 전문가 등록
+	 * 선행조건 : 예상번호 필터 목록이 추출되어야 함.
+	 * 
+	 * 2020.04.25
+	 * from 필터 테이블
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/sysmng/insertExpertExpectNumbers")
+	public void insertExpertExpectNumbers(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, @ModelAttribute WinDataDto dto) throws IOException {
+		
+		HttpSession session = request.getSession();
+		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
+		
+		JSONObject jsonObj = new JSONObject();
+		
+		if (userInfo != null) {
+			int loginUserNo = userInfo.getUser_no();
+			log.info("[" + loginUserNo + "][C] 예상번호 전문가 등록");
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("ASC");
+			List<WinDataAnlyDto> winDataList = sysmngService.getWinDataAnlyList(winDataDto);
+			
+			// 예상번호
+			int lastWinCount = winDataList.get(winDataList.size()-1).getWin_count(); 
+			int exCount = lastWinCount + 1;
+			
+			log.info("[" + loginUserNo + "]\t예상번호 전문가 삭제");
+			ExDataDto delExData = new ExDataDto();
+			delExData.setEx_count(exCount);
+			sysmngService.deleteExptNumExpert(delExData);
+			
+			// 예상번호 NEW 검증 삭제
+			log.info("[" + loginUserNo + "]\t예상번호 NEW 검증 삭제");
+			sysmngService.deleteExptNumNewVari();
+			log.info("[" + loginUserNo + "]\t예상번호 전문가 검증 삭제");
+			sysmngService.deleteExptNumExpertVari();
+			
+			// 예상번호 NEW 건수 조회
+			int exptNewListCnt = sysmngService.getExDataFilterListCnt(delExData);
+			
+			/** 조합숫자 목록 */
+			// 전체 건수
+			int totalCombinationCnt = exptNewListCnt;
+			// 조회 건수
+			int selectCnt = 100000;
+			// 처리횟수
+			int repeatCnt = totalCombinationCnt / selectCnt + 1;
+			// 조회범위 시작
+			int startSeq = 0;
+			// 실행횟수
+			int excuteCnt = 0;
+			// 저장확인건수
+			int saveCheckCnt = 10000;
+			// 총등록건수
+			int saveCnt = 0;
+			
+			for (int i = 0; i < repeatCnt; i++) {
+				// 조회범위 설정
+				Map<String, Integer> map = new HashMap<String, Integer>();
+				map.put("startSeq", (i * selectCnt));
+				map.put("selectCnt", selectCnt);				
+				map.put("exCount", exCount);
+				// 로또번호조합 목록 조회
+				List<ExDataDto> expectDataList = sysmngService.getFilterCombinationList(map);
+				
+				/** 추출한 예상데이터 목록 */
+				List<ExDataDto> exDataList = new ArrayList<ExDataDto>();
+				
+				// 예상번호 전문가 필터 체크 후 등록
+				for (int k = 0; k < expectDataList.size(); k++) {
+					ExDataDto exData = expectDataList.get(k);
+					exData.setNumbers(LottoUtil.getNumbers(exData));
+					int[] arrNumbers = exData.getNumbers();
+					String numbers = "";
+					for (int j = 0; j < arrNumbers.length; j++) {
+						if (j > 0) {
+							numbers += ",";
+						}
+						numbers += arrNumbers[j];
+					}
+					
+//					log.info(excuteCnt + ") 예상번호 조합 >>> " + numbers);
+					
+					boolean result = lottoDataService.checkExpertFilter(exData, winDataList);
+					if (result) {
+						exDataList.add(exData);
+					}
+					
+					// 저장확인건수에 도달하면 등록 처리
+					if (exDataList.size() == saveCheckCnt) {
+						Map<String, List> dataMap = new HashMap<String, List>();
+						dataMap.put("list", exDataList);
+						sysmngService.insertExptNumExpertList(dataMap);
+						
+						saveCnt += exDataList.size();
+						
+						log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 등록건수 = " + saveCnt);
+						
+						// 리스트 초기화
+						exDataList = new ArrayList<ExDataDto>();
+					}
+					
+					excuteCnt++;	// 실행횟수 추가
+					
+					// 진행도 출력
+					int d_cnt = excuteCnt;
+					int d_total = totalCombinationCnt;
+					double percent = LottoUtil.getPercent(d_cnt, d_total);
+					
+					log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> [" + numbers + "] " + (k+1) + " / " + expectDataList.size() + " / 전체 진행도 = " + excuteCnt + " (" + (percent) + "%, " + (i+1) + " / " + repeatCnt + "Phase)");
+				}
+				
+				// 나머지 등록처리
+				if (exDataList.size() > 0) {
+					Map<String, List> dataMap = new HashMap<String, List>();
+					dataMap.put("list", exDataList);
+					sysmngService.insertExptNumExpertList(dataMap);
+					saveCnt =+ exDataList.size();
+					
+					log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 나머지건수 = " + exDataList.size());
+				}
+				
+				log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 현재까지 등록건수 = " + saveCnt);
+			}
+			log.info("\t>예상번호 전문가 대상건수를 총 " + saveCnt + "건 등록했습니다.");
+			
+			jsonObj.put("status", "success");
+			jsonObj.put("msg", "예상번호 전문가 대상건수를 총 " + saveCnt + "건 등록했습니다.");
+			
+		} else {
+			jsonObj.put("status", "usernotfound");
+			jsonObj.put("msg", "세션이 종료되었거나 로그인 상태가 아닙니다.");
+		}
+		
+		System.out.println("JSONObject::"+jsonObj.toString()); 
+		writeJSON(response, jsonObj);
+		
+	}
+	
+	/**
 	 * 예상번호 분석 화면 호출(ajax)
 	 * 
 	 * @param modelMap
@@ -2004,6 +2296,118 @@ public class SysmngController extends DefaultSMController {
 			
 			// 당첨결과 설정
 			lottoDataService.getExDataResult(modelMap, lastData, exDataNewList);
+			
+			//CurrMenuInfo overwrite
+			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/exptdatamng"));
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ExDataResult");
+			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
+			
+		} else {
+			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
+		}
+		return POPUP;
+	}
+	
+	/**
+	 * 전회차 매칭결과 필터 화면 호출(ajax)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/resultExDataFilterajax")
+	public String resultExDataFilterajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			long loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 전회차 매칭결과 필터 화면 호출(ajax)");
+			
+			setModelMapWithAuthCheck(modelMap, request);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("DESC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			// 최근 당첨번호
+			WinDataDto lastData = winDataList.get(0);
+			modelMap.addAttribute("last_count", lastData.getWin_count());
+			
+			// 예상번호 목록 조회
+			ExDataDto dto = new ExDataDto();
+			dto.setEx_count(lastData.getWin_count());
+			dto.setSord("ASC");
+			dto.setPage("1");	// 전체조회 설정
+			List<ExDataDto> exDataList = sysmngService.getExDataFilterList(dto);
+			
+			// 당첨결과 설정
+			lottoDataService.getExDataResult(modelMap, lastData, exDataList);
+			
+			//CurrMenuInfo overwrite
+			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/exptdatamng"));
+			
+			modelMap.addAttribute(CONTENT_PAGE, "sysmng/ExDataResult");
+			modelMap.addAttribute("isAjax", "Y");
+			modelMap.addAttribute("isLogin", userInfo.getIsLogin());
+			
+		} else {
+			modelMap.addAttribute(CONTENT_PAGE, "base/Main");
+		}
+		return POPUP;
+	}
+	
+	/**
+	 * 전회차 매칭결과 전문가 화면 호출(ajax)
+	 * 
+	 * @param modelMap
+	 * @param request
+	 * @param response
+	 * @param ses
+	 * @return
+	 * @throws SQLException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping("/sysmng/resultExDataExpertajax")
+	public String resultExDataExpertajax(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response, HttpSession ses) throws SQLException, UnsupportedEncodingException {
+		
+		UserSession userInfo = (UserSession) ses.getAttribute("UserInfo");
+		
+		if (userInfo != null) {
+			
+			long loginUserId = userInfo.getUser_no();
+			log.info("["+loginUserId+"][C] 전회차 매칭결과 전문가 화면 호출(ajax)");
+			
+			setModelMapWithAuthCheck(modelMap, request);
+			
+			// 당첨번호 전체 목록 조회
+			WinDataDto winDataDto = new WinDataDto();
+			winDataDto.setSord("DESC");
+			winDataDto.setPage("1");	// 전체조회 설정
+			List<WinDataDto> winDataList = sysmngService.getWinDataList(winDataDto);
+			
+			// 최근 당첨번호
+			WinDataDto lastData = winDataList.get(0);
+			modelMap.addAttribute("last_count", lastData.getWin_count());
+			
+			// 예상번호 목록 조회
+			ExDataDto dto = new ExDataDto();
+			dto.setEx_count(lastData.getWin_count());
+			dto.setSord("ASC");
+			dto.setPage("1");	// 전체조회 설정
+			List<ExDataDto> exDataList = sysmngService.getExDataExpertList(dto);
+			
+			// 당첨결과 설정
+			lottoDataService.getExDataResult(modelMap, lastData, exDataList);
 			
 			//CurrMenuInfo overwrite
 			modelMap.addAttribute("CurrMenuInfo", getCurrMenuInfo(userInfo, "/sysmng/exptdatamng"));
