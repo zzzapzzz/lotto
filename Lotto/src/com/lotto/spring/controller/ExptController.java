@@ -186,12 +186,6 @@ public class ExptController extends DefaultSMController {
 		String searchCount = WebUtil.replaceParam(request.getParameter("search_count"), "10");
 		int iSearchCount = Integer.parseInt(searchCount);
 		
-		//2016.05.23 cremazer
-  		//ORACLE 인 경우 대문자 설정
-  		if ("ORACLE".equals(systemInfo.getDatabase())) {
-  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-  		}
-  		
 		// 로그인 아이디
 		int loginUserNo = userInfo.getUser_no();
 		log.info("[" + loginUserNo + "][C] 예상번호 30목록 조회");

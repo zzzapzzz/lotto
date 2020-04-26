@@ -201,12 +201,6 @@ public class InfoController extends DefaultSMController {
 	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
 		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
-		//2016.05.23 cremazer
-  		//ORACLE 인 경우 대문자 설정
-  		if ("ORACLE".equals(systemInfo.getDatabase())) {
-  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-  		}
-  		
 		// 로그인 아이디
 		int loginUserNo = userInfo.getUser_no();
 		log.info("[" + loginUserNo + "][C] 서비스 신청목록 조회");

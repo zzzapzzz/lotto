@@ -190,12 +190,6 @@ public class TestController extends DefaultSMController {
 	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
 		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
-		//2016.05.23 cremazer
-  		//ORACLE 인 경우 대문자 설정
-  		if ("ORACLE".equals(systemInfo.getDatabase())) {
-  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-  		}
-  		
 		// 로그인 아이디
 		int loginUserNo = userInfo.getUser_no();
 		log.info("[" + loginUserNo + "][C] 총합 테스트");
@@ -288,12 +282,6 @@ public class TestController extends DefaultSMController {
 		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
 		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
-		//2016.05.23 cremazer
-		//ORACLE 인 경우 대문자 설정
-		if ("ORACLE".equals(systemInfo.getDatabase())) {
-			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-		}
-		
 		// 로그인 아이디
 		int loginUserNo = userInfo.getUser_no();
 		log.info("[" + loginUserNo + "][C] 최대 출현횟수별 테스트");
@@ -375,12 +363,6 @@ public class TestController extends DefaultSMController {
 		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
 		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
-		//2016.05.23 cremazer
-		//ORACLE 인 경우 대문자 설정
-		if ("ORACLE".equals(systemInfo.getDatabase())) {
-			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-		}
-		
 		// 로그인 아이디
 		int loginUserNo = userInfo.getUser_no();
 		log.info("[" + loginUserNo + "][C] 번호간 범위 테스트");
@@ -458,12 +440,6 @@ public class TestController extends DefaultSMController {
 		HttpSession session = request.getSession();
 		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
 		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
-		
-		//2016.05.23 cremazer
-		//ORACLE 인 경우 대문자 설정
-		if ("ORACLE".equals(systemInfo.getDatabase())) {
-			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-		}
 		
 		// 로그인 아이디
 		int loginUserNo = userInfo.getUser_no();
@@ -663,12 +639,6 @@ public class TestController extends DefaultSMController {
 		JSONObject jsonObj = new JSONObject();
 		
 		if (userInfo != null) {
-			//2016.05.23 cremazer
-	  		//ORACLE 인 경우 대문자 설정
-	  		if ("ORACLE".equals(systemInfo.getDatabase())) {
-	  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-	  		}
-	  		
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] AC 분석정보 등록");
@@ -726,12 +696,6 @@ public class TestController extends DefaultSMController {
 		JSONObject jsonObj = new JSONObject();
 		
 		if (userInfo != null) {
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 제외수 테스트");
@@ -896,12 +860,6 @@ public class TestController extends DefaultSMController {
 		JSONObject jsonObj = new JSONObject();
 		
 		if (userInfo != null) {
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 제외수 테스트");
@@ -1308,11 +1266,6 @@ public class TestController extends DefaultSMController {
 		JSONObject jsonObj = new JSONObject();
 		
 		if (userInfo != null) {
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
 			
 			String ex_count       = WebUtil.replaceParam(request.getParameter("ex_count"), "");
 			
@@ -1769,12 +1722,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-	  		//ORACLE 인 경우 대문자 설정
-	  		if ("ORACLE".equals(systemInfo.getDatabase())) {
-	  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-	  		}
-	  		
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 가설0 검증");
@@ -1949,12 +1896,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설1 검증");
@@ -2086,12 +2027,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-	  		//ORACLE 인 경우 대문자 설정
-	  		if ("ORACLE".equals(systemInfo.getDatabase())) {
-	  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-	  		}
-	  		
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설2 검증");
@@ -2223,12 +2158,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설3 검증");
@@ -2358,12 +2287,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설4 검증");
@@ -2484,12 +2407,6 @@ public class TestController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
-			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
 			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
@@ -2612,12 +2529,6 @@ public class TestController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
-			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
 			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
@@ -2760,12 +2671,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설7 검증");
@@ -2887,12 +2792,6 @@ public class TestController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
-			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
 			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
@@ -3019,12 +2918,6 @@ public class TestController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
-			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
 			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
@@ -3163,12 +3056,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설10 검증");
@@ -3299,12 +3186,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설11 검증");
@@ -3421,12 +3302,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설12 검증");
@@ -3526,12 +3401,6 @@ public class TestController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
-			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
 			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
@@ -3654,12 +3523,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설14 검증");
@@ -3767,12 +3630,6 @@ public class TestController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
-			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
 			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
@@ -3898,12 +3755,6 @@ public class TestController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
-			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
 			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
@@ -4037,12 +3888,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설17 검증");
@@ -4162,12 +4007,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설18 검증");
@@ -4280,12 +4119,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설19 검증");
@@ -4390,12 +4223,6 @@ public class TestController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
-			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
 			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
@@ -4566,12 +4393,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설21 검증");
@@ -4698,12 +4519,6 @@ public class TestController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
-			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
 			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
@@ -4874,12 +4689,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설24 검증");
@@ -5001,12 +4810,6 @@ public class TestController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
-			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
 			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
@@ -5149,12 +4952,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설26 검증");
@@ -5264,12 +5061,6 @@ public class TestController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
-			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
 			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
@@ -5413,12 +5204,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설28 검증");
@@ -5521,12 +5306,6 @@ public class TestController extends DefaultSMController {
 		if (userInfo != null) {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
-			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
 			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
@@ -5636,12 +5415,6 @@ public class TestController extends DefaultSMController {
 			
 			String fromCheckCount       = WebUtil.replaceParam(request.getParameter("fromCheckCount"), "");
 			
-			//2016.05.23 cremazer
-			//ORACLE 인 경우 대문자 설정
-			if ("ORACLE".equals(systemInfo.getDatabase())) {
-				dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-			}
-			
 			// 로그인 아이디
 			int loginUserNo = userInfo.getUser_no();
 			log.info("[" + loginUserNo + "][C] 나대길 가설30 검증");
@@ -5716,6 +5489,7 @@ public class TestController extends DefaultSMController {
 		writeJSON(response, jsonObj);
 	}
 	
+	/*
 	@RequestMapping("/test/sendEmail")
 	public void sendEmail(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		HttpSession session = request.getSession();
@@ -5873,4 +5647,5 @@ public class TestController extends DefaultSMController {
 		System.out.println("JSONObject::"+jsonObj.toString());
 		writeJSON(response, jsonObj);
 	}
+	*/
 }

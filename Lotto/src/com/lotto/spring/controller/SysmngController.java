@@ -215,12 +215,6 @@ public class SysmngController extends DefaultSMController {
 		String sidx = WebUtil.replaceParam(request.getParameter("sidx"), "usr_id");
 		String sord = WebUtil.replaceParam(request.getParameter("sord"), "ASC");	
 		
-		//2016.05.23 cremazer
-  		//ORACLE 인 경우 대문자 설정
-  		if ("ORACLE".equals(systemInfo.getDatabase())) {
-  			sord = sord.toUpperCase();
-  		}
-  		
 		// 로그인 아이디
 		int loginUserId = userInfo.getUser_no();
 		log.info("[" + loginUserId + "][C] 회원정보 목록 조회");
@@ -569,12 +563,6 @@ public class SysmngController extends DefaultSMController {
 	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
 		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
-		//2016.05.23 cremazer
-  		//ORACLE 인 경우 대문자 설정
-  		if ("ORACLE".equals(systemInfo.getDatabase())) {
-  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-  		}
-  		
 		// 로그인 아이디
 		int loginUserNo = userInfo.getUser_no();
 		log.info("[" + loginUserNo + "][C] 당첨번호정보 목록 조회");
@@ -1372,12 +1360,6 @@ public class SysmngController extends DefaultSMController {
 	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
 		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
-		//2016.05.23 cremazer
-  		//ORACLE 인 경우 대문자 설정
-  		if ("ORACLE".equals(systemInfo.getDatabase())) {
-  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-  		}
-  		
 		// 로그인 아이디
 		int loginUserNo = userInfo.getUser_no();
 		log.info("[" + loginUserNo + "][C] 예상번호정보 목록 조회");
@@ -1436,12 +1418,6 @@ public class SysmngController extends DefaultSMController {
 		HttpSession session = request.getSession();
 		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
 		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
-		
-		//2016.05.23 cremazer
-		//ORACLE 인 경우 대문자 설정
-		if ("ORACLE".equals(systemInfo.getDatabase())) {
-			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-		}
 		
 		// 로그인 아이디
 		int loginUserNo = userInfo.getUser_no();
@@ -2473,12 +2449,6 @@ public class SysmngController extends DefaultSMController {
 		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		JSONObject json = new JSONObject();
 		
-		//2016.05.23 cremazer
-  		//ORACLE 인 경우 대문자 설정
-  		if ("ORACLE".equals(systemInfo.getDatabase())) {
-  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-  		}
-  		
 		// 로그인 아이디
 		int loginUserNo = userInfo.getUser_no();
 		log.info("[" + loginUserNo + "][C] 예상번호 30목록 조회");
@@ -2627,12 +2597,6 @@ public class SysmngController extends DefaultSMController {
 		UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
 		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		JSONObject json = new JSONObject();
-		
-		//2016.05.23 cremazer
-		//ORACLE 인 경우 대문자 설정
-		if ("ORACLE".equals(systemInfo.getDatabase())) {
-			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-		}
 		
 		// 로그인 아이디
 		int loginUserNo = userInfo.getUser_no();
@@ -3525,12 +3489,6 @@ public class SysmngController extends DefaultSMController {
 	    UserSession userInfo = (UserSession) session.getAttribute("UserInfo");
 		SystemSession systemInfo = (SystemSession) session.getAttribute("SystemInfo");
 		
-		//2016.05.23 cremazer
-  		//ORACLE 인 경우 대문자 설정
-  		if ("ORACLE".equals(systemInfo.getDatabase())) {
-  			dto.setSord(WebUtil.replaceParam(dto.getSord(),"").toUpperCase());
-  		}
-  		
 		// 로그인 아이디
 		int loginUserNo = userInfo.getUser_no();
 		log.info("[" + loginUserNo + "][C] 서비스정보 목록 조회");
@@ -4166,12 +4124,6 @@ public class SysmngController extends DefaultSMController {
 		String sidx = WebUtil.replaceParam(request.getParameter("sidx"), "auth_cd");
 		String sord = WebUtil.replaceParam(request.getParameter("sord"), "ASC");	
 		
-		//2016.05.23 cremazer
-  		//ORACLE 인 경우 대문자 설정
-  		if ("ORACLE".equals(systemInfo.getDatabase())) {
-  			sord = sord.toUpperCase();
-  		}
-  		
 		// 로그인 아이디
 		int loginUserId = userInfo.getUser_no();
 		log.info("[" + loginUserId + "][C] 권한코드 목록 조회");
